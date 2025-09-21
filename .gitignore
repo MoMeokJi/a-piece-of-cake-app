@@ -32,6 +32,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+*.g.dart
+*.freezed.dart 
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +45,35 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase 구성 파일
+**/GoogleService-Info.plist
+ios/firebase/**/GoogleService-Info.plist
+**/google-services.json
+android/app/src/**/google-services.json
+
+# Firebase Options
+lib/config/firebase_options*.dart
+lib/config/firebase_options_dev.dart
+lib/config/firebase_options_qa.dart
+lib/config/firebase_options.dart
+
+# Firebase 로컬 파일
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+.firebase/hosting.*.cache
+firepit-log.txt
+
+# cursor
+.cursorignore
+
+# Environment variables
+.env
+.env.*
+
+# Keystore files and signing keys
+android/key.properties
+*.keystore
+*.jks
+upload-keystore.jks

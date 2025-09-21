@@ -26,3 +26,17 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          format: false
+          map: false
+          when: false
