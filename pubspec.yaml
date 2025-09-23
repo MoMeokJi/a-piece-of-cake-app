@@ -39,6 +39,7 @@ dependencies:
  shared_preferences: ^2.5.2
  pull_to_refresh: ^2.0.0
  flutter_dotenv: ^5.2.1
+ animated_bottom_navigation_bar: ^1.4.0
 
 dev_dependencies:
  flutter_test:
@@ -56,7 +57,6 @@ flutter:
    - assets/images/
    - assets/logo/
    - assets/icons/
-   - .env
  fonts:
    - family: NanumSquareNeo
      fonts:
