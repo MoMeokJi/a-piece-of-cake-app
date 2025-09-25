@@ -22,7 +22,7 @@ class MainScreen extends StatelessWidget {
           // 상단 고정 배너
           Container(
             width: double.infinity,
-            height: getHeight(220), // 배너 높이 조정 가능
+            height: getHeight(230),
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/main_banner.png'),
@@ -36,6 +36,31 @@ class MainScreen extends StatelessWidget {
                   offset: const Offset(0, 1), // 위쪽으로 그림자 효과
                 ),
               ],
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: getHeight(35)),
+                  Text(
+                    '오늘은 어떤 하루였나요?',
+                    style: TextStyle(
+                      fontSize: getWidth(18), // 사이즈는 조정하세요
+                      color: ColorConfig.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'piece of cake',
+                    style: TextStyle(
+                      fontFamily: 'DCC',
+                      fontSize: getWidth(40),
+                      color: ColorConfig.white,
+                      // fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           // 하단 탭 컨텐츠

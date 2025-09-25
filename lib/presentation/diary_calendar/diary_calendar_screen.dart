@@ -8,6 +8,6 @@ class DiaryCalendarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<DiaryCalendarViewModel>();
-    return Center(child: Text('calendar view'));
+    return SingleChildScrollView();
   }
 }

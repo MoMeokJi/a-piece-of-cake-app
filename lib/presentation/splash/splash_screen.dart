@@ -20,9 +20,26 @@ class SplashScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: ColorConfig.primary,
-      body: Center(
-        child: Image.asset('assets/logo/logo.png', width: getWidth(300)),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [ColorConfig.primary, ColorConfig.secondary],
+          ),
+        ),
+        child: Center(
+          child: Text(
+            'piece of cake',
+            style: TextStyle(
+              fontFamily: 'DCC',
+              fontSize: getWidth(48), // 크기는 조정하세요
+              color: ColorConfig.white,
+            ),
+          ),
+        ),
       ),
     );
   }
