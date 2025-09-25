@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cake/config/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
@@ -21,7 +23,7 @@ class DiaryListScreen extends StatelessWidget {
           elevation: 0,
           floating: true, // 스크롤 올릴 때 바로 나타남
           snap: true, // 빠르게 나타나고 사라짐
-          toolbarHeight: getHeight(40),
+          toolbarHeight: (Platform.isIOS) ? getHeight(15) : getHeight(40),
           flexibleSpace: Padding(
             padding: EdgeInsets.symmetric(
               vertical: getHeight(10),
