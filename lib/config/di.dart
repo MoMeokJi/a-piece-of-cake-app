@@ -30,6 +30,8 @@ Future<void> diSetup() async {
   getIt.registerFactory(() => MainViewModel());
 
   //하단 네비게이션 탭 viewmodel -> singleton
-  getIt.registerLazySingleton(() => DiaryCalendarViewModel());
+  getIt.registerLazySingleton(
+    () => DiaryCalendarViewModel(diaryRepository: getIt<DiaryRepository>()),
+  );
   getIt.registerLazySingleton(() => DiaryListViewModel());
 }

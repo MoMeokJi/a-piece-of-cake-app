@@ -19,8 +19,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
 
   @override
   Future<List<Diary>> getCurrentMonthlyDiaryList() async {
-    // TODO: 현재 날짜 확인 후 그 달에 써진 일기 가져오기
-    throw UnimplementedError();
+    return await _diaryDao.getCurrentMonthDiaries();
   }
 
   @override
@@ -28,8 +27,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
     required int year,
     required int month,
   }) async {
-    // TODO: 요청하는 달에 쓴 일기 가져오기
-    throw UnimplementedError();
+    return await _diaryDao.getDiariesByMonth(year, month);
   }
 
   @override
