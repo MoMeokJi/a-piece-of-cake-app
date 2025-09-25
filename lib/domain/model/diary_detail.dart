@@ -1,7 +1,5 @@
 // ignore_for_file: annotate_overrides
 
-import 'dart:ui';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 part 'diary_detail.freezed.dart';
 

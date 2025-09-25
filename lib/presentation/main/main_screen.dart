@@ -77,7 +77,7 @@ class MainScreen extends StatelessWidget {
           height: getHeight(80),
         ),
         shape: const CircleBorder(),
-        elevation: 0,
+        elevation: 2,
         fillColor: ColorConfig.primary,
         onPressed: () async {},
         child: Icon(
