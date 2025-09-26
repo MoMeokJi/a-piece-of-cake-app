@@ -1,4 +1,4 @@
-import 'package:cake/config/color_config.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/main/components/bottom_navi.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
@@ -22,7 +22,7 @@ class MainScreen extends StatelessWidget {
           // 상단 고정 배너
           Container(
             width: double.infinity,
-            height: getHeight(230),
+            height: getHeight(210),
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/main_banner.png'),

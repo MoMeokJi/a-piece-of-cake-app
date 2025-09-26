@@ -2,7 +2,7 @@ import 'package:cake/config/di.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/my_app.dart';
-import 'package:cake/config/color_config.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';

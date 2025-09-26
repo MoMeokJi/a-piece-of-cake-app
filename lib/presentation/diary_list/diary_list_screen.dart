@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cake/config/color_config.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:flutter/material.dart';

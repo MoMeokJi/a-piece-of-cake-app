@@ -1,4 +1,4 @@
-import 'package:cake/config/color_config.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:flutter/material.dart';
