@@ -35,7 +35,7 @@ class SplashScreen extends StatelessWidget {
             'piece of cake',
             style: TextStyle(
               fontFamily: 'DCC',
-              fontSize: getWidth(48), // 크기는 조정하세요
+              fontSize: getWidth(48),
               color: ColorConfig.white,
             ),
           ),

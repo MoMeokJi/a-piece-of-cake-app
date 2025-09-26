@@ -14,11 +14,11 @@ GetIt getIt = GetIt.instance;
 Future<void> diSetup() async {
   // Database 초기화 및 등록
   getIt.registerSingletonAsync<Database>(() => DatabaseHelper().database);
-  await getIt.isReady<Database>();
   getIt.registerSingletonWithDependencies<DiaryDao>(
     () => DiaryDao(getIt<Database>()),
     dependsOn: [Database],
   );
+  await getIt.isReady<DiaryDao>(); // DiaryDao 인스턴스까지 생성 완료
 
   // repository => singleton
   getIt.registerLazySingleton<DiaryRepository>(

@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
 
 class ColorConfig {
-  static const Color primary = Color(0xFF8196C3);
-  static const Color secondary = Color(0xFFEEB5BE);
+  static const Color primary = Color(0xff8196C3);
+  static const Color secondary = Color(0xffEEB5BE);
 
-  static const Color background = Color(0xFFFCFCFC);
-  static const Color bottomNavi = Color(0xFFF9F9F9);
-  static const Color borderColor = Color(0xFFCCCCCC);
-  static const Color dividerColor = Color(0xFFE2E2E2);
-  static const Color containerColor = Color(0xFFE1E1E1);
+  static const Color background = Color(0xffFCFCFC);
+  static const Color bottomNavi = Color(0xffF9F9F9);
+  static const Color borderColor = Color(0xffCCCCCC);
+  static const Color dividerColor = Color(0xffE2E2E2);
+  static const Color containerColor = Color(0xffE1E1E1);
 
-  static const Color success = Color(0xFF4CAF50);
-  static const Color confirm = Color(0xFF2196F3);
-  static const Color error = Color(0xFFF44336);
+  static const Color success = Color(0xff4CAF50);
+  static const Color confirm = Color(0xff2196F3);
+  static const Color error = Color(0xffF44336);
   static const Color caution = Color(0xffD52F30);
-  static const Color disabled = Color(0xFFD3D3D3);
+  static const Color disabled = Color(0xffD3D3D3);
 
-  static const Color black = Color(0xFF111111);
-  static const Color gray1 = Color(0xFF484848);
-  static const Color gray2 = Color(0xFF797979);
-  static const Color gray3 = Color(0xFFA9A9A9);
-  static const Color gray4 = Color(0xFFD9D9D9);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE4E4E4);
+  static const Color black = Color(0xff111111);
+  static const Color gray1 = Color(0xff484848);
+  static const Color gray2 = Color(0xff797979);
+  static const Color gray3 = Color(0xffA9A9A9);
+  static const Color gray4 = Color(0xffD9D9D9);
+  static const Color white = Color(0xffFFFFFF);
+  static const Color border = Color(0xffE4E4E4);
+
+  //calendar color
+  static const Color weekendColor = Color(0xffD74343);
+  static const Color weekdayColor = Color(0xff333333);
+  static const Color todayColor = Color(0xffD8E1F0);
+  static const Color outsideDayColor = Color(0xffB3B3B3);
+  static const Color selectDayColor = Color(0xff8196C3);
+  static const Color markerDotColor = Color(0xffEEB5BE);
 }

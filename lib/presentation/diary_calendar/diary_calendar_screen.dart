@@ -1,4 +1,8 @@
+import 'package:cake/config/color_config.dart';
+import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
+import 'package:cake/core/extensions/color_extensions.dart';
+import 'package:cake/domain/model/diary.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -12,120 +16,74 @@ class DiaryCalendarScreen extends StatelessWidget {
 
     return Column(
       children: [
-        // 캘린더 (고정)
-        _buildCalendar(viewModel),
+        // 캘린더  영역
+        TableCalendar<dynamic>(
+          firstDay: DateTime.utc(2025, 1, 1),
+          lastDay: DateTime.utc(2030, 12, 31),
+          focusedDay: viewModel.focusedMonth,
+          calendarFormat: CalendarFormat.month, // 월간 보기
+          eventLoader: viewModel.getDiaryListForMarker,
+          startingDayOfWeek: StartingDayOfWeek.sunday,
+          onDaySelected: viewModel.onDaySelected,
+          onPageChanged: (focusedDay) =>
+              viewModel.loadMonthlyDiaries(focusedDay),
+          selectedDayPredicate: (day) => isSameDay(viewModel.selectedDay, day),
+          calendarStyle: CalendarStyle(
+            outsideTextStyle: TextStyle(color: ColorConfig.outsideDayColor),
+            defaultTextStyle: TextStyle(color: ColorConfig.weekdayColor),
+            weekendTextStyle: TextStyle(color: ColorConfig.weekendColor),
+            holidayTextStyle: TextStyle(color: ColorConfig.weekendColor),
+            // 선택된 날짜 스타일
+            selectedDecoration: BoxDecoration(
+              color: ColorConfig.selectDayColor,
+              shape: BoxShape.circle,
+            ),
+            selectedTextStyle: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            // 오늘 날짜 스타일
+            todayDecoration: BoxDecoration(
+              color: ColorConfig.todayColor,
+              shape: BoxShape.circle,
+            ),
+            todayTextStyle: TextStyle(color: ColorConfig.weekdayColor),
+            // 마커 스타일
+            markersMaxCount: 3,
+            markerSize: getWidth(6),
+            markerMargin: EdgeInsets.symmetric(horizontal: getWidth(1)),
+            markersAlignment: Alignment.topCenter,
+            markersAnchor: 1.8,
+            markerDecoration: BoxDecoration(
+              color: ColorConfig.markerDotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          headerStyle: const HeaderStyle(
+            formatButtonVisible: false, // 포맷 변경 버튼 숨김
+            titleCentered: true,
+            formatButtonShowsNext: false,
+          ),
+        ),
 
         // 선택된 날짜의 일기들 (스크롤 가능)
-        if (viewModel.selectedDay != null) _buildSelectedDayDiaries(viewModel),
+        _buildSelectedDayDiaries(viewModel),
       ],
     );
   }
 
-  Widget _buildCalendar(DiaryCalendarViewModel viewModel) {
-    return TableCalendar<dynamic>(
-      firstDay: DateTime.utc(2020, 1, 1),
-      lastDay: DateTime.utc(2030, 12, 31),
-      focusedDay: viewModel.focusedDay,
-      calendarFormat: CalendarFormat.month, // 월간 보기로 고정
-      eventLoader: viewModel.getEventsForDay,
-      startingDayOfWeek: StartingDayOfWeek.sunday,
-      calendarStyle: const CalendarStyle(
-        outsideDaysVisible: false,
-        weekendTextStyle: TextStyle(color: Colors.red),
-        holidayTextStyle: TextStyle(color: Colors.red),
-      ),
-      headerStyle: const HeaderStyle(
-        formatButtonVisible: false, // 포맷 변경 버튼 숨김
-        titleCentered: true,
-        formatButtonShowsNext: false,
-      ),
-      calendarBuilders: CalendarBuilders(
-        // 일기가 있는 날짜에 점 표시 (최대 3개)
-        markerBuilder: (context, day, events) {
-          if (events.isNotEmpty) {
-            final eventCount = events.length;
-            final displayCount = eventCount > 3 ? 3 : eventCount;
-
-            return Positioned(
-              bottom: 1,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(displayCount, (index) {
-                  return Container(
-                    width: 4,
-                    height: 4,
-                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                  );
-                }),
-              ),
-            );
-          }
-          return null;
-        },
-        // 선택된 날짜 스타일
-        selectedBuilder: (context, day, focusedDay) {
-          return Container(
-            margin: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${day.day}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          );
-        },
-        // 오늘 날짜 스타일
-        todayBuilder: (context, day, focusedDay) {
-          return Container(
-            margin: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.3),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${day.day}',
-                style: const TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      onDaySelected: viewModel.onDaySelected,
-      onPageChanged: (focusedDay) {
-        viewModel.onPageChanged(focusedDay);
-        // 월이 변경될 때 해당 월의 일기들 로드
-        viewModel.loadMonthlyDiaries(focusedDay);
-      },
-      selectedDayPredicate: (day) {
-        return isSameDay(viewModel.selectedDay, day);
-      },
-    );
-  }
-
   Widget _buildSelectedDayDiaries(DiaryCalendarViewModel viewModel) {
-    if (viewModel.selectedDayDiaries.isEmpty) {
+    // 선택된 날짜에 일기가 없을 때
+    if (viewModel.selectedDayDiaryList.isEmpty) {
+      final dateText =
+          '${viewModel.selectedDay.month}월 ${viewModel.selectedDay.day}일';
       return Expanded(
         child: Container(
           padding: const EdgeInsets.all(16),
-          child: const Center(
+          child: Center(
             child: Text(
-              '이 날에는 일기가 없습니다.',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              '$dateText에는 일기가 없습니다.',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ),
         ),
@@ -135,16 +93,16 @@ class DiaryCalendarScreen extends StatelessWidget {
     return Expanded(
       child: ListView.builder(
         padding: const EdgeInsets.only(bottom: 16),
-        itemCount: viewModel.selectedDayDiaries.length,
+        itemCount: viewModel.selectedDayDiaryList.length,
         itemBuilder: (context, index) {
-          final diary = viewModel.selectedDayDiaries[index];
+          final diary = viewModel.selectedDayDiaryList[index];
           return _buildDiaryCard(diary);
         },
       ),
     );
   }
 
-  Widget _buildDiaryCard(dynamic diary) {
+  Widget _buildDiaryCard(Diary diary) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
@@ -174,7 +132,7 @@ class DiaryCalendarScreen extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: Color(int.parse(diary.firstColorHex)),
+                    color: diary.firstColorHex.toColor(),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.grey.shade300, width: 1),
                   ),
@@ -184,7 +142,7 @@ class DiaryCalendarScreen extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: Color(int.parse(diary.secondColorHex)),
+                    color: diary.secondColorHex.toColor(),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.grey.shade300, width: 1),
                   ),
