@@ -82,6 +82,26 @@ Future<void> _createTestData() async {
         await diaryDao.insertDiary(diary);
       }
     }
+    // 오늘 날짜로 일기 3개 추가
+    print('오늘 날짜(2025-09-28) 일기 3개를 추가합니다...');
+    final today = DateTime(2025, 9, 28);
+
+    for (int i = 0; i < 3; i++) {
+      final hour = random.nextInt(23) + 1; // 1-23시
+      final minute = random.nextInt(60); // 0-59분
+
+      final todayDiary = Diary(
+        id: random.nextInt(10000) + 10000, // 기존 ID와 겹치지 않게
+        summary: _generateRandomSummary(),
+        createdAt: DateTime(today.year, today.month, today.day, hour, minute),
+        firstColorHex: _getRandomColorHex(),
+        secondColorHex: _getRandomColorHex(),
+        musicTitle: _getRandomMusicTitle(),
+        musicArtist: _getRandomMusicArtist(),
+      );
+
+      await diaryDao.insertDiary(todayDiary);
+    }
 
     print('테스트 데이터 생성 완료!');
   } catch (e) {

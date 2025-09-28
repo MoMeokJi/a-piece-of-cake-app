@@ -27,7 +27,9 @@ Future<void> diSetup() async {
 
   //viewmodel -> factory
   getIt.registerFactory(() => SplashViewModel());
-  getIt.registerFactory(() => MainViewModel());
+  getIt.registerFactory(
+    () => MainViewModel(diaryRepo: getIt<DiaryRepository>()),
+  );
 
   //하단 네비게이션 탭 viewmodel -> singleton
   getIt.registerLazySingleton(

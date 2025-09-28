@@ -31,6 +31,12 @@ class DiaryRepositoryImpl implements DiaryRepository {
   }
 
   @override
+  Future<bool> isAbleToWriteDiaryToday() async {
+    final count = await _diaryDao.getTodayDiaryCount();
+    return count < 3;
+  }
+
+  @override
   Future<void> removeDiary(int id) async {
     // sqflite 삭제
     await _diaryDao.deleteDiary(id);

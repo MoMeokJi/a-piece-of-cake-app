@@ -5,6 +5,7 @@ import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/main/components/bottom_navi.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -39,7 +40,16 @@ class MainScreen extends StatelessWidget {
         shape: const CircleBorder(),
         elevation: 2,
         fillColor: ColorConfig.primary,
-        onPressed: () {
+        onPressed: () async {
+          final canWrite = await viewModel.checkDiaryLimit();
+
+          if (!canWrite) {
+            Fluttertoast.showToast(msg: '오늘 일기는 여기까지! 내일 또 만나요 😊');
+            return;
+          }
+
+          if (!context.mounted) return;
+
           showModalBottomSheet(
             backgroundColor: ColorConfig.background,
             context: context,

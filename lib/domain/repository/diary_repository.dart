@@ -8,5 +8,6 @@ abstract interface class DiaryRepository {
     required int year,
     required int month,
   });
+  Future<bool> isAbleToWriteDiaryToday();
   Future<void> removeDiary(int id);
 }

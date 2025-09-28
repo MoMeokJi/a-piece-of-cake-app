@@ -78,6 +78,23 @@ class DiaryDao {
     return getDiariesByMonth(now.year, now.month);
   }
 
+  // 오늘 작성한 일기 개수 반환
+  Future<int> getTodayDiaryCount() async {
+    final today = DateTime.now();
+    // 오늘 00:00:00부터
+    final startOfDay = DateTime(today.year, today.month, today.day);
+    // 오늘 23:59:59까지
+    final endOfDay = DateTime(today.year, today.month, today.day, 23, 59, 59);
+
+    final List<Map<String, dynamic>> maps = await _db.query(
+      DatabaseHelper.diaryTableName,
+      where: 'createdAt >= ? AND createdAt <= ?',
+      whereArgs: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+    );
+
+    return maps.length;
+  }
+
   // 전체 데이터 다 지우는 메서드
   Future<int> deleteAll() => _db.delete(DatabaseHelper.diaryTableName);
 
