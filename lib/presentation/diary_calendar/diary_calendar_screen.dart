@@ -1,6 +1,7 @@
 import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
+import 'package:cake/presentation/diary_calendar/components/month_picker_dialog.dart';
 import 'package:cake/ui/common_components/diary_card.dart';
 import 'package:cake/ui/style/text_config.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +21,9 @@ class DiaryCalendarScreen extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: getWidth(20)),
           child: TableCalendar<dynamic>(
-            firstDay: DateTime.utc(2025, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: viewModel.focusedMonth,
+            firstDay: viewModel.minDate,
+            lastDay: viewModel.maxDate,
+            focusedDay: viewModel.focusedDate,
             calendarFormat: CalendarFormat.month, // 월간 보기
             eventLoader: viewModel.getDiaryListForMarker,
             startingDayOfWeek: StartingDayOfWeek.sunday,
@@ -91,6 +92,20 @@ class DiaryCalendarScreen extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
             ),
+            onHeaderTapped: (focusedDay) {
+              showDialog(
+                context: context,
+                barrierDismissible: true,
+                builder: (context) => MonthPickerDialog(
+                  initialDate: viewModel.focusedDate,
+                  minYear: viewModel.minDate.year,
+                  maxYear: viewModel.maxDate.year,
+                  onDateSelected: (selectedDate) {
+                    viewModel.updateFocusedMonth(selectedDate);
+                  },
+                ),
+              );
+            },
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
@@ -114,7 +129,11 @@ class DiaryCalendarScreen extends StatelessWidget {
             ? _buildEmptyText()
             : Expanded(
                 child: ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: getWidth(20)),
+                  padding: EdgeInsets.only(
+                    left: getWidth(20),
+                    right: getWidth(20),
+                    bottom: getHeight(25), // 리스트 마지막 여백 추가
+                  ),
                   separatorBuilder: (context, index) =>
                       SizedBox(height: getHeight(12)),
                   itemCount: viewModel.selectedDayDiaryList.length,

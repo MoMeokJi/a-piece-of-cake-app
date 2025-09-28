@@ -8,9 +8,13 @@ class DiaryCalendarViewModel with ChangeNotifier {
   final DiaryRepository _diaryRepo;
 
   // 현재 포커스한 날짜(=월)
-  DateTime _focusedMonth = DateTime.now();
+  DateTime _focusedDate = DateTime.now();
   // 사용자가 선택한 날짜
   DateTime _selectedDay = DateTime.now();
+
+  // 캘린더 노출 날짜
+  final DateTime _minDate = DateTime.utc(2020, 1, 1);
+  final DateTime _maxDate = DateTime.utc(2030, 12, 31);
 
   // 현재 월의 일기들
   List<Diary> _monthlyDiaryList = [];
@@ -18,8 +22,11 @@ class DiaryCalendarViewModel with ChangeNotifier {
   List<Diary> _selectedDayDiaryList = [];
 
   // Getters
-  DateTime get focusedMonth => _focusedMonth;
+  DateTime get focusedDate => _focusedDate;
   DateTime get selectedDay => _selectedDay;
+  DateTime get minDate => _minDate;
+  DateTime get maxDate => _maxDate;
+
   List<Diary> get selectedDayDiaryList => _selectedDayDiaryList;
 
   DiaryCalendarViewModel({required DiaryRepository diaryRepo})
@@ -43,7 +50,7 @@ class DiaryCalendarViewModel with ChangeNotifier {
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(_selectedDay, selectedDay)) {
       _selectedDay = selectedDay;
-      _focusedMonth = focusedDay;
+      _focusedDate = focusedDay;
       _filterSelectedDayDiaries();
       notifyListeners();
     }
@@ -62,7 +69,7 @@ class DiaryCalendarViewModel with ChangeNotifier {
   Future<void> loadMonthlyDiaries(DateTime focusedDay) async {
     try {
       // 포커스된 월 업데이트
-      _focusedMonth = focusedDay;
+      _focusedDate = focusedDay;
       notifyListeners();
       // 해당 월의 일기들 로드
       _monthlyDiaryList = await _diaryRepo.getMonthlyDiaryList(
@@ -75,6 +82,24 @@ class DiaryCalendarViewModel with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       AppLogger.error('DiaryCalendarViewModel loadMonthlyDiaries Error: $e');
+    }
+  }
+
+  // 년도/월 선택 시 실행 (월 피커에서 사용)
+  Future<void> updateFocusedMonth(DateTime newDate) async {
+    try {
+      // 새로운 월로 포커스 업데이트
+      _focusedDate = DateTime(newDate.year, newDate.month, 1);
+
+      _monthlyDiaryList = await _diaryRepo.getMonthlyDiaryList(
+        year: newDate.year,
+        month: newDate.month,
+      );
+
+      _filterSelectedDayDiaries();
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('DiaryCalendarViewModel updateFocusedMonth Error: $e');
     }
   }
 
