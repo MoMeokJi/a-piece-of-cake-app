@@ -6,9 +6,9 @@ class ColorConfig {
 
   static const Color background = Color(0xffFCFCFC);
   static const Color bottomNavi = Color(0xffF9F9F9);
-  static const Color borderColor = Color(0xffCCCCCC);
   static const Color dividerColor = Color(0xffE2E2E2);
   static const Color containerColor = Color(0xffE1E1E1);
+  static const Color border = Color(0xffE4E4E4);
 
   static const Color success = Color(0xff4CAF50);
   static const Color confirm = Color(0xff2196F3);
@@ -22,7 +22,6 @@ class ColorConfig {
   static const Color gray3 = Color(0xffA9A9A9);
   static const Color gray4 = Color(0xffD9D9D9);
   static const Color white = Color(0xffFFFFFF);
-  static const Color border = Color(0xffE4E4E4);
 
   //calendar color
   static const Color weekendColor = Color(0xffD74343);
