@@ -1,5 +1,10 @@
-import 'package:cake/domain/model/diary.dart';
+import 'package:cake/config/size_config.dart';
 import 'package:cake/core/extensions/color_extensions.dart';
+import 'package:cake/domain/model/diary.dart';
+import 'package:cake/ui/common_components/custom_divider.dart';
+import 'package:cake/ui/style/color_config.dart';
+import 'package:cake/ui/style/text_config.dart';
+import 'package:cake/utils/date_converter.dart';
 import 'package:flutter/material.dart';
 
 class DiaryCard extends StatelessWidget {
@@ -8,115 +13,110 @@ class DiaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorConfig.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: ColorConfig.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsetsGeometry.symmetric(
+          horizontal: getWidth(25),
+          vertical: getHeight(15),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 일기 요약
+            // 날짜
             Text(
-              diary.summary,
+              DateConverter.dateToDateString(diary.createdAt),
               style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                fontSize: 12,
+                color: ColorConfig.diaryDateColor,
+                fontWeight: FontWeight.w400,
               ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 12),
 
-            // 색상 표시
+            // 일기 내용
+            Padding(
+              padding: EdgeInsetsGeometry.symmetric(vertical: getHeight(5)),
+              child: Text(
+                diary.summary,
+                style: const TextStyle(
+                  fontSize: TextConfig.diaryFontSize,
+                  color: ColorConfig.diaryTextColor,
+                  fontWeight: FontWeight.w600,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            SizedBox(height: getHeight(5)),
+            CustomDivider(),
+            SizedBox(height: getHeight(10)),
+
             Row(
               children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: diary.firstColorHex.toColor(),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade300, width: 1),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: diary.secondColorHex.toColor(),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade300, width: 1),
-                  ),
-                ),
-                const Spacer(),
+                _colorCircle(diary.firstColorHex),
+                SizedBox(width: getWidth(8)),
+                _colorCircle(diary.secondColorHex),
+                SizedBox(width: getWidth(20)),
 
-                // 음악 정보
-                if (diary.musicTitle.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.music_note,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            '${diary.musicTitle} - ${diary.musicArtist}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                // Expanded로 남은 공간을 다 차지하게 하고 그 안에서 음악 정보를 오른쪽 정렬. 길어지면 ...처리
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(
+                        Icons.headphones,
+                        size: getWidth(16),
+                        color: ColorConfig.diaryMusicTextColor,
+                      ),
+                      SizedBox(width: getWidth(3)),
+                      Flexible(
+                        child: Text(
+                          '${diary.musicTitle} - ${diary.musicArtist}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: ColorConfig.diaryMusicTextColor,
+                            fontWeight: FontWeight.w400,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // 작성일
-            Row(
-              children: [
-                const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  '${diary.createdAt.toString().split(' ')[0]}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                const Spacer(),
-
-                // 더보기 버튼
-                TextButton(
-                  onPressed: () {
-                    // TODO: 일기 상세보기 페이지로 이동
-                    print('일기 상세보기: ${diary.id}');
-                  },
-                  child: const Text(
-                    '자세히 보기',
-                    style: TextStyle(fontSize: 12, color: Colors.blue),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _colorCircle(String colorHex) {
+    return Container(
+      width: getWidth(16),
+      height: getHeight(16),
+      decoration: BoxDecoration(
+        color: colorHex.toColor(),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: ColorConfig.black.withValues(alpha: 0.1),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }

@@ -33,7 +33,7 @@ class MainScreen extends StatelessWidget {
                   color: Colors.grey.withValues(alpha: 0.3),
                   spreadRadius: 3,
                   blurRadius: 5,
-                  offset: const Offset(0, 1), // 위쪽으로 그림자 효과
+                  offset: const Offset(0, 1),
                 ),
               ],
             ),
@@ -45,7 +45,7 @@ class MainScreen extends StatelessWidget {
                   Text(
                     '오늘은 어떤 하루였나요?',
                     style: TextStyle(
-                      fontSize: getWidth(18), // 사이즈는 조정하세요
+                      fontSize: getWidth(18),
                       color: ColorConfig.white,
                       fontWeight: FontWeight.bold,
                     ),

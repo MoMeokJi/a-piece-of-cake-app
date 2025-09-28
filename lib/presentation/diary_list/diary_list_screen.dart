@@ -1,8 +1,9 @@
 import 'dart:io';
-
+import 'package:cake/domain/enum/sort_type.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
+import 'package:cake/ui/common_components/diary_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,8 +15,8 @@ class DiaryListScreen extends StatelessWidget {
     final viewModel = context.watch<DiaryListViewModel>();
 
     return CustomScrollView(
+      controller: viewModel.scrollController,
       slivers: [
-        // 상단 버튼 두 개 (스크롤 시 사라졌다 나타남)
         SliverAppBar(
           automaticallyImplyLeading: false, // 뒤로가기 버튼 제거
           backgroundColor: Colors.transparent,
@@ -26,71 +27,69 @@ class DiaryListScreen extends StatelessWidget {
           toolbarHeight: (Platform.isIOS) ? getHeight(15) : getHeight(40),
           flexibleSpace: Padding(
             padding: EdgeInsets.symmetric(
-              vertical: getHeight(10),
-              horizontal: getWidth(20),
+              vertical: getHeight(8),
+              horizontal: getWidth(25),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: ColorConfig.white,
-                    backgroundColor: ColorConfig.primary,
-                    side: BorderSide(color: ColorConfig.primary),
-                  ),
-                  child: Text(
-                    '최신순',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
+                _buildSortButton(
+                  sortType: SortType.latest,
+                  isSelected: viewModel.sortType == SortType.latest,
+                  onPressed: () => viewModel.setSortType(SortType.latest),
                 ),
                 SizedBox(width: getWidth(15)),
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: ColorConfig.gray3,
-                    backgroundColor: ColorConfig.white,
-                    side: BorderSide(color: ColorConfig.gray4),
-                  ),
-                  child: Text(
-                    '등록순',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
+                _buildSortButton(
+                  sortType: SortType.oldest,
+                  isSelected: viewModel.sortType == SortType.oldest,
+                  onPressed: () => viewModel.setSortType(SortType.oldest),
                 ),
               ],
             ),
           ),
         ),
-        // 리스트
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    title: Text('다이어리 항목 ${index + 1}'),
-                    subtitle: Text(
-                      '${DateTime.now().add(Duration(days: index)).toString().substring(0, 10)}',
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {},
-                  ),
-                ),
-              );
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: getWidth(20)),
+          sliver: SliverList.separated(
+            itemCount: viewModel.diaryList.length,
+            itemBuilder: (context, index) {
+              final diary = viewModel.diaryList[index];
+              return DiaryCard(key: ValueKey(diary.id), diary: diary);
             },
-            childCount: 10, // 10개 아이템
+            separatorBuilder: (context, index) =>
+                SizedBox(height: getHeight(16)),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSortButton({
+    required SortType sortType,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: isSelected ? ColorConfig.white : ColorConfig.gray3,
+        backgroundColor: isSelected ? ColorConfig.primary : ColorConfig.white,
+        side: BorderSide(
+          color: isSelected ? ColorConfig.primary : ColorConfig.gray4,
+        ),
+        textStyle: TextStyle(
+          fontSize: getWidth(16),
+          letterSpacing: 0.5,
+          fontWeight: FontWeight.w600,
+        ),
+        minimumSize: Size.zero,
+        padding: EdgeInsets.symmetric(
+          horizontal: getWidth(15),
+          vertical: getHeight(8),
+        ),
+      ),
+      child: Text(sortType.text),
     );
   }
 }

@@ -16,12 +16,9 @@ class DiaryCalendarScreen extends StatelessWidget {
 
     return Column(
       children: [
-        // 캘린더 카드 영역
+        // 캘린더 영역
         Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: getWidth(20),
-            vertical: getHeight(12),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: getWidth(20)),
           child: TableCalendar<dynamic>(
             firstDay: DateTime.utc(2025, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
@@ -88,7 +85,7 @@ class DiaryCalendarScreen extends StatelessWidget {
               markerSize: getWidth(6),
               markerMargin: EdgeInsets.symmetric(horizontal: getWidth(1)),
               markersAlignment: Alignment.topCenter,
-              markersAnchor: 0.7,
+              markersAnchor: getHeight(0.8),
               markerDecoration: BoxDecoration(
                 color: ColorConfig.markerDotColor,
                 shape: BoxShape.circle,
@@ -100,32 +97,26 @@ class DiaryCalendarScreen extends StatelessWidget {
               formatButtonShowsNext: false,
               headerPadding: EdgeInsets.symmetric(vertical: getHeight(8)),
               titleTextStyle: TextStyle(
-                fontSize: getWidth(16), // 제목 폰트 크기 줄임
+                fontSize: getWidth(15),
                 fontWeight: FontWeight.w600,
               ),
-              leftChevronIcon: Icon(
-                Icons.chevron_left,
-                size: getWidth(24), // 좌측 화살표 크기 줄임
-              ),
-              rightChevronIcon: Icon(
-                Icons.chevron_right,
-                size: getWidth(24), // 우측 화살표 크기 줄임
-              ),
+              leftChevronIcon: Icon(Icons.chevron_left, size: getWidth(22)),
+              rightChevronIcon: Icon(Icons.chevron_right, size: getWidth(22)),
             ),
           ),
         ),
+
+        // 캘린더 리스트 사이 간격
+        SizedBox(height: getHeight(20)),
 
         // 일기 리스트 영역
         (viewModel.selectedDayDiaryList.isEmpty)
             ? _buildEmptyText()
             : Expanded(
                 child: ListView.separated(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getWidth(16),
-                    vertical: getHeight(16),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: getWidth(20)),
                   separatorBuilder: (context, index) =>
-                      SizedBox(height: getHeight(8)),
+                      SizedBox(height: getHeight(12)),
                   itemCount: viewModel.selectedDayDiaryList.length,
                   itemBuilder: (context, index) {
                     final diary = viewModel.selectedDayDiaryList[index];
@@ -138,28 +129,21 @@ class DiaryCalendarScreen extends StatelessWidget {
   }
 
   Widget _buildEmptyText() {
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '작성한 일기가 없습니다.',
-              style: TextStyle(
-                fontSize: getWidth(16),
-                color: ColorConfig.gray1,
-              ),
-            ),
-            SizedBox(height: getHeight(8)),
-            Text(
-              '오늘의 이야기를 기록해보세요',
-              style: TextStyle(
-                fontSize: getWidth(14),
-                color: ColorConfig.gray3,
-              ),
-            ),
-          ],
-        ),
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: getHeight(50)),
+          Text(
+            '작성한 일기가 없습니다.',
+            style: TextStyle(fontSize: getWidth(16), color: ColorConfig.gray1),
+          ),
+          SizedBox(height: getHeight(5)),
+          Text(
+            '오늘의 이야기를 기록해보세요',
+            style: TextStyle(fontSize: getWidth(14), color: ColorConfig.gray3),
+          ),
+        ],
       ),
     );
   }

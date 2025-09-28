@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class DiaryCalendarViewModel with ChangeNotifier {
-  final DiaryRepository _diaryRepository;
+  final DiaryRepository _diaryRepo;
 
   // 현재 포커스한 날짜(=월)
   DateTime _focusedMonth = DateTime.now();
@@ -22,15 +22,15 @@ class DiaryCalendarViewModel with ChangeNotifier {
   DateTime get selectedDay => _selectedDay;
   List<Diary> get selectedDayDiaryList => _selectedDayDiaryList;
 
-  DiaryCalendarViewModel({required DiaryRepository diaryRepository})
-    : _diaryRepository = diaryRepository {
+  DiaryCalendarViewModel({required DiaryRepository diaryRepo})
+    : _diaryRepo = diaryRepo {
     _initialize();
   }
 
   Future<void> _initialize() async {
     try {
       // 현재 월의 일기 로드
-      _monthlyDiaryList = await _diaryRepository.getCurrentMonthlyDiaryList();
+      _monthlyDiaryList = await _diaryRepo.getCurrentMonthlyDiaryList();
       // 오늘 날짜 일기 필터링
       _filterSelectedDayDiaries();
     } catch (e) {
@@ -65,7 +65,7 @@ class DiaryCalendarViewModel with ChangeNotifier {
       _focusedMonth = focusedDay;
       notifyListeners();
       // 해당 월의 일기들 로드
-      _monthlyDiaryList = await _diaryRepository.getMonthlyDiaryList(
+      _monthlyDiaryList = await _diaryRepo.getMonthlyDiaryList(
         year: focusedDay.year,
         month: focusedDay.month,
       );
