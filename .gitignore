@@ -74,6 +74,3 @@ firepit-log.txt
 
 # Keystore files and signing keys
 android/key.properties
-*.keystore
-*.jks
-upload-keystore.jks
