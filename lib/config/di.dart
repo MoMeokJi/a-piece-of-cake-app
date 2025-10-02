@@ -1,7 +1,17 @@
+import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
+import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager_impl.dart';
 import 'package:cake/data/data_source/sqflite/database_helper.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/repository/diary_repository_impl.dart';
+import 'package:cake/data/repository/token_repository_impl.dart';
+import 'package:cake/data/service/fcm_service_impl.dart';
+import 'package:cake/data/service/notification_service_impl.dart';
+import 'package:cake/data/service/permission_handler_service_impl.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
+import 'package:cake/domain/repository/token_repository.dart';
+import 'package:cake/domain/service/fcm_service.dart';
+import 'package:cake/domain/service/notification_service.dart';
+import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
@@ -20,7 +30,33 @@ Future<void> diSetup() async {
   );
   await getIt.isReady<DiaryDao>(); // DiaryDao 인스턴스까지 생성 완료
 
-  // repository => singleton
+  // 얘는 data source에서 다 쓸 확률이 높기 때문에 앞에서 선언
+  getIt.registerLazySingleton<TokenRepository>(() => TokenRepositoryImpl());
+
+  //api -> LazySignleton
+  getIt.registerLazySingleton<FirebaseMessagingManager>(
+    () => FirebaseMessagingManagerImpl(),
+  );
+
+  //service -> LazySingleton
+  getIt.registerLazySingleton<PermissionHandlerService>(
+    () => PermissionHandlerServiceImpl(),
+  );
+
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationServiceImpl(),
+  );
+
+  getIt.registerLazySingleton<FCMService>(
+    () => FCMServiceImpl(
+      messagingManager: getIt<FirebaseMessagingManager>(),
+      tokenRepository: getIt<TokenRepository>(),
+      notificationService: getIt<NotificationService>(),
+      permissionHandlerService: getIt<PermissionHandlerService>(),
+    ),
+  );
+
+  // repository => Lazysingleton
   getIt.registerLazySingleton<DiaryRepository>(
     () => DiaryRepositoryImpl(diaryDao: getIt<DiaryDao>()),
   );
@@ -31,7 +67,7 @@ Future<void> diSetup() async {
     () => MainViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
 
-  //하단 네비게이션 탭 viewmodel -> singleton
+  //하단 네비게이션 탭 viewmodel -> LazySignleton
   getIt.registerLazySingleton(
     () => DiaryCalendarViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
