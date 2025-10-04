@@ -12,10 +12,14 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<SplashViewModel>();
 
-    // 로딩이 끝나면 홈으로 이동
+    // 로딩이 끝나면 분기 처리
     if (!viewModel.isLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/diary-calendar');
+        if (viewModel.isLoggedIn) {
+          context.go('/diary-calendar');
+        } else {
+          context.go('/sign-up');
+        }
       });
     }
 
