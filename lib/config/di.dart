@@ -1,5 +1,9 @@
+import 'package:cake/data/data_source/api/user/mock_user_api.dart';
+import 'package:cake/data/data_source/api/user/user_api.dart';
+import 'package:cake/data/data_source/api/user/user_api_impl.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager_impl.dart';
+import 'package:cake/data/data_source/firebase/messaging/mock_firebase_messaging_manager.dart';
 import 'package:cake/data/data_source/sqflite/database_helper.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/repository/diary_repository_impl.dart';
@@ -34,8 +38,12 @@ Future<void> diSetup() async {
   getIt.registerLazySingleton<TokenRepository>(() => TokenRepositoryImpl());
 
   //api -> LazySignleton
+  getIt.registerLazySingleton<UserApi>(
+    () => MockUserApi(getIt<TokenRepository>()),
+  );
+
   getIt.registerLazySingleton<FirebaseMessagingManager>(
-    () => FirebaseMessagingManagerImpl(),
+    () => MockFirebaseMessagingManager(),
   );
 
   //service -> LazySingleton
@@ -62,7 +70,9 @@ Future<void> diSetup() async {
   );
 
   //viewmodel -> factory
-  getIt.registerFactory(() => SplashViewModel());
+  getIt.registerFactory(
+    () => SplashViewModel(tokenRepo: getIt<TokenRepository>()),
+  );
   getIt.registerFactory(
     () => MainViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
