@@ -8,17 +8,20 @@ import 'package:cake/data/data_source/sqflite/database_helper.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/repository/diary_repository_impl.dart';
 import 'package:cake/data/repository/token_repository_impl.dart';
+import 'package:cake/data/repository/user_repository_impl.dart';
 import 'package:cake/data/service/fcm_service_impl.dart';
 import 'package:cake/data/service/notification_service_impl.dart';
 import 'package:cake/data/service/permission_handler_service_impl.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/domain/repository/token_repository.dart';
+import 'package:cake/domain/repository/user_repository.dart';
 import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
+import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sqflite/sqflite.dart';
@@ -68,13 +71,11 @@ Future<void> diSetup() async {
   getIt.registerLazySingleton<DiaryRepository>(
     () => DiaryRepositoryImpl(diaryDao: getIt<DiaryDao>()),
   );
-
-  //viewmodel -> factory
-  getIt.registerFactory(
-    () => SplashViewModel(tokenRepo: getIt<TokenRepository>()),
-  );
-  getIt.registerFactory(
-    () => MainViewModel(diaryRepo: getIt<DiaryRepository>()),
+  getIt.registerLazySingleton<UserRepository>(
+    () => UserRepositoryImpl(
+      userApi: getIt<UserApi>(),
+      tokenRepo: getIt<TokenRepository>(),
+    ),
   );
 
   //하단 네비게이션 탭 viewmodel -> LazySignleton
@@ -83,5 +84,16 @@ Future<void> diSetup() async {
   );
   getIt.registerLazySingleton(
     () => DiaryListViewModel(diaryRepo: getIt<DiaryRepository>()),
+  );
+
+  //viewmodel -> factory
+  getIt.registerFactory(
+    () => SplashViewModel(tokenRepo: getIt<TokenRepository>()),
+  );
+  getIt.registerFactory(
+    () => MainViewModel(diaryRepo: getIt<DiaryRepository>()),
+  );
+  getIt.registerFactory(
+    () => SignUpViewModel(userRepo: getIt<UserRepository>()),
   );
 }

@@ -5,6 +5,8 @@ import 'package:cake/presentation/diary_list/diary_list_screen.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/presentation/main/main_screen.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
+import 'package:cake/presentation/sign_up/sign_up_screen.dart';
+import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_screen.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,16 @@ class AppRouter {
           );
         },
       ),
+      GoRoute(
+        path: '/sign-up',
+        builder: (BuildContext context, GoRouterState state) {
+          return ChangeNotifierProvider(
+            create: (context) => getIt<SignUpViewModel>(),
+            child: const SignUpScreen(),
+          );
+        },
+      ),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ChangeNotifierProvider(

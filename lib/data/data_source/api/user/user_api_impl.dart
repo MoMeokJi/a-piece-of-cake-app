@@ -32,14 +32,14 @@ class UserApiImpl extends BaseApi implements UserApi {
   }
 
   @override
-  Future<void> deleteUser() async {
+  Future<bool> deleteUser() async {
     final response = await http.delete(
       Uri.parse('${ApiConfig.baseUrl}/users'),
       headers: await getHeaders(),
     );
 
     if (response.statusCode == 200) {
-      return;
+      return true;
     } else if (response.statusCode == 403) {
       await reissueTokens();
       return deleteUser();
