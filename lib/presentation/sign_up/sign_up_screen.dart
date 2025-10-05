@@ -1,5 +1,13 @@
+import 'package:cake/config/size_config.dart';
+import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/enum/result_state.dart';
+import 'package:cake/presentation/sign_up/components/diary_type_option.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
+import 'package:cake/ui/common_components/basic_button.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class SignUpScreen extends StatelessWidget {
@@ -8,6 +16,123 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SignUpViewModel>();
-    return const Placeholder();
+
+    if (viewModel.state == ResultState.success) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/diary-calendar');
+      });
+    } else if (viewModel.state == ResultState.error) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        //TODO: error 처리
+      });
+    }
+
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // 상단 타이틀 영역
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: getWidth(24)),
+                  child: Column(
+                    children: [
+                      SizedBox(height: getHeight(60)),
+
+                      // 타이틀
+                      Text(
+                        '어떤 일기를\n선호하시나요?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: getWidth(28),
+                          fontWeight: FontWeight.bold,
+                          height: 1.4,
+                        ),
+                      ),
+
+                      SizedBox(height: getHeight(12)),
+
+                      // 서브 타이틀
+                      Text(
+                        '마음에 드는 일기 핵심세를 골라주세요!',
+                        style: TextStyle(
+                          fontSize: getWidth(14),
+                          color: Colors.grey[600],
+                        ),
+                      ),
+
+                      SizedBox(height: getHeight(40)),
+                    ],
+                  ),
+                ),
+
+                // 옵션 리스트 (스크롤 가능)
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.symmetric(horizontal: getWidth(24)),
+                    children: [
+                      DiaryTypeOption(
+                        type: DiaryType.emotional,
+                        isSelected:
+                            viewModel.selectedType == DiaryType.emotional,
+                        onTap: () => viewModel.selectType(DiaryType.emotional),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryType.record,
+                        isSelected: viewModel.selectedType == DiaryType.record,
+                        onTap: () => viewModel.selectType(DiaryType.record),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryType.goal,
+                        isSelected: viewModel.selectedType == DiaryType.goal,
+                        onTap: () => viewModel.selectType(DiaryType.goal),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryType.confession,
+                        isSelected:
+                            viewModel.selectedType == DiaryType.confession,
+                        onTap: () => viewModel.selectType(DiaryType.confession),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryType.freewriting,
+                        isSelected:
+                            viewModel.selectedType == DiaryType.freewriting,
+                        onTap: () =>
+                            viewModel.selectType(DiaryType.freewriting),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 하단 버튼 (고정)
+                Padding(
+                  padding: EdgeInsets.all(getWidth(24)),
+                  child: BasicButton(
+                    text: '시작하기',
+                    isEnabled:
+                        viewModel.selectedType != null &&
+                        viewModel.state != ResultState.loading,
+                    onPressed: () => viewModel.signUp(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (viewModel.state == ResultState.loading)
+          Container(
+            color: Colors.black.withValues(alpha: 0.5),
+            child: const Center(
+              child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
+            ),
+          ),
+      ],
+    );
   }
 }
