@@ -30,7 +30,7 @@ class SignUpScreen extends StatelessWidget {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: ColorConfig.background,
           body: SafeArea(
             child: Column(
               children: [
@@ -52,18 +52,18 @@ class SignUpScreen extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: getHeight(12)),
+                      SizedBox(height: getHeight(8)),
 
                       // 서브 타이틀
                       Text(
-                        '마음에 드는 일기 핵심세를 골라주세요!',
+                        '마음에 드는 일기 레시피를 골라주세요',
                         style: TextStyle(
                           fontSize: getWidth(14),
-                          color: Colors.grey[600],
+                          color: ColorConfig.gray2,
                         ),
                       ),
 
-                      SizedBox(height: getHeight(40)),
+                      SizedBox(height: getHeight(50)),
                     ],
                   ),
                 ),
