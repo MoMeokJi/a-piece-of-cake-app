@@ -18,7 +18,7 @@ class UserApiImpl extends BaseApi implements UserApi {
       body: jsonEncode({
         'deviceId': fcmToken,
         'preference': preference,
-        'mobileOS': Platform.operatingSystem,
+        'mobileOS': Platform.isAndroid ? 'AND' : 'IOS',
       }),
     );
 

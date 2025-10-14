@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:math';
 import 'package:cake/config/firebase_options.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'utils/app_logger.dart';
 
 // Background 메시지 처리를 위한 top-level function
@@ -67,6 +68,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   // 1. Flutter 엔진 초기화
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. 날짜포맷팅 초기화
+  await initializeDateFormatting('ko');
 
   // 3. FCM Background Handler 등록 (반드시 다른 Firebase 작업 전에 호출)
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
