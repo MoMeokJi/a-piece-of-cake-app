@@ -53,7 +53,7 @@ class DiarySelectBottomSheet extends StatelessWidget {
                         borderColor: ColorConfig.primary.withValues(alpha: 0.2),
                         onTap: () {
                           context.pop();
-                          // 문답 일기 페이지로 이동
+                          context.push('/qna-diary');
                         },
                       ),
                     ),
@@ -75,7 +75,7 @@ class DiarySelectBottomSheet extends StatelessWidget {
                         ),
                         onTap: () {
                           context.pop();
-                          // 자유 일기 페이지로 이동
+                          context.push('/free-diary');
                         },
                       ),
                     ),

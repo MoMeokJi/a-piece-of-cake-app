@@ -16,7 +16,7 @@ class ColorConfig {
   static const Color caution = Color(0xffD52F30);
   static const Color disabled = Color(0xffD3D3D3);
 
-  static const Color black = Color(0xff111111);
+  static const Color black = Color(0xff121212);
   static const Color gray1 = Color(0xff484848);
   static const Color gray2 = Color(0xff797979);
   static const Color gray3 = Color(0xffA9A9A9);

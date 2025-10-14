@@ -20,7 +20,9 @@ import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
+import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
+import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:get_it/get_it.dart';
@@ -95,5 +97,11 @@ Future<void> diSetup() async {
   );
   getIt.registerFactory(
     () => SignUpViewModel(userRepo: getIt<UserRepository>()),
+  );
+  getIt.registerFactory(
+    () => QnaDiaryCreateViewModel(diaryRepo: getIt<DiaryRepository>()),
+  );
+  getIt.registerFactory(
+    () => FreeDiaryCreateViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
 }

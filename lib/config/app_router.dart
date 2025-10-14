@@ -3,8 +3,12 @@ import 'package:cake/presentation/diary_calendar/diary_calendar_screen.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_screen.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
+import 'package:cake/presentation/free_diary_create/free_diary_create_screen.dart';
+import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/presentation/main/main_screen.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
+import 'package:cake/presentation/qna_diary_create/qna_diary_create_screen.dart';
+import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
 import 'package:cake/presentation/sign_up/sign_up_screen.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_screen.dart';
@@ -72,6 +76,25 @@ class AppRouter {
             ],
           ),
         ],
+      ),
+
+      GoRoute(
+        path: '/qna-diary',
+        builder: (BuildContext context, GoRouterState state) {
+          return ChangeNotifierProvider(
+            create: (context) => getIt<QnaDiaryCreateViewModel>(),
+            child: const QnaDiaryCreateScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/free-diary',
+        builder: (BuildContext context, GoRouterState state) {
+          return ChangeNotifierProvider(
+            create: (context) => getIt<FreeDiaryCreateViewModel>(),
+            child: const FreeDiaryCreateScreen(),
+          );
+        },
       ),
     ],
   );
