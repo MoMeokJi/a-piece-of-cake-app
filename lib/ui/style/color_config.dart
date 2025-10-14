@@ -35,4 +35,11 @@ class ColorConfig {
   static const Color diaryTextColor = Color(0xff444444);
   static const Color diaryDateColor = Color(0xff7C7C7C);
   static const Color diaryMusicTextColor = Color(0xff7C7C7C);
+
+  //diary type color
+  static const Color emotionalDiary = Color(0xFFFCD2D8);
+  static const Color recordDiary = Color(0xFFD8E1F0);
+  static const Color goalDiary = Color(0xFFD4E6C7);
+  static const Color confessionDiary = Color(0xFFE6D7F0);
+  static const Color freewritingDiary = Color(0xFFF5E6B8);
 }

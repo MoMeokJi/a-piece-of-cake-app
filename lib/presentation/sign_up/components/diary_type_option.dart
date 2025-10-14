@@ -15,26 +15,6 @@ class DiaryTypeOption extends StatelessWidget {
     required this.onTap,
   });
 
-  String _getEmoji(DiaryType type) {
-    return switch (type) {
-      DiaryType.emotional => '💕',
-      DiaryType.record => '📘',
-      DiaryType.goal => '🏆',
-      DiaryType.confession => '💭',
-      DiaryType.freewriting => '✍🏻',
-    };
-  }
-
-  Color _getBackgroundColor(DiaryType type) {
-    return switch (type) {
-      DiaryType.emotional => Color(0xFFFCD2D8), // 핑크
-      DiaryType.record => Color(0xFFD8E1F0), // 블루
-      DiaryType.goal => Color(0xFFD4E6C7), // 그린
-      DiaryType.confession => Color(0xFFE6D7F0), // 퍼플
-      DiaryType.freewriting => Color(0xFFF5E6B8), // 옐로우
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -48,17 +28,19 @@ class DiaryTypeOption extends StatelessWidget {
           color: ColorConfig.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? ColorConfig.primary.withValues(alpha: 0.5) : ColorConfig.border.withValues(alpha: 0.5),
+            color: isSelected
+                ? ColorConfig.primary.withValues(alpha: 0.5)
+                : ColorConfig.border.withValues(alpha: 0.5),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
-          BoxShadow(
-            color: ColorConfig.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
-          ),
-        ],
+            BoxShadow(
+              color: ColorConfig.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -67,12 +49,12 @@ class DiaryTypeOption extends StatelessWidget {
               width: getWidth(48),
               height: getWidth(48),
               decoration: BoxDecoration(
-                color: _getBackgroundColor(type),
+                color: type.color,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: Text(
-                  _getEmoji(type),
+                  type.emoji,
                   style: TextStyle(fontSize: getWidth(18)),
                 ),
               ),

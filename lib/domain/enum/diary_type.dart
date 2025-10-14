@@ -1,3 +1,7 @@
+import 'dart:ui';
+
+import 'package:cake/ui/style/color_config.dart';
+
 enum DiaryType {
   emotional,
   record,
@@ -12,6 +16,22 @@ enum DiaryType {
     DiaryType.goal => '목표와 계획을 세우는 다짐일기',
     DiaryType.confession => '나만 아는 내면을 담은 속마음일기',
     DiaryType.freewriting => '뭐라도 쓰는게 목표인 끄적일기',
+  };
+
+  String get emoji => switch (this) {
+    DiaryType.emotional => '💕',
+    DiaryType.record => '📘',
+    DiaryType.goal => '🏆',
+    DiaryType.confession => '💭',
+    DiaryType.freewriting => '✍🏻',
+  };
+
+  Color get color => switch (this) {
+    DiaryType.emotional => ColorConfig.emotionalDiary,
+    DiaryType.record => ColorConfig.recordDiary,
+    DiaryType.goal => ColorConfig.goalDiary,
+    DiaryType.confession => ColorConfig.confessionDiary,
+    DiaryType.freewriting => ColorConfig.freewritingDiary,
   };
 
   // server에 보낼 데이터로 변환

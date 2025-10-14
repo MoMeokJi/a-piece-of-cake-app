@@ -1,11 +1,10 @@
 import 'package:cake/config/size_config.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DiarySelectBottomSheet extends StatelessWidget {
-  final Function(String)? onDiarySelected;
-
-  const DiarySelectBottomSheet({super.key, this.onDiarySelected});
+  const DiarySelectBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +24,7 @@ class DiarySelectBottomSheet extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(
                   top: getHeight(24),
-                  bottom: getHeight(30),
+                  bottom: getHeight(20),
                 ),
                 child: Text(
                   '어떤 일기를 작성하시나요?',
@@ -48,11 +47,13 @@ class DiarySelectBottomSheet extends StatelessWidget {
                         imagePath: 'assets/images/blueberry_flat.png',
                         title: '문답 일기',
                         description: '질문에 답하고\n자동으로 일기 작성',
-                        backgroundColor: ColorConfig.primary.withAlpha(20),
-                        borderColor: ColorConfig.primary.withAlpha(40),
+                        backgroundColor: ColorConfig.primary.withValues(
+                          alpha: 0.12,
+                        ),
+                        borderColor: ColorConfig.primary.withValues(alpha: 0.2),
                         onTap: () {
-                          onDiarySelected?.call('question');
-                          Navigator.pop(context);
+                          context.pop();
+                          // 문답 일기 페이지로 이동
                         },
                       ),
                     ),
@@ -66,17 +67,22 @@ class DiarySelectBottomSheet extends StatelessWidget {
                         imagePath: 'assets/images/strawberry_flat.png',
                         title: '자유 일기',
                         description: '내 방식대로\n자유롭게 일기 작성',
-                        backgroundColor: ColorConfig.secondary.withAlpha(20),
-                        borderColor: ColorConfig.secondary.withAlpha(40),
+                        backgroundColor: ColorConfig.secondary.withValues(
+                          alpha: 0.12,
+                        ),
+                        borderColor: ColorConfig.secondary.withValues(
+                          alpha: 0.2,
+                        ),
                         onTap: () {
-                          onDiarySelected?.call('free');
-                          Navigator.pop(context);
+                          context.pop();
+                          // 자유 일기 페이지로 이동
                         },
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(height: getHeight(12)),
             ],
           ),
         ),
@@ -115,7 +121,7 @@ class DiarySelectBottomSheet extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: getHeight(20)),
+            SizedBox(height: getHeight(16)),
 
             // 제목
             Text(
