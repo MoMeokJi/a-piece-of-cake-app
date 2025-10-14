@@ -43,6 +43,7 @@ dependencies:
  animated_bottom_navigation_bar: ^1.4.0
  table_calendar: ^3.2.0
  flutter_svg: ^2.2.1
+ flutter_keyboard_visibility: ^6.0.0
 
 dev_dependencies:
  flutter_test:
