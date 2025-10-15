@@ -36,7 +36,10 @@ class CommonMainAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: const Icon(Icons.chevron_left),
               color: ColorConfig.black,
               iconSize: getWidth(28),
-              onPressed: () => context.pop(),
+              onPressed: () {
+                FocusScope.of(context).unfocus(); // 모든 포커스 해제
+                context.pop();
+              },
             )
           : null,
       title: titleText != null
