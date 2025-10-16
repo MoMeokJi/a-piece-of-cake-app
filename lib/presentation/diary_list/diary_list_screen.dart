@@ -118,7 +118,7 @@ class DiaryListScreen extends StatelessWidget {
         textStyle: TextStyle(
           fontSize: getWidth(16),
           letterSpacing: 0.5,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
         minimumSize: Size.zero,
         padding: EdgeInsets.symmetric(

@@ -1,6 +1,9 @@
 import 'package:cake/config/di.dart';
+import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_screen.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
+import 'package:cake/presentation/diary_detail/diary_detail_screen.dart';
+import 'package:cake/presentation/diary_detail/diary_detail_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_screen.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_screen.dart';
@@ -93,6 +96,25 @@ class AppRouter {
           return ChangeNotifierProvider(
             create: (context) => getIt<FreeDiaryCreateViewModel>(),
             child: const FreeDiaryCreateScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/diary-detail',
+        builder: (context, state) {
+          final extra = state.extra;
+          DiaryDetail? diaryDetail;
+          int? id;
+
+          if (extra is DiaryDetail) {
+            diaryDetail = extra;
+          } else if (extra is int) {
+            id = extra;
+          }
+
+          return ChangeNotifierProvider(
+            create: (context) => getIt<DiaryDetailViewModel>(),
+            child: DiaryDetailScreen(diaryDetail: diaryDetail, id: id),
           );
         },
       ),

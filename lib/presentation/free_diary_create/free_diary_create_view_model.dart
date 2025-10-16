@@ -1,4 +1,5 @@
 import 'package:cake/domain/enum/result_state.dart';
+import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +25,8 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
   final List<XFile> _pickedImages = [];
   List<XFile> get pickedImages => _pickedImages;
 
-  bool get isSubmitEnabled =>
-      _textController.text.isNotEmpty && _pickedImages.isNotEmpty;
+  DiaryDetail? _completedDiary;
+  DiaryDetail? get completedDiary => _completedDiary;
 
   ResultState _resultState = ResultState.none;
   ResultState get state => _resultState;
@@ -43,7 +44,10 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
       _resultState = ResultState.loading;
       notifyListeners();
 
-      // repo에 일기 작성
+      _completedDiary = await _diaryRepo.completeDiary(
+        text: _textController.text,
+        images: _pickedImages,
+      );
 
       _resultState = ResultState.success;
     } catch (e) {

@@ -1,3 +1,5 @@
+import 'package:cake/data/data_source/api/diary/diary_api.dart';
+import 'package:cake/data/data_source/api/diary/mock_diary_api.dart';
 import 'package:cake/data/data_source/api/user/mock_user_api.dart';
 import 'package:cake/data/data_source/api/user/user_api.dart';
 import 'package:cake/data/data_source/api/user/user_api_impl.dart';
@@ -19,6 +21,7 @@ import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
+import 'package:cake/presentation/diary_detail/diary_detail_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
@@ -47,6 +50,7 @@ Future<void> diSetup() async {
     () => MockUserApi(getIt<TokenRepository>()),
   );
 
+  getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
   getIt.registerLazySingleton<FirebaseMessagingManager>(
     () => MockFirebaseMessagingManager(),
   );
@@ -71,7 +75,10 @@ Future<void> diSetup() async {
 
   // repository => Lazysingleton
   getIt.registerLazySingleton<DiaryRepository>(
-    () => DiaryRepositoryImpl(diaryDao: getIt<DiaryDao>()),
+    () => DiaryRepositoryImpl(
+      diaryDao: getIt<DiaryDao>(),
+      diaryApi: getIt<DiaryApi>(),
+    ),
   );
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(
@@ -103,5 +110,9 @@ Future<void> diSetup() async {
   );
   getIt.registerFactory(
     () => FreeDiaryCreateViewModel(diaryRepo: getIt<DiaryRepository>()),
+  );
+
+  getIt.registerFactory(
+    () => DiaryDetailViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
 }
