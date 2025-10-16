@@ -13,6 +13,7 @@ extension DiaryDetailMapper on DiaryDetailDto {
     musicArtist: music?.artist ?? '',
     youtubeUrl: music?.youtubeUrl ?? '',
     feedback: feedbackMsg ?? '',
+    summary: summary,
   );
 
   DateTime _parseDateOrDefault(String? dateStr) {

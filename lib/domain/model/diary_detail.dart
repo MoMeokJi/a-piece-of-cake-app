@@ -15,7 +15,9 @@ class DiaryDetail with _$DiaryDetail {
   final String musicArtist;
   final String youtubeUrl;
   final String feedback;
-  const DiaryDetail({
+  String? summary;
+
+  DiaryDetail({
     required this.id,
     required this.body,
     required this.createdAt,
@@ -26,5 +28,19 @@ class DiaryDetail with _$DiaryDetail {
     required this.musicArtist,
     required this.youtubeUrl,
     required this.feedback,
+    this.summary,
   });
+
+  factory DiaryDetail.empty() => DiaryDetail(
+    id: -1,
+    body: '',
+    createdAt: DateTime(1900, 1, 1),
+    imageUrls: [],
+    firstColorHex: '',
+    secondColorHex: '',
+    musicTitle: '',
+    musicArtist: '',
+    youtubeUrl: '',
+    feedback: '',
+  );
 }

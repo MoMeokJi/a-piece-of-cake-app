@@ -23,21 +23,6 @@ abstract class BaseApi {
     return headers;
   }
 
-  // 응답 헤더에서 토큰 저장
-  Future<void> saveTokensFromHeader(Map<String, String> headers) async {
-    final rawAccessToken = headers['authorization'];
-    final refreshToken = headers['refresh-token'];
-
-    if (rawAccessToken != null && refreshToken != null) {
-      // Bearer prefix 제거
-      final accessToken = rawAccessToken.replaceFirst('Bearer ', '');
-      await _tokenRepository.saveTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      );
-    }
-  }
-
   // fcmToken 꺼내기
   Future<String?> getFCMToken() async {
     return await _tokenRepository.getFCMToken();
@@ -54,6 +39,21 @@ abstract class BaseApi {
       await saveTokensFromHeader(response.headers);
     } else {
       throw ApiException(response.statusCode, 'reissueTokens 에러');
+    }
+  }
+
+  // 응답 헤더에서 토큰 저장
+  Future<void> saveTokensFromHeader(Map<String, String> headers) async {
+    final rawAccessToken = headers['authorization'];
+    final refreshToken = headers['refresh-token'];
+
+    if (rawAccessToken != null && refreshToken != null) {
+      // Bearer prefix 제거
+      final accessToken = rawAccessToken.replaceFirst('Bearer ', '');
+      await _tokenRepository.saveTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
     }
   }
 }
