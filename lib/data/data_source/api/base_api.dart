@@ -32,28 +32,38 @@ abstract class BaseApi {
   Future<void> reissueTokens() async {
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/auth/reissue'),
-      headers: await getHeaders(),
     );
 
     if (response.statusCode == 200) {
-      await saveTokensFromHeader(response.headers);
+      await saveAllTokensFromHeader(response.headers);
     } else {
       throw ApiException(response.statusCode, 'reissueTokens 에러');
     }
   }
 
-  // 응답 헤더에서 토큰 저장
-  Future<void> saveTokensFromHeader(Map<String, String> headers) async {
-    final rawAccessToken = headers['authorization'];
-    final refreshToken = headers['refresh-token'];
+  // 헤더에서 두개의 토큰 저장
+  Future<void> saveAllTokensFromHeader(Map<String, String> headers) async {
+    final rawAccessToken = headers['Authorization'];
+    final refreshToken = headers['Refresh-Token'];
 
     if (rawAccessToken != null && refreshToken != null) {
       // Bearer prefix 제거
       final accessToken = rawAccessToken.replaceFirst('Bearer ', '');
-      await _tokenRepository.saveTokens(
+      await _tokenRepository.saveJWTTokens(
         accessToken: accessToken,
         refreshToken: refreshToken,
       );
+    }
+  }
+
+  //헤더에서 access토큰만 빼와서 저장
+  Future<void> saveAccessTokenFromHeader(Map<String, String> headers) async {
+    final rawAccessToken = headers['Authorization'];
+
+    if (rawAccessToken != null) {
+      // Bearer prefix 제거
+      final accessToken = rawAccessToken.replaceFirst('Bearer ', '');
+      await _tokenRepository.saveAccessToken(accessToken);
     }
   }
 }

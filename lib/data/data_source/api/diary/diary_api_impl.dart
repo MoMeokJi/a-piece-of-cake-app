@@ -35,6 +35,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
     if (streamedResponse.statusCode == 201) {
       // StreamedResponse를 Response로 변환 (multipartFile을 쓰면 StreamedResponse로 리턴됨.)
       final response = await http.Response.fromStream(streamedResponse);
+      await saveAllTokensFromHeader(response.headers);
       final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
 
       return DiaryDetailDto.fromJson(jsonData);
@@ -57,6 +58,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
     );
 
     if (response.statusCode == 201) {
+      await saveAllTokensFromHeader(response.headers);
       final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
       return jsonData['content'] as String;
     } else if (response.statusCode == 403) {
@@ -75,6 +77,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
     );
 
     if (response.statusCode == 200) {
+      await saveAllTokensFromHeader(response.headers);
       final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
       return DiaryDetailDto.fromJson(jsonData);
     } else if (response.statusCode == 403) {
@@ -93,6 +96,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
     );
 
     if (response.statusCode == 204) {
+      await saveAllTokensFromHeader(response.headers);
     } else if (response.statusCode == 403) {
       await reissueTokens();
       return deleteDiary(id: id);

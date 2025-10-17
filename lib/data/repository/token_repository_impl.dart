@@ -30,7 +30,7 @@ class TokenRepositoryImpl implements TokenRepository {
   }
 
   @override
-  Future<void> saveTokens({
+  Future<void> saveJWTTokens({
     required String accessToken,
     required String refreshToken,
   }) async {
@@ -38,8 +38,20 @@ class TokenRepositoryImpl implements TokenRepository {
       _storage.write(key: _accessTokenKey, value: accessToken),
       _storage.write(key: _refreshTokenKey, value: refreshToken),
     ]);
-    AppLogger.log('저장된 엑세스토큰 $accessToken');
-    AppLogger.log('저장된 리프레시토큰 $refreshToken');
+    AppLogger.log('저장된 access 토큰: $accessToken');
+    AppLogger.log('저장된 refresh 토큰: $refreshToken');
+  }
+
+  @override
+  Future<void> saveAccessToken(String token) async {
+    await _storage.write(key: _accessTokenKey, value: token);
+    AppLogger.log('저장된 access 토큰: $token');
+  }
+
+  @override
+  Future<void> saveRefreshToken(String token) async {
+    await _storage.write(key: _refreshTokenKey, value: token);
+    AppLogger.log('저장된 refresh 토큰: $token');
   }
 
   @override
