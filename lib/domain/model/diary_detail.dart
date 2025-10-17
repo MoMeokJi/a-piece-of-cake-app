@@ -14,7 +14,7 @@ class DiaryDetail with _$DiaryDetail {
   final String musicTitle;
   final String musicArtist;
   final String youtubeUrl;
-  final String feedback;
+  String? feedback;
   String? summary;
 
   DiaryDetail({
@@ -27,7 +27,7 @@ class DiaryDetail with _$DiaryDetail {
     required this.musicTitle,
     required this.musicArtist,
     required this.youtubeUrl,
-    required this.feedback,
+    this.feedback,
     this.summary,
   });
 
@@ -41,6 +41,5 @@ class DiaryDetail with _$DiaryDetail {
     musicTitle: '',
     musicArtist: '',
     youtubeUrl: '',
-    feedback: '',
   );
 }

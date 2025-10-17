@@ -12,7 +12,7 @@ extension DiaryDetailMapper on DiaryDetailDto {
     musicTitle: music?.title ?? '',
     musicArtist: music?.artist ?? '',
     youtubeUrl: music?.youtubeUrl ?? '',
-    feedback: feedbackMsg ?? '',
+    feedback: feedbackMsg,
     summary: summary,
   );
 

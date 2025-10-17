@@ -28,11 +28,8 @@ class MockUserApi implements UserApi {
   }
 
   @override
-  Future<bool> deleteUser() async {
+  Future<void> deleteUser() async {
     await Future.delayed(const Duration(seconds: 1));
     AppLogger.log('Mock deleteUser 성공');
-
-    // 토큰 삭제
-    return true;
   }
 }

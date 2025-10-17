@@ -13,22 +13,17 @@ class MockDiaryApi implements DiaryApi {
     await Future.delayed(Duration(seconds: 1)); // 네트워크 지연 시뮬레이션
 
     return DiaryDetailDto(
-      diaryId: 1,
+      diaryId: 214,
       content: text,
       createdAt: DateTime.now().toIso8601String(),
 
-      images: [
-        'https://picsum.photos/400/300?random=1',
-        'https://picsum.photos/400/300?random=2',
-        'https://picsum.photos/400/300?random=3',
-      ],
-      colors: ['#FF6B6B', '#4ECDC4'],
+      images: ['https://picsum.photos/600/400'],
+      colors: ['#8196C3', '#EEB5BE'],
       music: MusicDto(
-        title: '하루 끝',
-        artist: '아이유',
-        youtubeUrl: 'https://youtube.com/watch?v=abcd1234',
+        title: 'blue valentine',
+        artist: '엔믹스',
+        youtubeUrl: 'https://www.youtube.com/watch?v=EmeW6li6bbo',
       ),
-      feedbackMsg: '오늘도 수고했어요!',
       summary: '오늘은 좋은 하루였습니다.',
     );
   }
@@ -42,14 +37,14 @@ class MockDiaryApi implements DiaryApi {
       content: '메인에서 넘어왔어요 오늘은 프로젝트를 열심히 했어요. 힘들었지만 보람찼습니다.',
       createdAt: '2025-10-16T14:30:00Z',
       images: [
-        'https://picsum.photos/400/300?random=10',
-        'https://picsum.photos/400/300?random=11',
+        'https://picsum.photos/600/400',
+        'https://picsum.photos/600/400',
       ],
-      colors: ['#FFB6C1', '#87CEEB'],
+      colors: ['#8196C3', '#EEB5BE'],
       music: MusicDto(
-        title: '좋은 날',
-        artist: '아이유',
-        youtubeUrl: 'https://youtube.com/watch?v=xyz789',
+        title: 'blue valentine',
+        artist: '엔믹스',
+        youtubeUrl: 'https://www.youtube.com/watch?v=EmeW6li6bbo',
       ),
       feedbackMsg: '잘 하고 있어요!',
     );
