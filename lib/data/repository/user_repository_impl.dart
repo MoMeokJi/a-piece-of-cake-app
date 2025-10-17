@@ -20,9 +20,8 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<void> withdraw() async {
-    if (await _userApi.deleteUser()) {
-      await _tokenRepo.clearTokens();
-      await _tokenRepo.clearFCMToken();
-    }
+    await _userApi.deleteUser();
+    await _tokenRepo.clearTokens();
+    await _tokenRepo.clearFCMToken();
   }
 }
