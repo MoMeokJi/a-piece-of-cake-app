@@ -1,6 +1,12 @@
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/model/diary_detail.dart';
+import 'package:cake/presentation/diary_detail/components/body_section.dart';
+import 'package:cake/presentation/diary_detail/components/colors_section.dart';
+import 'package:cake/presentation/diary_detail/components/empty_feedback_section.dart';
+import 'package:cake/presentation/diary_detail/components/feedback_section.dart';
+import 'package:cake/presentation/diary_detail/components/image_grid_thumbnail.dart';
+import 'package:cake/presentation/diary_detail/components/music_section.dart';
 import 'package:cake/presentation/diary_detail/diary_detail_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
@@ -46,26 +52,46 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: (viewModel.state == ResultState.loading)
-              ? SpinKitFadingCube(color: ColorConfig.primary, size: 30.0)
-              : Column(
-                  children: [
-                    // 본문 영역
-
-                    // 이미지 영역
-
-                    // 피드백 있을 때만 표시
-
-                    // 컬러
-
-                    // 뮤직
-
-                    // 피드백 없을 떄만 표시
-                    Text(viewModel.diary.toString()),
-                  ],
+        child: (viewModel.state == ResultState.loading)
+            ? Center(
+                child: SpinKitFadingCube(
+                  color: ColorConfig.primary,
+                  size: 30.0,
                 ),
-        ),
+              )
+            : SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: getWidth(25)),
+                  child: Column(
+                    children: [
+                      // 본문 영역
+                      BodySection(diary: viewModel.diary),
+                      SizedBox(height: getHeight(8)),
+                      // 이미지 영역
+                      ImageGridThumbnail(diary: viewModel.diary),
+                      SizedBox(height: getHeight(20)),
+                      // 피드백 있을 때만 표시
+                      if (viewModel.diary.feedback != null &&
+                          viewModel.diary.feedback!.isNotEmpty) ...[
+                        FeedbackSection(diary: viewModel.diary),
+                        SizedBox(height: getHeight(20)),
+                      ],
+                      // 컬러
+                      ColorsSection(diary: viewModel.diary),
+                      SizedBox(height: getHeight(20)),
+                      // 뮤직
+                      MusicSection(diary: viewModel.diary),
+                      SizedBox(height: getHeight(20)),
+                      // 피드백 없을 때만 표시
+                      if (viewModel.diary.feedback == null ||
+                          viewModel.diary.feedback!.isEmpty) ...[
+                        EmptyFeedbackSection(),
+                        SizedBox(height: getHeight(20)),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
       ),
     );
   }

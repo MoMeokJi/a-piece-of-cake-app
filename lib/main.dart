@@ -102,7 +102,7 @@ void main() async {
   await getIt<FCMService>().initialize();
 
   // 테스트 데이터 생성 (개발용) -> 이거 대신에 나중에 여기서 메인 탭 뷰모델들 초기화시켜서 데이터 가져오게 할수도 있겠다. 아닌가 이건 스플래쉬에서 하려나?
-  await _createTestData();
+  // await _createTestData();
 
   runApp(const MyApp());
 }

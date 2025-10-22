@@ -40,13 +40,13 @@ class MockDiaryApi implements DiaryApi {
         'https://picsum.photos/600/400',
         'https://picsum.photos/600/400',
       ],
-      colors: ['#8196C3', '#EEB5BE'],
+      colors: ['#C3E9A6', '#B19CD9'],
       music: MusicDto(
         title: 'blue valentine',
         artist: '엔믹스',
         youtubeUrl: 'https://www.youtube.com/watch?v=EmeW6li6bbo',
       ),
-      feedbackMsg: '잘 하고 있어요!',
+      feedbackMsg: '',
     );
   }
 

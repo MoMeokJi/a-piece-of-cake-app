@@ -91,7 +91,7 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                         child: FixedBottomSection(
                           onGalleryTap: viewModel.getImageFromGallery,
                           onCameraTap: viewModel.getImageFromCamera,
-                          onCompleted: () {},
+                          onCompleted: viewModel.writeFreeDiary,
                           currentImageCount: viewModel.pickedImages.length,
                           maxImageCount: viewModel.maxImgLength,
                         ),

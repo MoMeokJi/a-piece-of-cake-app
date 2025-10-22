@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cake/config/size_config.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -19,16 +20,16 @@ class DiaryImageGrid extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: getWidth(12),
-        mainAxisSpacing: getHeight(12),
+        crossAxisCount: 4,
+        crossAxisSpacing: getWidth(8),
+        mainAxisSpacing: getHeight(8),
       ),
       itemCount: images.length,
       itemBuilder: (context, index) {
         return Stack(
           children: [
             Container(
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(6)),
               clipBehavior: Clip.hardEdge,
               child: Image.file(
                 File(images[index].path),
@@ -38,17 +39,21 @@ class DiaryImageGrid extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: 8,
-              top: 8,
+              right: 4,
+              top: 4,
               child: GestureDetector(
                 onTap: () => onRemove(index),
                 child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: ColorConfig.black.withValues(alpha: 0.7),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 16),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: getWidth(18),
+                  ),
                 ),
               ),
             ),
