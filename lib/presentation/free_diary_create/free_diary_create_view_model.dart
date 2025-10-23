@@ -1,6 +1,9 @@
+import 'package:cake/config/di.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
+import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
+import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -48,6 +51,12 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
         text: _textController.text,
         images: _pickedImages,
       );
+      AppLogger.log(_completedDiary.toString());
+
+      final diaryCalendarVM = getIt<DiaryCalendarViewModel>();
+      await diaryCalendarVM.initialize();
+      final diaryListVM = getIt<DiaryListViewModel>();
+      await diaryListVM.loadDiaryList();
 
       _resultState = ResultState.success;
     } catch (e) {

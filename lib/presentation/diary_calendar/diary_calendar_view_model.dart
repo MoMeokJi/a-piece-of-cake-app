@@ -31,10 +31,10 @@ class DiaryCalendarViewModel with ChangeNotifier {
 
   DiaryCalendarViewModel({required DiaryRepository diaryRepo})
     : _diaryRepo = diaryRepo {
-    _initialize();
+    initialize();
   }
 
-  Future<void> _initialize() async {
+  Future<void> initialize() async {
     try {
       // 현재 월의 일기 로드
       _monthlyDiaryList = await _diaryRepo.getCurrentMonthlyDiaryList();

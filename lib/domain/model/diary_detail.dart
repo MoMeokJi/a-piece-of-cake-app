@@ -13,7 +13,7 @@ class DiaryDetail with _$DiaryDetail {
   final String secondColorHex;
   final String musicTitle;
   final String musicArtist;
-  final String youtubeUrl;
+  final String youtubeVideoId;
   String? feedback;
   String? summary;
 
@@ -26,7 +26,7 @@ class DiaryDetail with _$DiaryDetail {
     required this.secondColorHex,
     required this.musicTitle,
     required this.musicArtist,
-    required this.youtubeUrl,
+    required this.youtubeVideoId,
     this.feedback,
     this.summary,
   });
@@ -40,6 +40,6 @@ class DiaryDetail with _$DiaryDetail {
     secondColorHex: '',
     musicTitle: '',
     musicArtist: '',
-    youtubeUrl: '',
+    youtubeVideoId: '',
   );
 }

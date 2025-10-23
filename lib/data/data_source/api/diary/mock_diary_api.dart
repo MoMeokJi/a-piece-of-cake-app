@@ -22,9 +22,9 @@ class MockDiaryApi implements DiaryApi {
       music: MusicDto(
         title: 'blue valentine',
         artist: '엔믹스',
-        youtubeUrl: 'https://www.youtube.com/watch?v=EmeW6li6bbo',
+        videoId: 'EmeW6li6bbo',
       ),
-      summary: '오늘은 좋은 하루였습니다.',
+      summary: '퇴사해야겠다 진짜로',
     );
   }
 
@@ -34,7 +34,14 @@ class MockDiaryApi implements DiaryApi {
 
     return DiaryDetailDto(
       diaryId: id,
-      content: '메인에서 넘어왔어요 오늘은 프로젝트를 열심히 했어요. 힘들었지만 보람찼습니다.',
+      content:
+          '''오늘은 정말 힘든 하루였다. 아침부터 비가 내려서 우울한 기분으로 하루를 시작했다. 지하철도 지연되고, 회사에 늦을 뻔했다.
+
+오늘 프레젠테이션이 있었는데 너무 떨렸다. 밤새 준비했던 자료들을 발표하는 동안 손이 계속 떨렸고, 목소리도 제대로 나오지 않았다. 그런데 생각보다 팀장님이 좋게 봐주셔서 다행이었다.
+
+점심시간에는 동료와 함께 새로 생긴 파스타집에 갔다. 토마토 크림파스타를 먹었는데 정말 맛있었다. 그 친구와 오랜만에 진솔한 대화를 나누면서 마음이 한결 가벼워졌다.
+
+퇴근 후에는 헬스장에 갔다. 운동을 하면서 오늘 하루의 스트레스를 모두 땀으로 흘려보냈다. 집에 돌아와서는 따뜻한 차를 마시며 좋아하는 드라마를 봤다. 이런 소소한 일상의 행복이 얼마나 소중한지 새삼 느꼈다.''',
       createdAt: '2025-10-16T14:30:00Z',
       images: [
         'https://picsum.photos/600/400',
@@ -44,9 +51,10 @@ class MockDiaryApi implements DiaryApi {
       music: MusicDto(
         title: 'blue valentine',
         artist: '엔믹스',
-        youtubeUrl: 'https://www.youtube.com/watch?v=EmeW6li6bbo',
+        videoId: 'EmeW6li6bbo',
       ),
-      feedbackMsg: '',
+      feedbackMsg:
+          '힘든 하루를 보내셨군요. 프레젠테이션 긴장하셨을 텐데 팀장님이 좋게 봐주셔서 다행이에요! 동료와의 대화로 마음이 가벼워지고, 운동으로 스트레스를 해소하신 것도 정말 좋은 선택이었네요!',
     );
   }
 

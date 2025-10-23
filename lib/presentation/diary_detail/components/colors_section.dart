@@ -24,8 +24,8 @@ class ColorsSection extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: getWidth(16),
-          vertical: getHeight(15),
+          horizontal: getWidth(20),
+          vertical: getHeight(16),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

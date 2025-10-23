@@ -6,9 +6,9 @@ part 'music_dto.g.dart';
 class MusicDto {
   final String? title;
   final String? artist;
-  final String? youtubeUrl;
+  final String? videoId;
 
-  MusicDto({this.title, this.artist, this.youtubeUrl});
+  MusicDto({this.title, this.artist, this.videoId});
 
   factory MusicDto.fromJson(Map<String, dynamic> json) =>
       _$MusicDtoFromJson(json);

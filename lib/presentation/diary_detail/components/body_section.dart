@@ -12,6 +12,7 @@ class BodySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: ColorConfig.white,
         borderRadius: BorderRadius.circular(10),
@@ -49,7 +50,7 @@ class BodySection extends StatelessWidget {
                 fontSize: TextConfig.diaryFontSize,
                 color: ColorConfig.diaryTextColor,
                 fontWeight: FontWeight.w500,
-                height: 1.5,
+                height: 1.6,
               ),
             ),
           ],

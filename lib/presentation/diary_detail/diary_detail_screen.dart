@@ -28,7 +28,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.microtask(() async {
+      if (!mounted) return;
       context.read<DiaryDetailViewModel>().initialize(
         widget.diaryDetail,
         widget.id,

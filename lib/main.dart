@@ -102,7 +102,7 @@ void main() async {
   await getIt<FCMService>().initialize();
 
   // 테스트 데이터 생성 (개발용) -> 이거 대신에 나중에 여기서 메인 탭 뷰모델들 초기화시켜서 데이터 가져오게 할수도 있겠다. 아닌가 이건 스플래쉬에서 하려나?
-  // await _createTestData();
+  await _createTestData();
 
   runApp(const MyApp());
 }
@@ -134,7 +134,7 @@ Future<void> _createTestData() async {
     final now = DateTime.now();
 
     // 7, 8, 9월에 무작위로 일기 생성
-    for (int month = 7; month <= 9; month++) {
+    for (int month = 9; month <= 9; month++) {
       // 각 월에 5-15개의 일기 생성
       final diaryCount = random.nextInt(11) + 5; // 5-15개
 
@@ -160,8 +160,7 @@ Future<void> _createTestData() async {
       }
     }
     // 오늘 날짜로 일기 3개 추가
-    print('오늘 날짜(2025-09-28) 일기 3개를 추가합니다...');
-    final today = DateTime(2025, 9, 28);
+    final today = DateTime(2025, 10, 20);
 
     for (int i = 0; i < 3; i++) {
       final hour = random.nextInt(23) + 1; // 1-23시

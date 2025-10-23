@@ -11,7 +11,7 @@ extension DiaryDetailMapper on DiaryDetailDto {
     secondColorHex: colors?[1] ?? '#EEB5BE',
     musicTitle: music?.title ?? '',
     musicArtist: music?.artist ?? '',
-    youtubeUrl: music?.youtubeUrl ?? '',
+    youtubeVideoId: music?.videoId ?? '',
     feedback: feedbackMsg,
     summary: summary,
   );

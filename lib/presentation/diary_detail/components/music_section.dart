@@ -16,30 +16,14 @@ class MusicSection extends StatefulWidget {
 class _MusicSectionState extends State<MusicSection> {
   late YoutubePlayerController _controller;
 
-  String _extractYoutubeId(String url) {
-    final uri = Uri.parse(url);
-
-    if (uri.host.contains('youtube.com')) {
-      return uri.queryParameters['v'] ?? '';
-    }
-
-    if (uri.host.contains('youtu.be')) {
-      return uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
-    }
-
-    return '';
-  }
-
   @override
   void initState() {
     super.initState();
-    final videoId = _extractYoutubeId(widget.diary.youtubeUrl);
 
-    AppLogger.log('비디오 ID: $videoId');
-    AppLogger.log('원본 URL: ${widget.diary.youtubeUrl}');
+    AppLogger.log('videoId: ${widget.diary.youtubeVideoId}');
 
     _controller = YoutubePlayerController.fromVideoId(
-      videoId: videoId,
+      videoId: widget.diary.youtubeVideoId,
       autoPlay: true,
       params: const YoutubePlayerParams(
         mute: false,
@@ -123,5 +107,11 @@ class _MusicSectionState extends State<MusicSection> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
   }
 }
