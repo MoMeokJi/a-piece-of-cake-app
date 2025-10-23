@@ -70,19 +70,19 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                       SizedBox(height: getHeight(8)),
                       // 이미지 영역
                       ImageGridThumbnail(diary: viewModel.diary),
-                      SizedBox(height: getHeight(20)),
+                      SizedBox(height: getHeight(16)),
                       // 피드백 있을 때만 표시
                       if (viewModel.diary.feedback != null &&
                           viewModel.diary.feedback!.isNotEmpty) ...[
                         FeedbackSection(diary: viewModel.diary),
-                        SizedBox(height: getHeight(20)),
+                        SizedBox(height: getHeight(16)),
                       ],
                       // 컬러
                       ColorsSection(diary: viewModel.diary),
-                      SizedBox(height: getHeight(20)),
+                      SizedBox(height: getHeight(16)),
                       // 뮤직
                       MusicSection(diary: viewModel.diary),
-                      SizedBox(height: getHeight(20)),
+                      SizedBox(height: getHeight(16)),
                       // 피드백 없을 때만 표시
                       if (viewModel.diary.feedback == null ||
                           viewModel.diary.feedback!.isEmpty) ...[

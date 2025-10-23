@@ -79,7 +79,7 @@ class ColorsSection extends StatelessWidget {
             top: 0,
             bottom: 0,
             child: Container(
-              width: getWidth(120),
+              width: getWidth(100),
               decoration: BoxDecoration(
                 color: ColorConfig.black.withValues(alpha: 0.6),
                 borderRadius: const BorderRadius.only(

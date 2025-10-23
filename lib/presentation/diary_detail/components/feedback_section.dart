@@ -22,14 +22,6 @@ class FeedbackSection extends StatelessWidget {
             ],
           ),
           borderRadius: BorderRadius.circular(10),
-          // boxShadow: [
-          //   BoxShadow(
-          //     color: ColorConfig.black.withValues(alpha: 0.1),
-          //     blurRadius: 8,
-          //     offset: const Offset(0, 2),
-          //     spreadRadius: 0,
-          //   ),
-          // ],
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(
