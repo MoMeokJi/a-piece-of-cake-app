@@ -13,30 +13,32 @@ class DiaryDetailViewModel with ChangeNotifier {
   DiaryDetail _diary = DiaryDetail.empty();
   DiaryDetail get diary => _diary;
 
-  ResultState _state = ResultState.none;
+  ResultState _state = ResultState.loading;
   ResultState get state => _state;
 
   Future<void> initialize(DiaryDetail? detail, int? id) async {
-    _state = ResultState.loading;
-    notifyListeners();
+    try {
+      if (detail != null) {
+        _diary = detail;
+        _state = ResultState.success;
+        notifyListeners();
+        return;
+      }
 
-    if (detail != null) {
-      _diary = detail;
-      _state = ResultState.success;
-      notifyListeners();
-      return;
-    }
-
-    if (id != null) {
-      try {
+      if (id != null) {
         _diary = await _diaryRepo.getDiary(id: id);
         _state = ResultState.success;
-      } catch (e) {
-        AppLogger.error('일기디테일 가져오기 에러: ${e.toString()}');
-        _state = ResultState.error;
+        notifyListeners();
+        return;
       }
+
+      // detail도 id도 없는 경우 처리
+      _state = ResultState.error;
       notifyListeners();
-      return;
+    } catch (e) {
+      AppLogger.error('일기디테일 초기화 에러: ${e.toString()}');
+      _state = ResultState.error;
+      notifyListeners();
     }
   }
 }

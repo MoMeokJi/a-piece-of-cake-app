@@ -14,11 +14,16 @@ class MusicSection extends StatefulWidget {
 }
 
 class _MusicSectionState extends State<MusicSection> {
-  late YoutubePlayerController _controller;
+  YoutubePlayerController? _controller;
 
   @override
   void initState() {
     super.initState();
+
+    if (widget.diary.youtubeVideoId.isEmpty) {
+      AppLogger.log('videoId가 비어있음');
+      return;
+    }
 
     AppLogger.log('videoId: ${widget.diary.youtubeVideoId}');
 
@@ -79,13 +84,31 @@ class _MusicSectionState extends State<MusicSection> {
               ],
             ),
             SizedBox(height: getHeight(12)),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: YoutubePlayer(
-                controller: _controller,
-                aspectRatio: 16 / 9,
+            if (_controller != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: YoutubePlayer(
+                  controller: _controller!,
+                  aspectRatio: 16 / 9,
+                ),
+              )
+            else
+              Container(
+                height: getHeight(200),
+                decoration: BoxDecoration(
+                  color: ColorConfig.gray3,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '유튜브에서 음악을 불러올 수 없어요 😢',
+                    style: TextStyle(
+                      fontSize: getHeight(14),
+                      color: ColorConfig.gray1,
+                    ),
+                  ),
+                ),
               ),
-            ),
             SizedBox(height: getHeight(12)),
             Text(
               widget.diary.musicTitle,
@@ -111,7 +134,7 @@ class _MusicSectionState extends State<MusicSection> {
 
   @override
   void dispose() {
-    _controller.close();
+    _controller?.close();
     super.dispose();
   }
 }
