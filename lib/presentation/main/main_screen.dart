@@ -5,9 +5,9 @@ import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/main/components/bottom_navi.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 
 class MainScreen extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -42,9 +42,22 @@ class MainScreen extends StatelessWidget {
         fillColor: ColorConfig.primary,
         onPressed: () async {
           final canWrite = await viewModel.checkDiaryLimit();
+          if (!context.mounted) return;
 
           if (!canWrite) {
-            Fluttertoast.showToast(msg: '오늘 일기는 여기까지! 내일 또 만나요 😊');
+            toastification.show(
+              context: context,
+              type: ToastificationType.info,
+              style: ToastificationStyle.flatColored,
+              primaryColor: ColorConfig.primary,
+              title: Text(
+                '오늘 일기는 여기까지! 내일 또 만나요',
+                style: TextStyle(fontSize: getWidth(14)),
+              ),
+              autoCloseDuration: const Duration(seconds: 2),
+              alignment: Alignment.center,
+              showProgressBar: false,
+            );
             return;
           }
 

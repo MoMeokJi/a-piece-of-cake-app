@@ -34,15 +34,22 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
   ResultState _resultState = ResultState.none;
   ResultState get state => _resultState;
 
+  // 토스트 메시지 상태
+  String? _toastMessage;
+  String? get toastMessage => _toastMessage;
+
   Future<void> writeFreeDiary() async {
     unfocus();
-    if (_textController.text.isEmpty) {
-      AppLogger.log('일기는 30자 이상 작성해주세요');
+    if (_textController.text.length < 30) {
+      _toastMessage = '일기는 30자 이상 작성해주세요';
+      notifyListeners();
       return;
     } else if (_pickedImages.isEmpty) {
-      AppLogger.log('1장 이상의 사진을 첨부해야합니다');
+      _toastMessage = '1장 이상의 사진을 첨부해야합니다';
+      notifyListeners();
       return;
     }
+
     try {
       _resultState = ResultState.loading;
       notifyListeners();
@@ -60,6 +67,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
 
       _resultState = ResultState.success;
     } catch (e) {
+      _toastMessage = '일기 작성에 실패했습니다';
       _resultState = ResultState.error;
       AppLogger.error('자유 일기 작성 에러: ${e.toString()}');
     }
@@ -68,7 +76,8 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
 
   Future<void> getImageFromGallery() async {
     if (_pickedImages.length >= _maxImgLength) {
-      AppLogger.log('사진은 $_maxImgLength징까지 첨부 가능합니다');
+      _toastMessage = '사진은 $_maxImgLength장까지 첨부 가능합니다';
+      notifyListeners();
       return;
     }
 
@@ -80,7 +89,8 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
 
   Future<void> getImageFromCamera() async {
     if (_pickedImages.length >= _maxImgLength) {
-      AppLogger.log('사진은 $_maxImgLength징까지 첨부 가능합니다');
+      _toastMessage = '사진은 $_maxImgLength장까지 첨부 가능합니다';
+      notifyListeners();
       return;
     }
 
@@ -94,7 +104,8 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
     final remainingSlots = _maxImgLength - _pickedImages.length;
 
     if (remainingSlots <= 0) {
-      AppLogger.log('사진은 $_maxImgLength징까지 첨부 가능합니다');
+      _toastMessage = '사진은 $_maxImgLength장까지 첨부 가능합니다';
+      notifyListeners();
       return;
     }
 
@@ -102,7 +113,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
     _pickedImages.addAll(imagesToAdd);
 
     if (newImages.length > remainingSlots) {
-      AppLogger.log('사진은 $_maxImgLength징까지 첨부 가능합니다');
+      _toastMessage = '사진은 $_maxImgLength장까지 첨부 가능합니다';
     }
 
     notifyListeners();
@@ -115,6 +126,11 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
 
   void unfocus() {
     _focusNode.unfocus();
+  }
+
+  // 토스트 메시지 초기화 메서드
+  void clearToastMessage() {
+    _toastMessage = null;
   }
 
   @override

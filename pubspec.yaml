@@ -46,6 +46,7 @@ dependencies:
  photo_view: ^0.15.0
  youtube_player_iframe: ^5.2.2
  webview_flutter: ^4.13.0
+ toastification: ^3.0.3
 
 dev_dependencies:
  flutter_test:

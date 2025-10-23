@@ -11,6 +11,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 
 class FreeDiaryCreateScreen extends StatelessWidget {
   const FreeDiaryCreateScreen({super.key});
@@ -32,6 +33,20 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                 );
               } else if (viewModel.state == ResultState.error) {
                 //TODO: error 처리
+              }
+              // 토스트 메시지 처리
+              if (viewModel.toastMessage != null) {
+                toastification.show(
+                  context: context,
+                  type: ToastificationType.warning,
+                  style: ToastificationStyle.flat,
+                  primaryColor: ColorConfig.primary,
+                  title: Text(viewModel.toastMessage!),
+                  autoCloseDuration: const Duration(seconds: 2),
+                  alignment: Alignment.center,
+                  showProgressBar: false,
+                );
+                viewModel.clearToastMessage();
               }
             });
 
