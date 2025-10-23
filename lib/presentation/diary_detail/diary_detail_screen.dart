@@ -12,7 +12,10 @@ import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:toastification/toastification.dart';
 
 class DiaryDetailScreen extends StatefulWidget {
   final DiaryDetail? diaryDetail;
@@ -40,12 +43,57 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<DiaryDetailViewModel>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 삭제 성공
+      if (viewModel.removeState == ResultState.success) {
+        context.go('/diary-calendar');
+        viewModel.resetRemoveState();
+      }
+
+      // 토스트 메시지 표시 (성공/실패 모두)
+      if (viewModel.toastMessage != null) {
+        toastification.show(
+          context: context,
+          type: viewModel.removeState == ResultState.success
+              ? ToastificationType.success
+              : ToastificationType.error,
+          style: ToastificationStyle.flat,
+          primaryColor: ColorConfig.primary,
+          title: Text(viewModel.toastMessage!),
+          autoCloseDuration: const Duration(seconds: 2),
+          alignment: Alignment.bottomCenter,
+          showProgressBar: false,
+        );
+        viewModel.clearToastMessage();
+      }
+    });
+
     return Scaffold(
       backgroundColor: ColorConfig.background,
       appBar: CommonMainAppBar(
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              showCupertinoModalPopup(
+                context: context,
+                builder: (BuildContext context) => CupertinoActionSheet(
+                  actions: [
+                    CupertinoActionSheetAction(
+                      isDestructiveAction: true,
+                      onPressed: () async {
+                        context.pop();
+                        await viewModel.removeDiary();
+                      },
+                      child: Text('삭제하기', style: TextStyle(fontSize: 16)),
+                    ),
+                  ],
+                  cancelButton: CupertinoActionSheetAction(
+                    onPressed: () => context.pop(),
+                    child: Text('취소', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+              );
+            },
             icon: Icon(Icons.more_vert_rounded),
             color: ColorConfig.black,
             iconSize: getWidth(28),
@@ -53,7 +101,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         ],
       ),
       body: SafeArea(
-        child: (viewModel.state == ResultState.loading)
+        child: (viewModel.initializeState == ResultState.loading)
             ? Center(
                 child: SpinKitFadingCube(
                   color: ColorConfig.primary,

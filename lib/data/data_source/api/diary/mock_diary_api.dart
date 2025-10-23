@@ -72,6 +72,7 @@ class MockDiaryApi implements DiaryApi {
   @override
   Future<void> deleteDiary({required int id}) async {
     await Future.delayed(Duration(milliseconds: 500));
-    // 삭제 완료
+    print('서버삭제완료');
+    return;
   }
 }

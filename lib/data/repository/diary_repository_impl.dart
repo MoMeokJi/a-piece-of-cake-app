@@ -49,15 +49,6 @@ class DiaryRepositoryImpl implements DiaryRepository {
   }
 
   @override
-  Future<void> removeDiary(int id) async {
-    // sqflite 삭제
-    await _diaryDao.deleteDiary(id);
-
-    // 서버에 삭제 요청
-    await _diaryApi.deleteDiary(id: id);
-  }
-
-  @override
   Future<DiaryDetail> completeDiary({
     required String text,
     required List<XFile> images,
@@ -98,5 +89,14 @@ class DiaryRepositoryImpl implements DiaryRepository {
   Future<DiaryDetail> getDiary({required int id}) async {
     final DiaryDetailDto dto = await _diaryApi.fetchDiary(id: id);
     return dto.toDiaryDetail();
+  }
+
+  @override
+  Future<void> removeDiary(int id) async {
+    // sqflite 삭제
+    await _diaryDao.deleteDiary(id);
+
+    // 서버에 삭제 요청
+    await _diaryApi.deleteDiary(id: id);
   }
 }
