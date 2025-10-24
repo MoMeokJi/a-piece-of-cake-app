@@ -159,8 +159,23 @@ Future<void> _createTestData() async {
         await diaryDao.insertDiary(diary);
       }
     }
+
+    print('테스트 데이터 생성 완료!');
+  } catch (e) {
+    print('테스트 데이터 생성 중 에러: $e');
+  }
+}
+
+Future<void> _createTodayData() async {
+  try {
+    final diaryDao = getIt<DiaryDao>();
+
+    print('오늘 일기 데이터를 생성합니다...');
+
+    final random = Random();
+
     // 오늘 날짜로 일기 3개 추가
-    final today = DateTime(2025, 10, 20);
+    final today = DateTime(2025, 10, 24);
 
     for (int i = 0; i < 3; i++) {
       final hour = random.nextInt(23) + 1; // 1-23시
@@ -178,10 +193,8 @@ Future<void> _createTestData() async {
 
       await diaryDao.insertDiary(todayDiary);
     }
-
-    print('테스트 데이터 생성 완료!');
   } catch (e) {
-    print('테스트 데이터 생성 중 에러: $e');
+    print('오늘 데이터 생성 중 에러: $e');
   }
 }
 

@@ -48,14 +48,14 @@ class MainScreen extends StatelessWidget {
             toastification.show(
               context: context,
               type: ToastificationType.info,
-              style: ToastificationStyle.flatColored,
+              style: ToastificationStyle.fillColored,
               primaryColor: ColorConfig.primary,
               title: Text(
                 '오늘 일기는 여기까지! 내일 또 만나요',
                 style: TextStyle(fontSize: getWidth(14)),
               ),
               autoCloseDuration: const Duration(seconds: 2),
-              alignment: Alignment.center,
+              alignment: Alignment.bottomCenter,
               showProgressBar: false,
             );
             return;

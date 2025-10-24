@@ -47,6 +47,7 @@ dependencies:
  youtube_player_iframe: ^5.2.2
  webview_flutter: ^4.13.0
  toastification: ^3.0.3
+ animated_text_kit: ^4.3.0
 
 dev_dependencies:
  flutter_test:

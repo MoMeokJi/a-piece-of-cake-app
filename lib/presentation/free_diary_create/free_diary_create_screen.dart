@@ -5,10 +5,10 @@ import 'package:cake/presentation/free_diary_create/components/diary_text_field.
 import 'package:cake/presentation/free_diary_create/components/fixed_bottom_section.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
+import 'package:cake/ui/common_components/custom_loading_overlay.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
@@ -39,11 +39,14 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                 toastification.show(
                   context: context,
                   type: ToastificationType.warning,
-                  style: ToastificationStyle.flat,
+                  style: ToastificationStyle.fillColored,
                   primaryColor: ColorConfig.primary,
-                  title: Text(viewModel.toastMessage!),
+                  title: Text(
+                    viewModel.toastMessage!,
+                    style: TextStyle(fontSize: getWidth(14)),
+                  ),
                   autoCloseDuration: const Duration(seconds: 2),
-                  alignment: Alignment.center,
+                  alignment: Alignment.bottomCenter,
                   showProgressBar: false,
                 );
                 viewModel.clearToastMessage();
@@ -119,12 +122,7 @@ class FreeDiaryCreateScreen extends StatelessWidget {
         ),
 
         if (viewModel.state == ResultState.loading)
-          Container(
-            color: Colors.black.withValues(alpha: 0.5),
-            child: const Center(
-              child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
-            ),
-          ),
+          CustomLoadingOverlay(message: '잠시만 기다려주세요...'),
       ],
     );
   }

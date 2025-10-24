@@ -10,7 +10,7 @@ class MockDiaryApi implements DiaryApi {
     required String text,
     required List<XFile> images,
   }) async {
-    await Future.delayed(Duration(seconds: 1)); // 네트워크 지연 시뮬레이션
+    await Future.delayed(Duration(seconds: 5)); // 네트워크 지연 시뮬레이션
 
     return DiaryDetailDto(
       diaryId: 214,

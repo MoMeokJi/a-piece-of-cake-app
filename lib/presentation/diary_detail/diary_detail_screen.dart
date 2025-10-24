@@ -44,27 +44,31 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<DiaryDetailViewModel>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 삭제 성공
-      if (viewModel.removeState == ResultState.success) {
-        context.go('/diary-calendar');
-        viewModel.resetRemoveState();
-      }
-
-      // 토스트 메시지 표시 (성공/실패 모두)
+      // 토스트 메시지 표시
       if (viewModel.toastMessage != null) {
+        final isSuccess = viewModel.removeState == ResultState.success;
         toastification.show(
           context: context,
-          type: viewModel.removeState == ResultState.success
+          type: isSuccess
               ? ToastificationType.success
               : ToastificationType.error,
           style: ToastificationStyle.flat,
-          primaryColor: ColorConfig.primary,
-          title: Text(viewModel.toastMessage!),
+          primaryColor: isSuccess ? ColorConfig.primary : ColorConfig.error,
+          title: Text(
+            viewModel.toastMessage!,
+            style: TextStyle(fontSize: getWidth(14)),
+          ),
           autoCloseDuration: const Duration(seconds: 2),
           alignment: Alignment.bottomCenter,
           showProgressBar: false,
         );
         viewModel.clearToastMessage();
+      }
+
+      // 삭제 성공
+      if (viewModel.removeState == ResultState.success) {
+        context.go('/diary-calendar');
+        viewModel.resetRemoveState();
       }
     });
 
@@ -138,11 +142,18 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             ),
           ),
         ),
-        // 로딩 중일 때 전체 화면 오버레이
-        if (viewModel.initializeState == ResultState.loading ||
-            viewModel.removeState == ResultState.loading)
+        // 삭제 로딩 중일 때만 반투명 오버레이
+        if (viewModel.removeState == ResultState.loading)
           Container(
             color: Colors.black.withValues(alpha: 0.5),
+            child: const Center(
+              child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
+            ),
+          ),
+        // 처음 로딩 중일 때는 빈 화면에 로딩 스피너만
+        if (viewModel.initializeState == ResultState.loading)
+          Container(
+            color: ColorConfig.background,
             child: const Center(
               child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
             ),
