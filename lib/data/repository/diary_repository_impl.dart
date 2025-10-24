@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
@@ -62,7 +60,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
 
     await _diaryDao.insertDiary(
       Diary(
-        id: Random().nextInt(100000),
+        id: 214,
         summary: diary.summary!,
         createdAt: diary.createdAt,
         firstColorHex: diary.firstColorHex,

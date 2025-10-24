@@ -68,80 +68,86 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: ColorConfig.background,
-      appBar: CommonMainAppBar(
-        actions: [
-          IconButton(
-            onPressed: () {
-              showCupertinoModalPopup(
-                context: context,
-                builder: (BuildContext context) => CupertinoActionSheet(
-                  actions: [
-                    CupertinoActionSheetAction(
-                      isDestructiveAction: true,
-                      onPressed: () async {
-                        context.pop();
-                        await viewModel.removeDiary();
-                      },
-                      child: Text('삭제하기', style: TextStyle(fontSize: 16)),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: ColorConfig.background,
+          appBar: CommonMainAppBar(
+            actions: [
+              IconButton(
+                onPressed: () {
+                  showCupertinoModalPopup(
+                    context: context,
+                    builder: (BuildContext context) => CupertinoActionSheet(
+                      actions: [
+                        CupertinoActionSheetAction(
+                          isDestructiveAction: true,
+                          onPressed: () async {
+                            context.pop();
+                            await viewModel.removeDiary();
+                          },
+                          child: Text('삭제하기', style: TextStyle(fontSize: 16)),
+                        ),
+                      ],
+                      cancelButton: CupertinoActionSheetAction(
+                        onPressed: () => context.pop(),
+                        child: Text('취소', style: TextStyle(fontSize: 16)),
+                      ),
                     ),
-                  ],
-                  cancelButton: CupertinoActionSheetAction(
-                    onPressed: () => context.pop(),
-                    child: Text('취소', style: TextStyle(fontSize: 16)),
-                  ),
-                ),
-              );
-            },
-            icon: Icon(Icons.more_vert_rounded),
-            color: ColorConfig.black,
-            iconSize: getWidth(28),
+                  );
+                },
+                icon: Icon(Icons.more_vert_rounded),
+                color: ColorConfig.black,
+                iconSize: getWidth(28),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: (viewModel.initializeState == ResultState.loading)
-            ? Center(
-                child: SpinKitFadingCube(
-                  color: ColorConfig.primary,
-                  size: 30.0,
-                ),
-              )
-            : SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: getWidth(25)),
-                  child: Column(
-                    children: [
-                      // 본문 영역
-                      BodySection(diary: viewModel.diary),
-                      SizedBox(height: getHeight(8)),
-                      // 이미지 영역
-                      ImageGridThumbnail(diary: viewModel.diary),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: getWidth(25)),
+                child: Column(
+                  children: [
+                    // 본문 영역
+                    BodySection(diary: viewModel.diary),
+                    SizedBox(height: getHeight(8)),
+                    // 이미지 영역
+                    ImageGridThumbnail(diary: viewModel.diary),
+                    SizedBox(height: getHeight(16)),
+                    // 피드백 있을 때만 표시
+                    if (viewModel.diary.feedback != null &&
+                        viewModel.diary.feedback!.isNotEmpty) ...[
+                      FeedbackSection(diary: viewModel.diary),
                       SizedBox(height: getHeight(16)),
-                      // 피드백 있을 때만 표시
-                      if (viewModel.diary.feedback != null &&
-                          viewModel.diary.feedback!.isNotEmpty) ...[
-                        FeedbackSection(diary: viewModel.diary),
-                        SizedBox(height: getHeight(16)),
-                      ],
-                      // 컬러
-                      ColorsSection(diary: viewModel.diary),
-                      SizedBox(height: getHeight(16)),
-                      // 뮤직
-                      MusicSection(diary: viewModel.diary),
-                      SizedBox(height: getHeight(16)),
-                      // 피드백 없을 때만 표시
-                      if (viewModel.diary.feedback == null ||
-                          viewModel.diary.feedback!.isEmpty) ...[
-                        EmptyFeedbackSection(),
-                        SizedBox(height: getHeight(20)),
-                      ],
                     ],
-                  ),
+                    // 컬러
+                    ColorsSection(diary: viewModel.diary),
+                    SizedBox(height: getHeight(16)),
+                    // 뮤직
+                    MusicSection(diary: viewModel.diary),
+                    SizedBox(height: getHeight(16)),
+                    // 피드백 없을 때만 표시
+                    if (viewModel.diary.feedback == null ||
+                        viewModel.diary.feedback!.isEmpty) ...[
+                      EmptyFeedbackSection(),
+                      SizedBox(height: getHeight(20)),
+                    ],
+                  ],
                 ),
               ),
-      ),
+            ),
+          ),
+        ),
+        // 로딩 중일 때 전체 화면 오버레이
+        if (viewModel.initializeState == ResultState.loading ||
+            viewModel.removeState == ResultState.loading)
+          Container(
+            color: Colors.black.withValues(alpha: 0.5),
+            child: const Center(
+              child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
+            ),
+          ),
+      ],
     );
   }
 }
