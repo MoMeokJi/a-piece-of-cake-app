@@ -81,7 +81,7 @@ class ColorsSection extends StatelessWidget {
             child: Container(
               width: getWidth(100),
               decoration: BoxDecoration(
-                color: ColorConfig.black.withValues(alpha: 0.6),
+                color: ColorConfig.white.withValues(alpha: 0.8),
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(8),
                   bottomRight: Radius.circular(8),
@@ -93,7 +93,7 @@ class ColorsSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: getHeight(14),
                     fontWeight: FontWeight.w800,
-                    color: ColorConfig.white,
+                    color: ColorConfig.black,
                     letterSpacing: 0.5,
                   ),
                 ),
