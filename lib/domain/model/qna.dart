@@ -5,10 +5,9 @@ part 'qna.freezed.dart';
 
 @freezed
 class Qna with _$Qna {
+  final int id;
   final String question;
   final String answer;
 
-  const Qna({required this.question, required this.answer});
-
-  factory Qna.empty() => Qna(question: '', answer: '');
+  const Qna({required this.id, required this.question, required this.answer});
 }

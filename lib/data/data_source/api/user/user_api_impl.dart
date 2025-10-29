@@ -22,8 +22,8 @@ class UserApiImpl extends BaseApi implements UserApi {
       }),
     );
 
-    // 회원가입은 403이 있을수없음.
-    if (response.statusCode == 200) {
+    // 회원가입은 401이 있을수없음.
+    if (response.statusCode == 204) {
       await saveAllTokensFromHeader(response.headers);
       return;
     } else {
@@ -40,7 +40,7 @@ class UserApiImpl extends BaseApi implements UserApi {
 
     if (response.statusCode == 200) {
       await saveAccessTokenFromHeader(response.headers);
-    } else if (response.statusCode == 403) {
+    } else if (response.statusCode == 401) {
       await reissueTokens();
       return deleteUser();
     } else {

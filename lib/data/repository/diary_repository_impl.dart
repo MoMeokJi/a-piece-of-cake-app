@@ -74,6 +74,21 @@ class DiaryRepositoryImpl implements DiaryRepository {
   }
 
   @override
+  Future<List<Qna>> getQuestionList() async {
+    final questions = await _diaryApi.fetchQuestions();
+
+    // 2. List<String> → List<Qna> 변환 (id 부여)
+    final qnaList = questions.asMap().entries.map((entry) {
+      return Qna(id: (entry.key + 1), question: entry.value, answer: '');
+    }).toList();
+
+    // 3. 필요하면 여기서 섞기
+    // qnaList.shuffle();
+
+    return qnaList;
+  }
+
+  @override
   Future<String> generateQnaDiary({required List<Qna> qnaList}) async {
     final dtoList = qnaList.map((qna) => qna.toDto()).toList();
     final String generatedDiary = await _diaryApi.requestQnaDiary(

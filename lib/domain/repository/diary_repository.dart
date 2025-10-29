@@ -14,11 +14,13 @@ abstract interface class DiaryRepository {
   Future<bool> isAbleToWriteDiaryToday();
   Future<void> removeDiary(int id);
 
+  Future<DiaryDetail> getDiary({required int id});
+
+  Future<List<Qna>> getQuestionList();
+  Future<String> generateQnaDiary({required List<Qna> qnaList});
+
   Future<DiaryDetail> completeDiary({
     required String text,
     required List<XFile> images,
   });
-
-  Future<String> generateQnaDiary({required List<Qna> qnaList});
-  Future<DiaryDetail> getDiary({required int id});
 }

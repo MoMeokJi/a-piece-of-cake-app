@@ -75,4 +75,22 @@ class MockDiaryApi implements DiaryApi {
     print('서버삭제완료');
     return;
   }
+
+  @override
+  Future<List<String>> fetchQuestions() async {
+    final jsonData = {
+      "questions": [
+        "지금 기분이 어때?",
+        "오늘 특별한 일이나 기록하고 싶은 일이 있어?",
+        "오늘 가장 아쉬운 점을 말해줘",
+        "내일의 나에게 해주고 싶은 말이 있다면?",
+        "오늘 널 가장 힘들게한 일이 뭐야?",
+      ],
+    };
+
+    // 네트워크 지연 시뮬레이션
+    await Future.delayed(Duration(milliseconds: 500));
+
+    return List<String>.from(jsonData['questions'] as List);
+  }
 }
