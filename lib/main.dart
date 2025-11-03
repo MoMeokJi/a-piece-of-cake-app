@@ -134,7 +134,7 @@ Future<void> _createTestData() async {
     final now = DateTime.now();
 
     // 7, 8, 9월에 무작위로 일기 생성
-    for (int month = 9; month <= 9; month++) {
+    for (int month = 10; month <= 10; month++) {
       // 각 월에 5-15개의 일기 생성
       final diaryCount = random.nextInt(11) + 5; // 5-15개
 
