@@ -51,7 +51,7 @@ class MainScreen extends StatelessWidget {
               style: ToastificationStyle.fillColored,
               primaryColor: ColorConfig.primary,
               title: Text(
-                '오늘 일기는 여기까지! 내일 또 만나요',
+                '일기는 하루에 세번까지 작성할 수 있어요',
                 style: TextStyle(fontSize: getWidth(14)),
               ),
               autoCloseDuration: const Duration(seconds: 2),

@@ -40,7 +40,7 @@ class ColorsSection extends StatelessWidget {
                 ),
                 SizedBox(width: getWidth(8)),
                 Text(
-                  '오늘의 Color',
+                  '오늘의 추천 색상',
                   style: TextStyle(
                     fontSize: getHeight(16),
                     fontWeight: FontWeight.w800,

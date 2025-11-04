@@ -41,7 +41,7 @@ class FeedbackSection extends StatelessWidget {
                   ),
                   SizedBox(width: getWidth(8)),
                   Text(
-                    '오늘의 Flavor',
+                    '오늘의 달콤한 시식평',
                     style: TextStyle(
                       fontSize: getHeight(16),
                       fontWeight: FontWeight.w800,

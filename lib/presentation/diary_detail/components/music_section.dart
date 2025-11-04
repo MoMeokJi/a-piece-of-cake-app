@@ -53,7 +53,7 @@ class MusicSection extends StatelessWidget {
                 ),
                 SizedBox(width: getWidth(8)),
                 Text(
-                  '오늘의 Music',
+                  '오늘의 추천 음악',
                   style: TextStyle(
                     fontSize: getHeight(16),
                     fontWeight: FontWeight.w800,
@@ -133,7 +133,7 @@ class MusicSection extends StatelessWidget {
                 ),
                 SizedBox(width: getWidth(8)),
                 Text(
-                  '오늘의 Music',
+                  '오늘의 추천 음악',
                   style: TextStyle(
                     fontSize: getHeight(16),
                     fontWeight: FontWeight.w800,
