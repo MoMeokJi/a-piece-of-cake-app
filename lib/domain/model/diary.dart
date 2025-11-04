@@ -12,6 +12,7 @@ class Diary with _$Diary {
   final String secondColorHex;
   final String musicTitle;
   final String musicArtist;
+  final bool isDeleted;
 
   const Diary({
     required this.id,
@@ -21,5 +22,6 @@ class Diary with _$Diary {
     required this.secondColorHex,
     required this.musicTitle,
     required this.musicArtist,
+    this.isDeleted = false,
   });
 }

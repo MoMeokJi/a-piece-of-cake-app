@@ -6,20 +6,24 @@ class DiaryDao {
   final Database _db;
   DiaryDao(this._db);
 
-  // 최신순으로 일기 가져옴
+  // 삭제되지 않은 일기만 최신순으로 가져옴
   Future<List<Diary>> getAllDiariesLatest() async {
     final List<Map<String, dynamic>> maps = await _db.query(
       DatabaseHelper.diaryTableName,
+      where: 'isDeleted = ?',
+      whereArgs: [0],
       orderBy: 'createdAt DESC',
     );
 
     return _mapToDiaries(maps);
   }
 
-  // 등록순으로 일기 가져옴
+  // 삭제되지 않은 일기만 등록순으로 가져옴
   Future<List<Diary>> getAllDiariesOldest() async {
     final List<Map<String, dynamic>> maps = await _db.query(
       DatabaseHelper.diaryTableName,
+      where: 'isDeleted = ?',
+      whereArgs: [0],
       orderBy: 'createdAt ASC',
     );
 
@@ -28,33 +32,20 @@ class DiaryDao {
 
   // 일기 삽입/업데이트 메서드
   Future<void> insertDiary(Diary diary) async {
-    await _db.insert(
-      DatabaseHelper.diaryTableName,
-      {
-        'id': diary.id,
-        'summary': diary.summary,
-        'createdAt': diary.createdAt.toIso8601String(),
-        'firstColorHex': diary.firstColorHex,
-        'secondColorHex': diary.secondColorHex,
-        'musicTitle': diary.musicTitle,
-        'musicArtist': diary.musicArtist,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace, // 같은 ID면 덮어쓰기
-    );
-  }
-
-  // 일기 삭제하는 메서드
-  Future<void> deleteDiary(int id) async {
-    await _db.delete(
-      DatabaseHelper.diaryTableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _db.insert(DatabaseHelper.diaryTableName, {
+      'id': diary.id,
+      'summary': diary.summary,
+      'createdAt': diary.createdAt.toIso8601String(),
+      'firstColorHex': diary.firstColorHex,
+      'secondColorHex': diary.secondColorHex,
+      'musicTitle': diary.musicTitle,
+      'musicArtist': diary.musicArtist,
+      'isDeleted': diary.isDeleted ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.abort);
   }
 
   // 특정 년/월의 일기 가져오기
   Future<List<Diary>> getDiariesByMonth(int year, int month) async {
-    // 해당 월의 시작일과 끝일 계산
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(
       year,
@@ -64,8 +55,8 @@ class DiaryDao {
 
     final List<Map<String, dynamic>> maps = await _db.query(
       DatabaseHelper.diaryTableName,
-      where: 'createdAt >= ? AND createdAt <= ?',
-      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String()],
+      where: 'createdAt >= ? AND createdAt <= ? AND isDeleted = ?',
+      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String(), 0],
       orderBy: 'createdAt DESC',
     );
 
@@ -81,9 +72,7 @@ class DiaryDao {
   // 오늘 작성한 일기 개수 반환
   Future<int> getTodayDiaryCount() async {
     final today = DateTime.now();
-    // 오늘 00:00:00부터
     final startOfDay = DateTime(today.year, today.month, today.day);
-    // 오늘 23:59:59까지
     final endOfDay = DateTime(today.year, today.month, today.day, 23, 59, 59);
 
     final List<Map<String, dynamic>> maps = await _db.query(
@@ -95,7 +84,26 @@ class DiaryDao {
     return maps.length;
   }
 
-  // 전체 데이터 다 지우는 메서드
+  // 일기 소프트 삭제
+  Future<void> deleteDiary(int id) async {
+    await _db.update(
+      DatabaseHelper.diaryTableName,
+      {'isDeleted': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // 소프트 삭제된 일기들만 영구 삭제 -> 주기적으로 실행?
+  Future<int> deleteAllSoftDeletedDiaries() async {
+    return await _db.delete(
+      DatabaseHelper.diaryTableName,
+      where: 'isDeleted = ?',
+      whereArgs: [1],
+    );
+  }
+
+  // 전체 db 삭제
   Future<int> deleteAll() => _db.delete(DatabaseHelper.diaryTableName);
 
   // Map을 Diary 객체로 변환하는 헬퍼 메서드
@@ -110,6 +118,7 @@ class DiaryDao {
             secondColorHex: map['secondColorHex'] as String,
             musicTitle: map['musicTitle'] as String,
             musicArtist: map['musicArtist'] as String,
+            isDeleted: (map['isDeleted'] as int) == 1,
           ),
         )
         .toList();

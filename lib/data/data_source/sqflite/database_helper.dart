@@ -27,7 +27,8 @@ class DatabaseHelper {
         firstColorHex TEXT NOT NULL,
         secondColorHex TEXT NOT NULL,
         musicTitle TEXT NOT NULL,
-        musicArtist TEXT
+        musicArtist TEXT,
+        isDeleted INTEGER NOT NULL DEFAULT 0
       )
     ''');
   }
