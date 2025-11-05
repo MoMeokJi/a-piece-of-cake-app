@@ -1,8 +1,11 @@
 import 'package:cake/domain/enum/result_state.dart';
+import 'package:cake/presentation/qna_diary_create/components/chat_list.dart';
+import 'package:cake/presentation/qna_diary_create/components/fixed_input_section.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 
@@ -12,19 +15,45 @@ class QnaDiaryCreateScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<QnaDiaryCreateViewModel>();
+
     return Stack(
       children: [
-        Scaffold(
-          backgroundColor: ColorConfig.background,
-          appBar: CommonMainAppBar(),
-          body: Text('qna'),
+        KeyboardVisibilityBuilder(
+          builder: (context, isKeyboardVisible) {
+            return GestureDetector(
+              // 화면 빈 부분 터치 시 키보드 닫기
+              onTap: () => viewModel.unfocusKeyboard(),
+              child: Scaffold(
+                backgroundColor: ColorConfig.background,
+                appBar: const CommonMainAppBar(),
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ChatList(
+                          chatList: viewModel.chatList,
+                          scrollController: viewModel.scrollController,
+                        ),
+                      ),
+
+                      FixedInputSection(
+                        textController: viewModel.textController,
+                        focusNode: viewModel.focusNode,
+                        onCompleted: viewModel.saveAnswer,
+                        isKeyboardVisible: isKeyboardVisible,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
+
+        // 서버 전송 등으로 인한 전체 로딩 오버레이
         if (viewModel.state == ResultState.loading)
-          Container(
-            color: Colors.black.withValues(alpha: 0.5),
-            child: const Center(
-              child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
-            ),
+          const Center(
+            child: SpinKitFadingCube(color: ColorConfig.primary, size: 30.0),
           ),
       ],
     );

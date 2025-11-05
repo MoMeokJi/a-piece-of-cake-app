@@ -89,7 +89,7 @@ class MockDiaryApi implements DiaryApi {
     };
 
     // 네트워크 지연 시뮬레이션
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1500));
 
     return List<String>.from(jsonData['questions'] as List);
   }

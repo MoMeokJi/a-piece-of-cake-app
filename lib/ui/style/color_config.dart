@@ -5,6 +5,7 @@ class ColorConfig {
   static const Color secondary = Color(0xffEEB5BE);
 
   static const Color background = Color(0xffFCFCFC);
+  static const Color chatRoomBackground = Color(0xffEDEFF4);
   static const Color bottomNavi = Color(0xffF9F9F9);
   static const Color dividerColor = Color(0xffE2E2E2);
   static const Color containerColor = Color(0xffE1E1E1);
