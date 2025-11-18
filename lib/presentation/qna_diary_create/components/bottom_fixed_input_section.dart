@@ -1,14 +1,15 @@
+import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 
-class FixedInputSection extends StatelessWidget {
+class BottomFixedInputSection extends StatelessWidget {
   final TextEditingController textController;
   final FocusNode focusNode;
   final VoidCallback onCompleted;
   final bool isKeyboardVisible;
 
-  const FixedInputSection({
+  const BottomFixedInputSection({
     super.key,
     required this.textController,
     required this.focusNode,
@@ -42,7 +43,7 @@ class FixedInputSection extends StatelessWidget {
                 focusNode: focusNode,
                 maxLines: 4,
                 minLines: 2,
-                maxLength: 100,
+                maxLength: ServiceConfig.maxChatLenght,
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.send,
                 onFieldSubmitted: (value) {

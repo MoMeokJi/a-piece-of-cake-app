@@ -1,6 +1,6 @@
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/presentation/qna_diary_create/components/chat_list.dart';
-import 'package:cake/presentation/qna_diary_create/components/fixed_input_section.dart';
+import 'package:cake/presentation/qna_diary_create/components/bottom_fixed_input_section.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
@@ -21,8 +21,8 @@ class QnaDiaryCreateScreen extends StatelessWidget {
       children: [
         KeyboardVisibilityBuilder(
           builder: (context, isKeyboardVisible) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (viewModel.state == ResultState.success) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (viewModel.state == ResultState.success) {
                 context.pushReplacement(
                   '/qna-edit',
                   extra: viewModel.generatedDiary,
@@ -31,7 +31,7 @@ class QnaDiaryCreateScreen extends StatelessWidget {
                 //TODO: error 처리
               }
             });
-            
+
             return GestureDetector(
               // 화면 빈 부분 터치 시 키보드 닫기
               onTap: () => viewModel.unfocusKeyboard(),
@@ -48,7 +48,7 @@ class QnaDiaryCreateScreen extends StatelessWidget {
                         ),
                       ),
 
-                      FixedInputSection(
+                      BottomFixedInputSection(
                         textController: viewModel.textController,
                         focusNode: viewModel.focusNode,
                         onCompleted: viewModel.saveAnswer,

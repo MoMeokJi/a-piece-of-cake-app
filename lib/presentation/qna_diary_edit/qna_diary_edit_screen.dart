@@ -1,4 +1,3 @@
-import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
@@ -16,12 +15,12 @@ import 'package:toastification/toastification.dart';
 
 class QnaDiaryEditScreen extends StatelessWidget {
   final String content;
-  const QnaDiaryEditScreen({super.key, required this.content,});
+  const QnaDiaryEditScreen({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
-        final viewModel = context.watch<QnaDiaryEditViewModel>();
-       return Stack(
+    final viewModel = context.watch<QnaDiaryEditViewModel>();
+    return Stack(
       // 이 스택은 로딩스피너용 스택
       children: [
         KeyboardVisibilityBuilder(
@@ -97,7 +96,6 @@ class QnaDiaryEditScreen extends StatelessWidget {
                               onCameraTap: viewModel.getImageFromCamera,
                               onCompleted: viewModel.completeDiary,
                               currentImageCount: viewModel.pickedImages.length,
-                              maxImageCount: ServiceConfig.maxImageCount,
                             ),
                         ],
                       ),
@@ -112,7 +110,6 @@ class QnaDiaryEditScreen extends StatelessWidget {
                           onCameraTap: viewModel.getImageFromCamera,
                           onCompleted: viewModel.completeDiary,
                           currentImageCount: viewModel.pickedImages.length,
-                          maxImageCount: ServiceConfig.maxImageCount,
                         ),
                       ),
                   ],

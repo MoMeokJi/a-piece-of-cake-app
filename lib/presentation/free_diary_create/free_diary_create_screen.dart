@@ -1,4 +1,3 @@
-import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/ui/common_components/diary_image_grid.dart';
@@ -78,7 +77,6 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                                     focusNode: viewModel.focusNode,
                                     isKeyboardVisible: isKeyboardVisible,
                                     hintText: '하고 싶은 말을 자유롭게 적어주세요',
-
                                   ),
                                   SizedBox(height: getHeight(10)),
                                   if (viewModel.pickedImages.isNotEmpty)
@@ -99,7 +97,6 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                               onCameraTap: viewModel.getImageFromCamera,
                               onCompleted: viewModel.completeDiary,
                               currentImageCount: viewModel.pickedImages.length,
-                              maxImageCount: ServiceConfig.maxImageCount,
                             ),
                         ],
                       ),
@@ -114,7 +111,6 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                           onCameraTap: viewModel.getImageFromCamera,
                           onCompleted: viewModel.completeDiary,
                           currentImageCount: viewModel.pickedImages.length,
-                          maxImageCount: ServiceConfig.maxImageCount,
                         ),
                       ),
                   ],

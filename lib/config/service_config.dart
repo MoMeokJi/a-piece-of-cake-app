@@ -6,4 +6,10 @@ class ServiceConfig {
 
   // 일기 최소 글자수
   static const int minDiaryLength = 30;
+
+  // 일기 최대 글자수
+  static const int maxDiaryLength = 1500;
+
+  // 채팅 최대 글자수
+  static const int maxChatLenght = 100;
 }

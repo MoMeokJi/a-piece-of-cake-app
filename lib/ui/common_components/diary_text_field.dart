@@ -1,3 +1,4 @@
+import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
@@ -6,14 +7,14 @@ class DiaryTextField extends StatelessWidget {
   final TextEditingController textController;
   final FocusNode focusNode;
   final bool isKeyboardVisible;
-   final String? hintText;
+  final String? hintText;
 
   const DiaryTextField({
     super.key,
     required this.textController,
     required this.focusNode,
     required this.isKeyboardVisible,
-    this.hintText
+    this.hintText,
   });
 
   @override
@@ -21,7 +22,7 @@ class DiaryTextField extends StatelessWidget {
     return TextFormField(
       minLines: isKeyboardVisible ? 13 : 23,
       maxLines: isKeyboardVisible ? 13 : 23,
-      maxLength: 1500,
+      maxLength: ServiceConfig.maxDiaryLength,
       controller: textController,
       focusNode: focusNode,
       keyboardType: TextInputType.multiline,
