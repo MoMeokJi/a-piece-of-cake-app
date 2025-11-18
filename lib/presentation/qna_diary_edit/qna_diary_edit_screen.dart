@@ -1,12 +1,12 @@
 import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
-import 'package:cake/ui/common_components/diary_image_grid.dart';
-import 'package:cake/ui/common_components/diary_text_field.dart';
-import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
+import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/common_components/custom_loading_overlay.dart';
 import 'package:cake/ui/common_components/diary_complete_fixted_bottom_bar.dart';
+import 'package:cake/ui/common_components/diary_image_grid.dart';
+import 'package:cake/ui/common_components/diary_text_field.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -14,14 +14,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
-class FreeDiaryCreateScreen extends StatelessWidget {
-  const FreeDiaryCreateScreen({super.key});
+class QnaDiaryEditScreen extends StatelessWidget {
+  final String content;
+  const QnaDiaryEditScreen({super.key, required this.content,});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<FreeDiaryCreateViewModel>();
-
-    return Stack(
+        final viewModel = context.watch<QnaDiaryEditViewModel>();
+       return Stack(
       // 이 스택은 로딩스피너용 스택
       children: [
         KeyboardVisibilityBuilder(
@@ -77,8 +77,6 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                                     textController: viewModel.textController,
                                     focusNode: viewModel.focusNode,
                                     isKeyboardVisible: isKeyboardVisible,
-                                    hintText: '하고 싶은 말을 자유롭게 적어주세요',
-
                                   ),
                                   SizedBox(height: getHeight(10)),
                                   if (viewModel.pickedImages.isNotEmpty)

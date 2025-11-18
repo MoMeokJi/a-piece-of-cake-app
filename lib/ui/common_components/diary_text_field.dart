@@ -6,12 +6,14 @@ class DiaryTextField extends StatelessWidget {
   final TextEditingController textController;
   final FocusNode focusNode;
   final bool isKeyboardVisible;
+   final String? hintText;
 
   const DiaryTextField({
     super.key,
     required this.textController,
     required this.focusNode,
     required this.isKeyboardVisible,
+    this.hintText
   });
 
   @override
@@ -30,7 +32,7 @@ class DiaryTextField extends StatelessWidget {
       decoration: InputDecoration(
         filled: true,
         fillColor: ColorConfig.white,
-        hintText: '하고 싶은 말을 자유롭게 적어주세요',
+        hintText: hintText,
         hintStyle: TextStyle(color: ColorConfig.gray3, fontSize: getWidth(14)),
         helperStyle: TextStyle(
           color: ColorConfig.gray3,

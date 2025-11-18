@@ -47,7 +47,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
   }
 
   @override
-  Future<DiaryDetail> completeDiary({
+  Future<DiaryDetail> saveDiary({
     required String text,
     required List<XFile> images,
   }) async {

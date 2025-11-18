@@ -3,23 +3,21 @@ import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class FixedBottomSection extends StatelessWidget {
-  final VoidCallback onGalleryTap;
+class DiaryCompleteFixtedBottomBar extends StatelessWidget {
+    final VoidCallback onGalleryTap;
   final VoidCallback onCameraTap;
   final VoidCallback onCompleted;
   final int currentImageCount;
   final int maxImageCount;
-
-  const FixedBottomSection({
-    super.key,
-    required this.onGalleryTap,
+  const DiaryCompleteFixtedBottomBar({super.key,
+      required this.onGalleryTap,
     required this.onCameraTap,
     required this.onCompleted,
     required this.currentImageCount,
     required this.maxImageCount,
   });
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Container(
       height: getHeight(56),

@@ -17,6 +17,7 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
   List<Qna> _qnaList = [];
   final List<ChatListItem> _chatList = [];
   int _currentQnaIndex = 0;
+  String _generatedDiary = '';
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
@@ -27,6 +28,7 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
   TextEditingController get textController => _textController;
   FocusNode get focusNode => _focusNode;
   ScrollController get scrollController => _scrollController;
+  String get generatedDiary => _generatedDiary;
 
   bool get isAllQuestionsAnswered => _currentQnaIndex >= _qnaList.length;
 
@@ -98,8 +100,8 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
       _resultState = ResultState.loading;
       notifyListeners();
 
-      String content = await _diaryRepo.generateQnaDiary(qnaList: _qnaList);
-      AppLogger.log(content);
+      _generatedDiary = await _diaryRepo.generateQnaDiary(qnaList: _qnaList);
+      AppLogger.log(_generatedDiary);
 
       _resultState = ResultState.success;
       notifyListeners();

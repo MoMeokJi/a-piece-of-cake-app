@@ -12,6 +12,8 @@ import 'package:cake/presentation/main/main_screen.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_screen.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
+import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_screen.dart';
+import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
 import 'package:cake/presentation/sign_up/sign_up_screen.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_screen.dart';
@@ -115,6 +117,22 @@ class AppRouter {
           return ChangeNotifierProvider(
             create: (context) => getIt<DiaryDetailViewModel>(),
             child: DiaryDetailScreen(diaryDetail: diaryDetail, id: id),
+          );
+        },
+      ),
+        GoRoute(
+        path: '/qna-edit',
+        builder: (context, state) {
+          final extra = state.extra;
+          String content ='';
+          
+          if (extra is String) {
+            content = extra;
+          } 
+
+          return ChangeNotifierProvider(
+            create: (context) => getIt<QnaDiaryEditViewModel>(),
+            child: QnaDiaryEditScreen(content: content),
           );
         },
       ),

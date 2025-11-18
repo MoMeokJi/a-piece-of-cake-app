@@ -19,7 +19,7 @@ abstract interface class DiaryRepository {
   Future<List<Qna>> getQuestionList();
   Future<String> generateQnaDiary({required List<Qna> qnaList});
 
-  Future<DiaryDetail> completeDiary({
+  Future<DiaryDetail> saveDiary({
     required String text,
     required List<XFile> images,
   });

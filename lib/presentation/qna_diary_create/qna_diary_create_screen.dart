@@ -7,6 +7,7 @@ import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class QnaDiaryCreateScreen extends StatelessWidget {
@@ -20,6 +21,17 @@ class QnaDiaryCreateScreen extends StatelessWidget {
       children: [
         KeyboardVisibilityBuilder(
           builder: (context, isKeyboardVisible) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (viewModel.state == ResultState.success) {
+                context.pushReplacement(
+                  '/qna-edit',
+                  extra: viewModel.generatedDiary,
+                );
+              } else if (viewModel.state == ResultState.error) {
+                //TODO: error 처리
+              }
+            });
+            
             return GestureDetector(
               // 화면 빈 부분 터치 시 키보드 닫기
               onTap: () => viewModel.unfocusKeyboard(),

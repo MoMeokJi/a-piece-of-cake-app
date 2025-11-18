@@ -44,7 +44,12 @@ class FixedInputSection extends StatelessWidget {
                 minLines: 2,
                 maxLength: 100,
                 keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
+                textInputAction: TextInputAction.send,
+                onFieldSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    onCompleted();
+                  }
+                },
                 style: TextStyle(color: Colors.black, fontSize: getWidth(14)),
                 decoration: InputDecoration(
                   hintText: '답변을 입력해주세요',

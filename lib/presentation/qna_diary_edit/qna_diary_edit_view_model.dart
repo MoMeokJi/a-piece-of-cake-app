@@ -9,33 +9,43 @@ import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class FreeDiaryCreateViewModel with ChangeNotifier {
+class QnaDiaryEditViewModel with ChangeNotifier{
   final DiaryRepository _diaryRepo;
 
-  FreeDiaryCreateViewModel({required DiaryRepository diaryRepo})
+    QnaDiaryEditViewModel({required DiaryRepository diaryRepo})
     : _diaryRepo = diaryRepo;
 
-  final TextEditingController _textController = TextEditingController();
+      final TextEditingController _textController = TextEditingController();
   TextEditingController get textController => _textController;
 
   final FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
 
+  
 
-  final ImagePicker _picker = ImagePicker();
+    final ImagePicker _picker = ImagePicker();
 
-  final List<XFile> _pickedImages = [];
+      final List<XFile> _pickedImages = [];
   List<XFile> get pickedImages => _pickedImages;
 
-  DiaryDetail? _completedDiary;
+    DiaryDetail? _completedDiary;
   DiaryDetail? get completedDiary => _completedDiary;
 
   ResultState _resultState = ResultState.none;
   ResultState get state => _resultState;
 
-  // 토스트 메시지 상태
-  String? _toastMessage;
+    String? _toastMessage;
   String? get toastMessage => _toastMessage;
+
+  bool _isEditMode = false;
+  bool get isEditMode => _isEditMode;
+
+
+  void initialize(String initialContent) {
+  textController.text = initialContent; // 텍스트필드 초기값으로 생성된 일기 지정
+}
+
+
 
   Future<void> completeDiary() async {
     unfocus();
@@ -73,8 +83,12 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  void changeToEditMode(){
+    _isEditMode = true;
+    notifyListeners();
+  }
+
   Future<void> getImageFromGallery() async {
-     unfocus();
     if (_pickedImages.length >= ServiceConfig.maxImageCount) {
       _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
       notifyListeners();
@@ -88,7 +102,6 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
   }
 
   Future<void> getImageFromCamera() async {
-     unfocus();
     if (_pickedImages.length >= ServiceConfig.maxImageCount) {
       _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
       notifyListeners();
@@ -101,7 +114,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> _addImages(List<XFile> newImages) async {
+   Future<void> _addImages(List<XFile> newImages) async {
     final remainingSlots = ServiceConfig.maxImageCount - _pickedImages.length;
 
     if (remainingSlots <= 0) {
@@ -120,7 +133,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void removeImage(int index) {
+    void removeImage(int index) {
     _pickedImages.removeAt(index);
     notifyListeners();
   }
@@ -133,11 +146,11 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
   void clearToastMessage() {
     _toastMessage = null;
   }
-
   @override
   void dispose() {
     _textController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
+
 }
