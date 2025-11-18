@@ -1,3 +1,4 @@
 class ApiConfig {
-  static String get baseUrl => 'localhost:8080';
+    ApiConfig._();
+  static String get baseUrl => 'https://nakedly-interpetaloid-xander.ngrok-free.dev';
 }

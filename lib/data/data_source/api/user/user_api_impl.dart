@@ -15,6 +15,9 @@ class UserApiImpl extends BaseApi implements UserApi {
     final fcmToken = await getFCMToken();
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/users'),
+       headers: {
+        'Content-Type': 'application/json',
+      },
       body: jsonEncode({
         'deviceId': fcmToken,
         'preference': preference,
