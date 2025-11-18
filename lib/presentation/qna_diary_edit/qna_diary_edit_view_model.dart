@@ -9,43 +9,38 @@ import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class QnaDiaryEditViewModel with ChangeNotifier{
+class QnaDiaryEditViewModel with ChangeNotifier {
   final DiaryRepository _diaryRepo;
 
-    QnaDiaryEditViewModel({required DiaryRepository diaryRepo})
+  QnaDiaryEditViewModel({required DiaryRepository diaryRepo})
     : _diaryRepo = diaryRepo;
 
-      final TextEditingController _textController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
   TextEditingController get textController => _textController;
 
   final FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
 
-  
+  final ImagePicker _picker = ImagePicker();
 
-    final ImagePicker _picker = ImagePicker();
-
-      final List<XFile> _pickedImages = [];
+  final List<XFile> _pickedImages = [];
   List<XFile> get pickedImages => _pickedImages;
 
-    DiaryDetail? _completedDiary;
+  DiaryDetail? _completedDiary;
   DiaryDetail? get completedDiary => _completedDiary;
 
   ResultState _resultState = ResultState.none;
   ResultState get state => _resultState;
 
-    String? _toastMessage;
+  String? _toastMessage;
   String? get toastMessage => _toastMessage;
 
   bool _isEditMode = false;
   bool get isEditMode => _isEditMode;
 
-
   void initialize(String initialContent) {
-  textController.text = initialContent; // 텍스트필드 초기값으로 생성된 일기 지정
-}
-
-
+    textController.text = initialContent; // 텍스트필드 초기값으로 생성된 일기 지정
+  }
 
   Future<void> completeDiary() async {
     unfocus();
@@ -83,7 +78,7 @@ class QnaDiaryEditViewModel with ChangeNotifier{
     notifyListeners();
   }
 
-  void changeToEditMode(){
+  void changeToEditMode() {
     _isEditMode = true;
     notifyListeners();
   }
@@ -114,7 +109,7 @@ class QnaDiaryEditViewModel with ChangeNotifier{
     }
   }
 
-   Future<void> _addImages(List<XFile> newImages) async {
+  Future<void> _addImages(List<XFile> newImages) async {
     final remainingSlots = ServiceConfig.maxImageCount - _pickedImages.length;
 
     if (remainingSlots <= 0) {
@@ -133,7 +128,7 @@ class QnaDiaryEditViewModel with ChangeNotifier{
     notifyListeners();
   }
 
-    void removeImage(int index) {
+  void removeImage(int index) {
     _pickedImages.removeAt(index);
     notifyListeners();
   }
@@ -146,11 +141,11 @@ class QnaDiaryEditViewModel with ChangeNotifier{
   void clearToastMessage() {
     _toastMessage = null;
   }
+
   @override
   void dispose() {
     _textController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
-
 }

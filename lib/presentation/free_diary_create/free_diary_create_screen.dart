@@ -1,7 +1,7 @@
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/ui/common_components/diary_image_grid.dart';
-import 'package:cake/ui/common_components/diary_text_field.dart';
+import 'package:cake/presentation/free_diary_create/components/diary_text_field.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/common_components/custom_loading_overlay.dart';

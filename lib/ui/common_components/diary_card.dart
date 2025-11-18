@@ -32,7 +32,7 @@ class DiaryCard extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: EdgeInsetsGeometry.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: getWidth(25),
             vertical: getHeight(15),
           ),
@@ -51,7 +51,7 @@ class DiaryCard extends StatelessWidget {
 
               // 일기 내용
               Padding(
-                padding: EdgeInsetsGeometry.symmetric(vertical: getHeight(5)),
+                padding: EdgeInsets.symmetric(vertical: getHeight(5)),
                 child: Text(
                   diary.summary,
                   style: const TextStyle(

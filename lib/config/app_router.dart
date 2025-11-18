@@ -120,18 +120,19 @@ class AppRouter {
           );
         },
       ),
-        GoRoute(
+      GoRoute(
         path: '/qna-edit',
         builder: (context, state) {
           final extra = state.extra;
-          String content ='';
-          
+          String content = '';
+
           if (extra is String) {
             content = extra;
-          } 
+          }
 
           return ChangeNotifierProvider(
-            create: (context) => getIt<QnaDiaryEditViewModel>(),
+            create: (context) =>
+                getIt<QnaDiaryEditViewModel>()..initialize(content),
             child: QnaDiaryEditScreen(content: content),
           );
         },

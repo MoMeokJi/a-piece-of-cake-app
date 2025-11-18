@@ -26,7 +26,7 @@ class BodySection extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsetsGeometry.symmetric(
+        padding: EdgeInsets.symmetric(
           horizontal: getWidth(15),
           vertical: getHeight(20),
         ),

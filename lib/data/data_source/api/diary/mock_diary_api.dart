@@ -66,7 +66,7 @@ class MockDiaryApi implements DiaryApi {
 
     return '''오늘은 평범한 하루였어요. 
 특별한 일은 없었지만, 프로젝트를 완성하기 위해 열심히 노력했습니다.
-내일도 화이팅!''';
+너무 힘들지만 그래도 내일은 내일의 해가 뜨겠지...''';
   }
 
   @override
