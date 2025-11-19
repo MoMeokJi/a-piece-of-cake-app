@@ -6,29 +6,6 @@ import 'package:image_picker/image_picker.dart';
 
 class MockDiaryApi implements DiaryApi {
   @override
-  Future<DiaryDetailDto> createDiary({
-    required String text,
-    required List<XFile> images,
-  }) async {
-    await Future.delayed(Duration(seconds: 5)); // 네트워크 지연 시뮬레이션
-
-    return DiaryDetailDto(
-      diaryId: 214,
-      content: text,
-      createdAt: DateTime.now().toIso8601String(),
-
-      images: ['https://picsum.photos/600/400'],
-      colors: ['#8196C3', '#EEB5BE'],
-      music: MusicDto(
-        title: 'blue valentine',
-        artist: '엔믹스',
-        videoId: 'EmeW6li6bbo',
-      ),
-      summary: '퇴사해야겠다 진짜로',
-    );
-  }
-
-  @override
   Future<DiaryDetailDto> fetchDiary({required int id}) async {
     await Future.delayed(Duration(milliseconds: 800));
 
@@ -92,5 +69,51 @@ class MockDiaryApi implements DiaryApi {
     await Future.delayed(Duration(milliseconds: 1500));
 
     return List<String>.from(jsonData['questions'] as List);
+  }
+
+  @override
+  Future<DiaryDetailDto> createFreeDiary({
+    required String text,
+    required List<XFile> images,
+  }) async {
+    await Future.delayed(Duration(seconds: 5)); // 네트워크 지연 시뮬레이션
+
+    return DiaryDetailDto(
+      diaryId: 214,
+      content: '자유일기입니다. $text',
+      createdAt: DateTime.now().toIso8601String(),
+
+      images: ['https://picsum.photos/600/400'],
+      colors: ['#8196C3', '#EEB5BE'],
+      music: MusicDto(
+        title: 'blue valentine',
+        artist: '엔믹스',
+        videoId: 'EmeW6li6bbo',
+      ),
+      summary: '퇴사해야겠다 진짜로',
+    );
+  }
+
+  @override
+  Future<DiaryDetailDto> createQnaDiary({
+    required String text,
+    required List<XFile> images,
+  }) async {
+    await Future.delayed(Duration(seconds: 5)); // 네트워크 지연 시뮬레이션
+
+    return DiaryDetailDto(
+      diaryId: 214,
+      content: '문답일기입니다. $text',
+      createdAt: DateTime.now().toIso8601String(),
+
+      images: ['https://picsum.photos/600/400'],
+      colors: ['#8196C3', '#EEB5BE'],
+      music: MusicDto(
+        title: 'blue valentine',
+        artist: '엔믹스',
+        videoId: 'EmeW6li6bbo',
+      ),
+      summary: '퇴사해야겠다 진짜로',
+    );
   }
 }

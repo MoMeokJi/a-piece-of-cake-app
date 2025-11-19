@@ -1,5 +1,5 @@
 import 'package:cake/data/data_source/api/user/user_api.dart';
-import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/repository/user_repository.dart';
 
@@ -14,7 +14,7 @@ class UserRepositoryImpl implements UserRepository {
        _tokenRepo = tokenRepo;
 
   @override
-  Future<void> signUp({required DiaryType diaryPreference}) async {
+  Future<void> signUp({required DiaryPreference diaryPreference}) async {
     await _userApi.createUser(preference: diaryPreference.toServer);
   }
 

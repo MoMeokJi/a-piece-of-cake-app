@@ -3,6 +3,7 @@ import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
 import 'package:cake/data/mapper/diary_detail_mapper.dart';
 import 'package:cake/data/mapper/qna_mapper.dart';
+import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/model/qna.dart';
@@ -48,19 +49,25 @@ class DiaryRepositoryImpl implements DiaryRepository {
 
   @override
   Future<DiaryDetail> saveDiary({
+    required DiaryType diaryType,
     required String text,
     required List<XFile> images,
   }) async {
-    final DiaryDetailDto dto = await _diaryApi.createDiary(
-      text: text,
-      images: images,
-    );
+    final DiaryDetailDto dto = switch (diaryType) {
+      DiaryType.free => await _diaryApi.createFreeDiary(
+        text: text,
+        images: images,
+      ),
+      DiaryType.qna => await _diaryApi.createQnaDiary(
+        text: text,
+        images: images,
+      ),
+    };
 
     final DiaryDetail diary = dto.toDiaryDetail();
-
     await _diaryDao.insertDiary(
       Diary(
-        id: 214,
+        id: diary.id,
         summary: diary.summary!,
         createdAt: diary.createdAt,
         firstColorHex: diary.firstColorHex,
@@ -69,7 +76,6 @@ class DiaryRepositoryImpl implements DiaryRepository {
         musicArtist: diary.musicArtist,
       ),
     );
-
     return diary;
   }
 

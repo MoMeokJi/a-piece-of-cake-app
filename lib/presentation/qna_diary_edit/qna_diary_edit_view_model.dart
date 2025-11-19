@@ -1,5 +1,6 @@
 import 'package:cake/config/di.dart';
 import 'package:cake/config/service_config.dart';
+import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
@@ -59,6 +60,7 @@ class QnaDiaryEditViewModel with ChangeNotifier {
       notifyListeners();
 
       _completedDiary = await _diaryRepo.saveDiary(
+        diaryType: DiaryType.qna,
         text: _textController.text,
         images: _pickedImages,
       );

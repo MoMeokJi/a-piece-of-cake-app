@@ -1,10 +1,10 @@
 import 'package:cake/config/size_config.dart';
-import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 
 class DiaryTypeOption extends StatelessWidget {
-  final DiaryType type;
+  final DiaryPreference type;
   final bool isSelected;
   final VoidCallback onTap;
 

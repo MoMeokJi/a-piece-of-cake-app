@@ -1,4 +1,4 @@
-import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/repository/user_repository.dart';
 import 'package:flutter/material.dart';
@@ -8,13 +8,13 @@ class SignUpViewModel with ChangeNotifier {
 
   SignUpViewModel({required UserRepository userRepo}) : _userRepo = userRepo;
 
-  DiaryType? _selectedType;
-  DiaryType? get selectedType => _selectedType;
+  DiaryPreference? _selectedType;
+  DiaryPreference? get selectedType => _selectedType;
 
   ResultState _resultState = ResultState.none;
   ResultState get state => _resultState;
 
-  void selectType(DiaryType type) {
+  void selectType(DiaryPreference type) {
     _selectedType = type;
     notifyListeners();
   }

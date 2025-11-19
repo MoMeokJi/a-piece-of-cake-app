@@ -14,7 +14,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
   DiaryApiImpl(super._tokenRepository);
 
   @override
-  Future<DiaryDetailDto> createDiary({
+  Future<DiaryDetailDto> createQnaDiary({
     required String text,
     required List<XFile> images,
   }) async {
@@ -42,9 +42,44 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       return DiaryDetailDto.fromJson(jsonData);
     } else if (streamedResponse.statusCode == 401) {
       await reissueTokens();
-      return createDiary(text: text, images: images);
+      return createQnaDiary(text: text, images: images);
     } else {
-      throw ApiException(streamedResponse.statusCode, 'createDiary 기타 에러');
+      throw ApiException(streamedResponse.statusCode, 'createQnaDiary 기타 에러');
+    }
+  }
+
+  @override
+  Future<DiaryDetailDto> createFreeDiary({
+    required String text,
+    required List<XFile> images,
+  }) async {
+    final request = http.MultipartRequest(
+      "POST",
+      Uri.parse('${ApiConfig.baseUrl}/diaries/free'),
+    )..headers.addAll(await getHeaders());
+
+    request.fields['text'] = text;
+
+    for (var image in images) {
+      request.files.add(
+        await http.MultipartFile.fromPath('images', image.path),
+      );
+    }
+
+    final streamedResponse = await request.send();
+
+    if (streamedResponse.statusCode == 201) {
+      // StreamedResponse를 Response로 변환 (multipartFile을 쓰면 StreamedResponse로 리턴됨.)
+      final response = await http.Response.fromStream(streamedResponse);
+      await saveAccessTokenFromHeader(response.headers);
+      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
+
+      return DiaryDetailDto.fromJson(jsonData);
+    } else if (streamedResponse.statusCode == 401) {
+      await reissueTokens();
+      return createFreeDiary(text: text, images: images);
+    } else {
+      throw ApiException(streamedResponse.statusCode, 'createFreeDiary 기타 에러');
     }
   }
 

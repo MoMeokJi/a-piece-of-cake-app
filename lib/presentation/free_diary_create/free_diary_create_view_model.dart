@@ -1,5 +1,6 @@
 import 'package:cake/config/di.dart';
 import 'package:cake/config/service_config.dart';
+import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
@@ -20,7 +21,6 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
 
   final FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
-
 
   final ImagePicker _picker = ImagePicker();
 
@@ -54,6 +54,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
       notifyListeners();
 
       _completedDiary = await _diaryRepo.saveDiary(
+        diaryType: DiaryType.free,
         text: _textController.text,
         images: _pickedImages,
       );
@@ -74,7 +75,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
   }
 
   Future<void> getImageFromGallery() async {
-     unfocus();
+    unfocus();
     if (_pickedImages.length >= ServiceConfig.maxImageCount) {
       _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
       notifyListeners();
@@ -88,7 +89,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
   }
 
   Future<void> getImageFromCamera() async {
-     unfocus();
+    unfocus();
     if (_pickedImages.length >= ServiceConfig.maxImageCount) {
       _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
       notifyListeners();

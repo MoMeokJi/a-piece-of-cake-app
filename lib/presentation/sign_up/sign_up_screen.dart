@@ -1,5 +1,5 @@
 import 'package:cake/config/size_config.dart';
-import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/presentation/sign_up/components/diary_type_option.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
@@ -74,37 +74,44 @@ class SignUpScreen extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: getWidth(24)),
                     children: [
                       DiaryTypeOption(
-                        type: DiaryType.emotional,
+                        type: DiaryPreference.emotional,
                         isSelected:
-                            viewModel.selectedType == DiaryType.emotional,
-                        onTap: () => viewModel.selectType(DiaryType.emotional),
-                      ),
-                      SizedBox(height: getHeight(16)),
-                      DiaryTypeOption(
-                        type: DiaryType.record,
-                        isSelected: viewModel.selectedType == DiaryType.record,
-                        onTap: () => viewModel.selectType(DiaryType.record),
-                      ),
-                      SizedBox(height: getHeight(16)),
-                      DiaryTypeOption(
-                        type: DiaryType.goal,
-                        isSelected: viewModel.selectedType == DiaryType.goal,
-                        onTap: () => viewModel.selectType(DiaryType.goal),
-                      ),
-                      SizedBox(height: getHeight(16)),
-                      DiaryTypeOption(
-                        type: DiaryType.confession,
-                        isSelected:
-                            viewModel.selectedType == DiaryType.confession,
-                        onTap: () => viewModel.selectType(DiaryType.confession),
-                      ),
-                      SizedBox(height: getHeight(16)),
-                      DiaryTypeOption(
-                        type: DiaryType.freewriting,
-                        isSelected:
-                            viewModel.selectedType == DiaryType.freewriting,
+                            viewModel.selectedType == DiaryPreference.emotional,
                         onTap: () =>
-                            viewModel.selectType(DiaryType.freewriting),
+                            viewModel.selectType(DiaryPreference.emotional),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryPreference.record,
+                        isSelected:
+                            viewModel.selectedType == DiaryPreference.record,
+                        onTap: () =>
+                            viewModel.selectType(DiaryPreference.record),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryPreference.goal,
+                        isSelected:
+                            viewModel.selectedType == DiaryPreference.goal,
+                        onTap: () => viewModel.selectType(DiaryPreference.goal),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryPreference.confession,
+                        isSelected:
+                            viewModel.selectedType ==
+                            DiaryPreference.confession,
+                        onTap: () =>
+                            viewModel.selectType(DiaryPreference.confession),
+                      ),
+                      SizedBox(height: getHeight(16)),
+                      DiaryTypeOption(
+                        type: DiaryPreference.freewriting,
+                        isSelected:
+                            viewModel.selectedType ==
+                            DiaryPreference.freewriting,
+                        onTap: () =>
+                            viewModel.selectType(DiaryPreference.freewriting),
                       ),
                     ],
                   ),

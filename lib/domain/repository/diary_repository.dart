@@ -1,3 +1,4 @@
+import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/model/qna.dart';
@@ -20,6 +21,7 @@ abstract interface class DiaryRepository {
   Future<String> generateQnaDiary({required List<Qna> qnaList});
 
   Future<DiaryDetail> saveDiary({
+    required DiaryType diaryType,
     required String text,
     required List<XFile> images,
   });
