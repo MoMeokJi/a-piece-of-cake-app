@@ -15,9 +15,7 @@ class UserApiImpl extends BaseApi implements UserApi {
     final fcmToken = await getFCMToken();
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/users'),
-       headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'deviceId': fcmToken,
         'preference': preference,
@@ -42,7 +40,7 @@ class UserApiImpl extends BaseApi implements UserApi {
     );
 
     if (response.statusCode == 200) {
-      await saveAccessTokenFromHeader(response.headers);
+      await saveAllTokensFromHeader(response.headers);
     } else if (response.statusCode == 401) {
       await reissueTokens();
       return deleteUser();

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cake/config/api_config.dart';
 import 'package:cake/data/data_source/api/api_exception.dart';
 import 'package:cake/domain/repository/token_repository.dart';
@@ -31,26 +33,29 @@ abstract class BaseApi {
 
   // 토큰 재발급
   Future<void> reissueTokens() async {
-        AppLogger.log('토큰 모두 만료됨. 재발행 api 실행');
+    AppLogger.log('토큰 모두 만료됨. 재발행 api 실행');
+    final deviceId = await _tokenRepository.getFCMToken();
+    AppLogger.log('deviceId 확인 : $deviceId');
+
     final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/auth/reissue'),
+      Uri.parse('${ApiConfig.baseUrl}/auth/login'),
+      body: jsonEncode({'deviceId': deviceId}),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 204) {
       await saveAllTokensFromHeader(response.headers);
     } else {
       throw ApiException(response.statusCode, 'reissueTokens 에러');
     }
   }
 
-  // 헤더에서 두개의 토큰을 빼내서 저장. (회원가입 및 토큰 재발급 시 사용)
+  // 헤더에서 토큰을 빼내서 저장.
   Future<void> saveAllTokensFromHeader(Map<String, String> headers) async {
     final rawAccessToken = headers['authorization'];
     final refreshToken = headers['refresh-token'];
 
     AppLogger.log(headers['refresh-token'].toString());
     AppLogger.log(headers['authorization'].toString());
-
 
     if (rawAccessToken != null && refreshToken != null) {
       // Bearer prefix 제거
@@ -59,20 +64,6 @@ abstract class BaseApi {
         accessToken: accessToken,
         refreshToken: refreshToken,
       );
-    }
-  }
-
-  //헤더에서 access토큰만 빼와서 저장 (서버에서 accessToken이 만료됐을때 저장. 근데 그게 언제인지 모르니까 모든 api에서 사용되어야함)
-  Future<void> saveAccessTokenFromHeader(Map<String, String> headers) async {
-    final rawAccessToken = headers['authorization'];
-
-    AppLogger.log('accessToken 만료됨. 서버에서 헤더에 새로운 accessToken 발급힘');
-    AppLogger.log(headers['authorization'].toString());
-
-    if (rawAccessToken != null) {
-      // Bearer prefix 제거
-      final accessToken = rawAccessToken.replaceFirst('Bearer ', '');
-      await _tokenRepository.saveAccessToken(accessToken);
     }
   }
 }
