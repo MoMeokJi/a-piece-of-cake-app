@@ -12,12 +12,14 @@ import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/repository/diary_repository_impl.dart';
 import 'package:cake/data/repository/token_repository_impl.dart';
 import 'package:cake/data/repository/user_repository_impl.dart';
+import 'package:cake/data/service/app_store_check_service_impl.dart';
 import 'package:cake/data/service/fcm_service_impl.dart';
 import 'package:cake/data/service/notification_service_impl.dart';
 import 'package:cake/data/service/permission_handler_service_impl.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/repository/user_repository.dart';
+import 'package:cake/domain/service/app_store_check_service.dart';
 import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
@@ -77,6 +79,10 @@ Future<void> diSetup() async {
     ),
   );
 
+  getIt.registerLazySingleton<AppStoreCheckService>(
+    () => AppStoreCheckServiceImpl(),
+  );
+
   // repository => Lazysingleton
   getIt.registerLazySingleton<DiaryRepository>(
     () => DiaryRepositoryImpl(
@@ -101,7 +107,10 @@ Future<void> diSetup() async {
 
   //viewmodel -> factory
   getIt.registerFactory(
-    () => SplashViewModel(tokenRepo: getIt<TokenRepository>()),
+    () => SplashViewModel(
+      tokenRepo: getIt<TokenRepository>(),
+      appStoreCheckService: getIt<AppStoreCheckService>(),
+    ),
   );
   getIt.registerFactory(
     () => MainViewModel(diaryRepo: getIt<DiaryRepository>()),
@@ -120,7 +129,7 @@ Future<void> diSetup() async {
     () => DiaryDetailViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
 
-    getIt.registerFactory(
+  getIt.registerFactory(
     () => QnaDiaryEditViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
 }
