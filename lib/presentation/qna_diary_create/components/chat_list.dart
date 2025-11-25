@@ -23,7 +23,7 @@ class ChatList extends StatelessWidget {
         horizontal: getWidth(20),
       ),
       child: ListView.builder(
-        controller: scrollController, // 추가!
+        controller: scrollController,
         itemCount: chatList.length,
         itemBuilder: (context, index) {
           final item = chatList[index];

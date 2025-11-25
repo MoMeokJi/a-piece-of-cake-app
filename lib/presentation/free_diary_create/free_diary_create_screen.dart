@@ -4,7 +4,7 @@ import 'package:cake/ui/common_components/diary_image_grid.dart';
 import 'package:cake/presentation/free_diary_create/components/diary_text_field.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
-import 'package:cake/ui/common_components/custom_loading_overlay.dart';
+import 'package:cake/ui/common_components/diary_complete_loading_overlay.dart';
 import 'package:cake/ui/common_components/diary_complete_fixted_bottom_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
@@ -121,7 +121,7 @@ class FreeDiaryCreateScreen extends StatelessWidget {
         ),
 
         if (viewModel.state == ResultState.loading)
-          CustomLoadingOverlay(message: '잠시만 기다려주세요...'),
+          DiaryCompleteLoadingOverlay(message: '잠시만 기다려주세요...'),
       ],
     );
   }

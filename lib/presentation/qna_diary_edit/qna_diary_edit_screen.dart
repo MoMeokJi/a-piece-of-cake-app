@@ -3,7 +3,7 @@ import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/presentation/qna_diary_edit/components/read_mode_text_box.dart';
 import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
-import 'package:cake/ui/common_components/custom_loading_overlay.dart';
+import 'package:cake/ui/common_components/diary_complete_loading_overlay.dart';
 import 'package:cake/ui/common_components/diary_complete_fixted_bottom_bar.dart';
 import 'package:cake/ui/common_components/diary_image_grid.dart';
 import 'package:cake/ui/style/color_config.dart';
@@ -90,7 +90,7 @@ class QnaDiaryEditScreen extends StatelessWidget {
         ),
 
         if (viewModel.state == ResultState.loading)
-          CustomLoadingOverlay(message: '잠시만 기다려주세요...'),
+          DiaryCompleteLoadingOverlay(message: '잠시만 기다려주세요...'),
       ],
     );
   }

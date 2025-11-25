@@ -39,7 +39,7 @@ class MockDiaryApi implements DiaryApi {
   Future<String> requestQnaDiary({
     required List<QnaRequestDto> qnaListDto,
   }) async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 5));
 
     return '''오늘은 평범한 하루였어요. 
 특별한 일은 없었지만, 프로젝트를 완성하기 위해 열심히 노력했습니다.
@@ -66,7 +66,7 @@ class MockDiaryApi implements DiaryApi {
     };
 
     // 네트워크 지연 시뮬레이션
-    await Future.delayed(Duration(milliseconds: 1500));
+    await Future.delayed(Duration(milliseconds: 500));
 
     return List<String>.from(jsonData['questions'] as List);
   }

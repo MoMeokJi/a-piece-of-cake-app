@@ -36,6 +36,8 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
     try {
       _qnaList = await _diaryRepo.getQuestionList();
       _chatList.add(ChatListItem.bot(_qnaList[_currentQnaIndex].question));
+
+      _focusNode.addListener(_onFocusChange);
     } catch (e) {
       _resultState = ResultState.error;
     }
@@ -62,14 +64,13 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
 
   Future<void> _addNextQuestion() async {
     if (isAllQuestionsAnswered) {
-      _chatList.add(ChatListItem.bot('모든 질문에 답변을 완료했어요! 잠시만 기다려주세요 😀'));
-      notifyListeners();
-      _scrollToBottom();
+      unfocusKeyboard();
       await _submitToServer();
       return;
     }
 
-    await Future.delayed(Duration(milliseconds: 300));
+    // 다음 질문 추가하기 전 살짝 딜레이
+    await Future.delayed(Duration(milliseconds: 200));
     _chatList.add(ChatListItem.bot(_qnaList[_currentQnaIndex].question));
     notifyListeners();
 
@@ -111,8 +112,18 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
     }
   }
 
+  void _onFocusChange() {
+    if (_focusNode.hasFocus) {
+      // 키보드가 완전히 올라온 후 스크롤
+      Future.delayed(Duration(milliseconds: 500), () {
+        _scrollToBottom();
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
     _textController.dispose();
     _focusNode.dispose();
     _scrollController.dispose();

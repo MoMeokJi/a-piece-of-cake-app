@@ -26,7 +26,7 @@ class BottomFixedInputSection extends StatelessWidget {
         border: Border(top: BorderSide(color: ColorConfig.border, width: 0.5)),
       ),
       child: AnimatedPadding(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.only(
           left: getWidth(16),
           right: getWidth(16),
@@ -41,11 +41,12 @@ class BottomFixedInputSection extends StatelessWidget {
               child: TextFormField(
                 controller: textController,
                 focusNode: focusNode,
+                autofocus: true,
                 maxLines: 4,
                 minLines: 2,
                 maxLength: ServiceConfig.maxChatLenght,
                 keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.send,
+                textInputAction: TextInputAction.none,
                 onFieldSubmitted: (value) {
                   if (value.trim().isNotEmpty) {
                     onCompleted();
