@@ -1,10 +1,11 @@
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
+import 'package:cake/presentation/qna_diary_edit/components/diary_edit_mode_body.dart';
 import 'package:cake/presentation/qna_diary_edit/components/read_mode_text_box.dart';
 import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/common_components/diary_complete_loading_overlay.dart';
-import 'package:cake/ui/common_components/diary_complete_fixted_bottom_bar.dart';
+import 'package:cake/ui/common_components/diary_complete_fixed_bottom_bar.dart';
 import 'package:cake/ui/common_components/diary_image_grid.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
 class QnaDiaryEditScreen extends StatelessWidget {
-  final String content;
-  const QnaDiaryEditScreen({super.key, required this.content});
+  const QnaDiaryEditScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,44 +48,51 @@ class QnaDiaryEditScreen extends StatelessWidget {
     });
 
     return Stack(
-      // 이 스택은 로딩스피너용 스택
       children: [
         Scaffold(
           backgroundColor: ColorConfig.background,
           appBar: CommonMainAppBar(),
           body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: getWidth(25),
-                      vertical: getHeight(15),
-                    ),
-                    child: Column(
-                      children: [
-                        ReadModeTextBox(
-                          content: content,
-                          onEdit: viewModel.changeToEditMode,
-                        ),
-                        SizedBox(height: getHeight(10)),
-                        if (viewModel.pickedImages.isNotEmpty)
-                          DiaryImageGrid(
-                            images: viewModel.pickedImages,
-                            onRemove: (index) => viewModel.removeImage(index),
+            child: viewModel.editMode
+                ? DiaryEditModeBody(
+                    textEditingController: viewModel.textController,
+                    focusNode: viewModel.focusNode,
+                    onCompleted: viewModel.changeToReadMode,
+                    unfocus: viewModel.unfocus,
+                  )
+                : Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: getWidth(25),
+                            vertical: getHeight(15),
                           ),
-                      ],
-                    ),
+                          child: Column(
+                            children: [
+                              ReadModeTextBox(
+                                content: viewModel.textController.text,
+                                onEdit: viewModel.changeToEditMode,
+                              ),
+                              SizedBox(height: getHeight(10)),
+                              if (viewModel.pickedImages.isNotEmpty)
+                                DiaryImageGrid(
+                                  images: viewModel.pickedImages,
+                                  onRemove: (index) =>
+                                      viewModel.removeImage(index),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      DiaryCompleteFixedBottomBar(
+                        onGalleryTap: viewModel.getImageFromGallery,
+                        onCameraTap: viewModel.getImageFromCamera,
+                        onCompleted: viewModel.completeDiary,
+                        currentImageCount: viewModel.pickedImages.length,
+                      ),
+                    ],
                   ),
-                ),
-                DiaryCompleteFixtedBottomBar(
-                  onGalleryTap: viewModel.getImageFromGallery,
-                  onCameraTap: viewModel.getImageFromCamera,
-                  onCompleted: viewModel.completeDiary,
-                  currentImageCount: viewModel.pickedImages.length,
-                ),
-              ],
-            ),
           ),
         ),
 

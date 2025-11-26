@@ -133,7 +133,7 @@ class AppRouter {
           return ChangeNotifierProvider(
             create: (context) =>
                 getIt<QnaDiaryEditViewModel>()..initialize(content),
-            child: QnaDiaryEditScreen(content: content),
+            child: QnaDiaryEditScreen(),
           );
         },
       ),

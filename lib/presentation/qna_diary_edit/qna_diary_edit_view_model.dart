@@ -37,7 +37,7 @@ class QnaDiaryEditViewModel with ChangeNotifier {
   String? get toastMessage => _toastMessage;
 
   bool _isEditMode = false;
-  bool get isEditMode => _isEditMode;
+  bool get editMode => _isEditMode;
 
   void initialize(String initialContent) {
     textController.text = initialContent; // 텍스트필드 초기값으로 생성된 일기 지정
@@ -58,6 +58,8 @@ class QnaDiaryEditViewModel with ChangeNotifier {
     try {
       _resultState = ResultState.loading;
       notifyListeners();
+
+      AppLogger.log(_textController.text);
 
       _completedDiary = await _diaryRepo.saveDiary(
         diaryType: DiaryType.qna,
@@ -82,6 +84,14 @@ class QnaDiaryEditViewModel with ChangeNotifier {
 
   void changeToEditMode() {
     _isEditMode = true;
+    notifyListeners();
+
+    _focusNode.requestFocus();
+  }
+
+  void changeToReadMode() {
+    unfocus();
+    _isEditMode = false;
     notifyListeners();
   }
 

@@ -4,12 +4,12 @@ import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class DiaryCompleteFixtedBottomBar extends StatelessWidget {
+class DiaryCompleteFixedBottomBar extends StatelessWidget {
   final VoidCallback onGalleryTap;
   final VoidCallback onCameraTap;
   final VoidCallback onCompleted;
   final int currentImageCount;
-  const DiaryCompleteFixtedBottomBar({
+  const DiaryCompleteFixedBottomBar({
     super.key,
     required this.onGalleryTap,
     required this.onCameraTap,

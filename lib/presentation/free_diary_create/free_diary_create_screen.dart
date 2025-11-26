@@ -5,7 +5,7 @@ import 'package:cake/presentation/free_diary_create/components/diary_text_field.
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/common_components/diary_complete_loading_overlay.dart';
-import 'package:cake/ui/common_components/diary_complete_fixted_bottom_bar.dart';
+import 'package:cake/ui/common_components/diary_complete_fixed_bottom_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -92,7 +92,7 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                             ),
                           ),
                           if (!isKeyboardVisible)
-                            DiaryCompleteFixtedBottomBar(
+                            DiaryCompleteFixedBottomBar(
                               onGalleryTap: viewModel.getImageFromGallery,
                               onCameraTap: viewModel.getImageFromCamera,
                               onCompleted: viewModel.completeDiary,
@@ -106,7 +106,7 @@ class FreeDiaryCreateScreen extends StatelessWidget {
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        child: DiaryCompleteFixtedBottomBar(
+                        child: DiaryCompleteFixedBottomBar(
                           onGalleryTap: viewModel.getImageFromGallery,
                           onCameraTap: viewModel.getImageFromCamera,
                           onCompleted: viewModel.completeDiary,
