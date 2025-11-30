@@ -44,7 +44,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
   @override
   Future<bool> isAbleToWriteDiaryToday() async {
     final count = await _diaryDao.getTodayDiaryCount();
-    return count < 3;
+    return count < 10;
   }
 
   @override
