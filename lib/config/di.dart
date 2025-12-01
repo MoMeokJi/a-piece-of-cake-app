@@ -6,7 +6,6 @@ import 'package:cake/data/data_source/api/user/user_api.dart';
 import 'package:cake/data/data_source/api/user/user_api_impl.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager_impl.dart';
-import 'package:cake/data/data_source/firebase/messaging/mock_firebase_messaging_manager.dart';
 import 'package:cake/data/data_source/sqflite/database_helper.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/repository/diary_repository_impl.dart';
@@ -51,13 +50,13 @@ Future<void> diSetup() async {
 
   //api -> LazySignleton
   getIt.registerLazySingleton<UserApi>(
-    () => UserApiImpl(getIt<TokenRepository>()),
+    () => MockUserApi(getIt<TokenRepository>()),
   );
 
-  // getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
-  getIt.registerLazySingleton<DiaryApi>(
-    () => DiaryApiImpl(getIt<TokenRepository>()),
-  );
+  getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
+  // getIt.registerLazySingleton<DiaryApi>(
+  //   () => DiaryApiImpl(getIt<TokenRepository>()),
+  // );
 
   getIt.registerLazySingleton<FirebaseMessagingManager>(
     () => FirebaseMessagingManagerImpl(),

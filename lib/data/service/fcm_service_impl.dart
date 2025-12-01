@@ -49,7 +49,7 @@ class FCMServiceImpl implements FCMService {
   @override
   Future<void> getFCMTokenAndSave() async {
     final token = await _messagingManager.getToken();
-    await _tokenRepository.saveFCMToken(token);
+    await _tokenRepository.saveFcmToken(token);
   }
 
   void _setupForegroundHandler() {

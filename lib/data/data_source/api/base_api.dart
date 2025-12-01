@@ -28,13 +28,13 @@ abstract class BaseApi {
 
   // fcmToken 꺼내기
   Future<String?> getFCMToken() async {
-    return await _tokenRepository.getFCMToken();
+    return await _tokenRepository.getFcmToken();
   }
 
   // 토큰 재발급
   Future<void> reissueTokens() async {
     AppLogger.log('토큰 모두 만료됨. 재발행 api 실행');
-    final deviceId = await _tokenRepository.getFCMToken();
+    final deviceId = await _tokenRepository.getFcmToken();
     AppLogger.log('deviceId 확인 : $deviceId');
 
     final response = await http.post(
@@ -60,7 +60,7 @@ abstract class BaseApi {
     if (rawAccessToken != null && refreshToken != null) {
       // Bearer prefix 제거
       final accessToken = rawAccessToken.replaceFirst('Bearer ', '');
-      await _tokenRepository.saveJWTTokens(
+      await _tokenRepository.saveJwtTokens(
         accessToken: accessToken,
         refreshToken: refreshToken,
       );

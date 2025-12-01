@@ -30,7 +30,7 @@ class TokenRepositoryImpl implements TokenRepository {
   }
 
   @override
-  Future<void> saveJWTTokens({
+  Future<void> saveJwtTokens({
     required String accessToken,
     required String refreshToken,
   }) async {
@@ -65,18 +65,18 @@ class TokenRepositoryImpl implements TokenRepository {
   }
 
   @override
-  Future<String?> getFCMToken() async {
+  Future<String?> getFcmToken() async {
     return _storage.read(key: _fcmTokenKey);
   }
 
   @override
-  Future<void> saveFCMToken(String token) async {
+  Future<void> saveFcmToken(String token) async {
     await _storage.write(key: _fcmTokenKey, value: token);
     AppLogger.log('저장된 FCM 토큰: $token');
   }
 
   @override
-  Future<void> clearTokens() async {
+  Future<void> clearJwtTokens() async {
     await Future.wait([
       _storage.delete(key: _accessTokenKey),
       _storage.delete(key: _refreshTokenKey),
@@ -84,20 +84,20 @@ class TokenRepositoryImpl implements TokenRepository {
   }
 
   @override
-  Future<void> clearFCMToken() async {
+  Future<void> clearFcmToken() async {
     await _storage.delete(key: _fcmTokenKey);
   }
 
   @override
-  Future<bool> hasTokens() async {
+  Future<bool> hasJwtTokens() async {
     final accessToken = await getAccessToken();
     final refreshToken = await getRefreshToken();
     return accessToken != null && refreshToken != null;
   }
 
   @override
-  Future<bool> hasFCMToken() async {
-    final fcmToken = await getFCMToken();
+  Future<bool> hasFcmToken() async {
+    final fcmToken = await getFcmToken();
     return fcmToken != null;
   }
 }

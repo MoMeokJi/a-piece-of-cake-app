@@ -19,7 +19,7 @@ class MockUserApi implements UserApi {
         'mock_refresh_token_${DateTime.now().millisecondsSinceEpoch}';
 
     // 토큰 저장
-    await _tokenRepository.saveJWTTokens(
+    await _tokenRepository.saveJwtTokens(
       accessToken: mockAccessToken,
       refreshToken: mockRefreshToken,
     );

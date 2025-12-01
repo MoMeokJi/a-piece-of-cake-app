@@ -27,10 +27,11 @@ class SplashViewModel extends ChangeNotifier {
     try {
       await Future.delayed(const Duration(seconds: 3));
 
-      // 토큰 체크
-      _hasToken = await _tokenRepo.hasTokens();
       // 업데이트 체크
       _needUpdate = await _appStoreCheckService.checkForUpdate();
+
+      // 토큰 체크
+      _hasToken = await _tokenRepo.hasJwtTokens();
 
       _isInitialized = true;
       notifyListeners();
