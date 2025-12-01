@@ -38,7 +38,7 @@ class FCMServiceImpl implements FCMService {
     }
 
     // 2. FCM 토큰 저장
-    await getFCNTokenAndSave();
+    await getFCMTokenAndSave();
 
     // 3. 각 상태별 메시지 핸들러 설정
     _setupForegroundHandler();
@@ -47,7 +47,7 @@ class FCMServiceImpl implements FCMService {
   }
 
   @override
-  Future<void> getFCNTokenAndSave() async {
+  Future<void> getFCMTokenAndSave() async {
     final token = await _messagingManager.getToken();
     await _tokenRepository.saveFCMToken(token);
   }
@@ -60,6 +60,7 @@ class FCMServiceImpl implements FCMService {
         AppLogger.log('제목: ${message.data['title']}');
         AppLogger.log('내용: ${message.data['body']}');
         AppLogger.log('타입: ${message.data['type']}');
+        AppLogger.log('diaryId: ${message.data['diaryId']}');
         AppLogger.log('click_action: ${message.data["click_action"]}');
 
         // Foreground에서는 시스템 푸시가 안 보이므로 로컬 노티로 표시
@@ -82,6 +83,7 @@ class FCMServiceImpl implements FCMService {
         AppLogger.log('제목: ${message.data['title']}');
         AppLogger.log('내용: ${message.data['body']}');
         AppLogger.log('타입: ${message.data['type']}');
+        AppLogger.log('diaryId: ${message.data['diaryId']}');
         AppLogger.log('click_action: ${message.data["click_action"]}');
 
         _handleMessageTap(message);
