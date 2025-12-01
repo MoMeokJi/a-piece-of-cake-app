@@ -1,3 +1,4 @@
+import 'package:cake/domain/enum/splash_state.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
@@ -14,21 +15,24 @@ class SplashScreen extends StatelessWidget {
     final viewModel = context.watch<SplashViewModel>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 초기화가 완료된 경우에만 화면 전환 로직 실행
-      if (viewModel.isInitialized) {
-        // 업데이트가 필요한 경우 다이얼로그 표시
-        if (viewModel.needUpdate) {
+      switch (viewModel.state) {
+        case SplashState.initializing:
+          break;
+        case SplashState.showUpdateDialog:
           DialogUtils.showUpdateDialog(
             context: context,
             onUpdatePressed: () => viewModel.openStore(),
-            onLaterPressed: () => viewModel.cancleUpdate(),
+            onLaterPressed: () {
+              Navigator.of(context).pop();
+              viewModel.skipUpdate();
+            },
           );
-        } else {
-          final location = (viewModel.hasToken)
-              ? '/diary-calendar'
-              : '/sign-up';
-          context.go(location);
-        }
+
+        case SplashState.navigateToMain:
+          context.go('/diary-calendar');
+
+        case SplashState.navigateToSignUp:
+          context.go('/sign-up');
       }
     });
 
