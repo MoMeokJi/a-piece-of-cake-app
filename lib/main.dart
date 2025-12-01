@@ -19,7 +19,7 @@ import 'utils/app_logger.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Background handler에서는 DI를 사용할 수 없어서 직접 인스턴스 생성
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   AppLogger.log('FCM 수신 (top level) : Background 메시지');
   AppLogger.log('제목: ${message.data['title']}', tag: 'FCM');

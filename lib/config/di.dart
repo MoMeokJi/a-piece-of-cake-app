@@ -50,13 +50,13 @@ Future<void> diSetup() async {
 
   //api -> LazySignleton
   getIt.registerLazySingleton<UserApi>(
-    () => MockUserApi(getIt<TokenRepository>()),
+    () => UserApiImpl(getIt<TokenRepository>()),
   );
 
-  getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
-  // getIt.registerLazySingleton<DiaryApi>(
-  //   () => DiaryApiImpl(getIt<TokenRepository>()),
-  // );
+  // getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
+  getIt.registerLazySingleton<DiaryApi>(
+    () => DiaryApiImpl(getIt<TokenRepository>()),
+  );
 
   getIt.registerLazySingleton<FirebaseMessagingManager>(
     () => FirebaseMessagingManagerImpl(),
