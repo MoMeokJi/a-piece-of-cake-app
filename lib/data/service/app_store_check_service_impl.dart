@@ -106,15 +106,22 @@ class AppStoreCheckServiceImpl implements AppStoreCheckService {
   /// App Store에서 앱 버전 정보를 가져옴
   Future<String?> _getAppStoreVersion(String bundleId) async {
     try {
-      Uri uri = Uri.https("itunes.apple.com", "/lookup", {
+      Uri uri = Uri.https("itunes.apple.com", "/kr/lookup", {
         "bundleId": bundleId,
       });
 
       final response = await http.get(uri);
       if (response.statusCode == 200) {
         final jsonObj = json.decode(response.body);
-        // 결과가 있는지 확인
-        String? version = jsonObj['results'][0]['version'];
+
+        // ✅ 빈 배열 체크
+        final results = jsonObj['results'] as List;
+        if (results.isEmpty) {
+          AppLogger.error('App Store에서 앱을 찾을 수 없음: $bundleId');
+          return null;
+        }
+
+        String? version = results[0]['version'];
         AppLogger.log('앱스토어에서 추출된 버전 : $version');
         return version;
       }
