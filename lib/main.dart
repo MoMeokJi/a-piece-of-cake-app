@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:cake/config/di.dart';
+import 'package:cake/data/data_source/shared_preferences/storage.dart';
+import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
@@ -89,6 +91,12 @@ void main() async {
   // Firebase 초기화
   await _initializeFirebase();
   await diSetup();
+
+  // 최초 설치인지 확인
+  final isReinstall = await getIt<Storage>().checkAndHandleReinstall();
+  if (isReinstall) {
+    await getIt<TokenRepository>().clearAllSecureData();
+  }
 
   await getIt<PermissionHandlerService>().requestEssentialPermissions();
   await getIt<NotificationService>().initialize();

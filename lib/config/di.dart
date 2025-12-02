@@ -6,6 +6,7 @@ import 'package:cake/data/data_source/api/user/user_api.dart';
 import 'package:cake/data/data_source/api/user/user_api_impl.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager_impl.dart';
+import 'package:cake/data/data_source/shared_preferences/storage.dart';
 import 'package:cake/data/data_source/sqflite/database_helper.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/repository/diary_repository_impl.dart';
@@ -37,13 +38,16 @@ import 'package:sqflite/sqflite.dart';
 GetIt getIt = GetIt.instance;
 
 Future<void> diSetup() async {
-  // Database 초기화 및 등록
+  // sqflite
   getIt.registerSingletonAsync<Database>(() => DatabaseHelper().database);
   getIt.registerSingletonWithDependencies<DiaryDao>(
     () => DiaryDao(getIt<Database>()),
     dependsOn: [Database],
   );
   await getIt.isReady<DiaryDao>(); // DiaryDao 인스턴스까지 생성 완료
+
+  // shared_prefences
+  getIt.registerLazySingleton<Storage>(() => Storage());
 
   // 얘는 data source에서 다 쓸 확률이 높기 때문에 앞에서 선언
   getIt.registerLazySingleton<TokenRepository>(() => TokenRepositoryImpl());
