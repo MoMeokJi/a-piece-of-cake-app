@@ -46,7 +46,7 @@ class BottomFixedInputSection extends StatelessWidget {
                 minLines: 2,
                 maxLength: ServiceConfig.maxChatLenght,
                 keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.next,
+                textInputAction: TextInputAction.newline,
                 onFieldSubmitted: (value) {
                   if (value.trim().isNotEmpty) {
                     onCompleted();

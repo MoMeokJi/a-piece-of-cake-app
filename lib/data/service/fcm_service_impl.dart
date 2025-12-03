@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:cake/config/app_router.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/service/fcm_service.dart';
@@ -69,7 +71,10 @@ class FCMServiceImpl implements FCMService {
               message.data['title'] ??
               'message.data[title]이 null. foreground임니다용',
           body: message.data['body'] ?? '',
-          payload: message.data.toString(),
+          payload: jsonEncode({
+            'type': message.data['type'],
+            'diaryId': message.data['diaryId'],
+          }),
         );
       }
     });
@@ -110,6 +115,22 @@ class FCMServiceImpl implements FCMService {
   }
 
   void _handleMessageTap(RemoteMessage message) {
-    AppLogger.log('메시지 탭 함: ${message.data}');
+    AppLogger.log(
+      'fcm service 알림 탭 처리 시작. message: ${message.data.toString()}',
+    );
+    try {
+      final type = message.data['type'];
+      final diaryId = message.data['diaryId'];
+
+      if (type == 'FEEDBACK') {
+        AppLogger.log('diary detail 페이지로 이동합니다');
+        AppRouter.router.push(
+          '/diary-detail',
+          extra: int.parse(diaryId.toString()),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('fcm service 알림 탭 처리 실패: $e');
+    }
   }
 }

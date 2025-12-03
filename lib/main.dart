@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:cake/config/di.dart';
 import 'package:cake/data/data_source/shared_preferences/storage.dart';
@@ -56,6 +57,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       message.data['title'] ?? 'message.data[title]이 null. background임니다용',
       message.data['body'] ?? '',
       notificationDetails,
+      payload: jsonEncode({
+        'type': message.data['type'],
+        'diaryId': message.data['diaryId'],
+      }),
     );
   }
 }
