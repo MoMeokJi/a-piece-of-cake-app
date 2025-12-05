@@ -1,7 +1,6 @@
 import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
 
 class PermissionHandlerServiceImpl implements PermissionHandlerService {
   bool _hasNotificationPermission = false;

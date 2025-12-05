@@ -28,12 +28,12 @@ class FCMServiceImpl implements FCMService {
 
   @override
   Future<void> initialize() async {
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-          alert: true,
-          badge: false,
-          sound: true,
-        );
+    // await FirebaseMessaging.instance
+    //     .setForegroundNotificationPresentationOptions(
+    //       alert: true,
+    //       badge: false,
+    //       sound: true,
+    //     );
 
     // 1. 알림 권한 확인 및 요청
     if (!await _permissionHandlerService.checkPermission(
@@ -52,7 +52,7 @@ class FCMServiceImpl implements FCMService {
     // 3. 각 상태별 메시지 핸들러 설정
     _setupForegroundHandler();
     _setupBackgroundOpenHandler();
-    await _setupTerminatedHandler();
+    _setupTerminatedHandler();
   }
 
   @override
@@ -73,18 +73,16 @@ class FCMServiceImpl implements FCMService {
         AppLogger.log('click_action: ${message.data["click_action"]}');
 
         // Foreground에서는 시스템 푸시가 안 보이므로 로컬 노티로 표시
-        if (Platform.isAndroid) {
-          await _notificationService.showNotification(
-            title:
-                message.data['title'] ??
-                'message.data[title]이 null. foreground임니다용',
-            body: message.data['body'] ?? '',
-            payload: jsonEncode({
-              'type': message.data['type'],
-              'diaryId': message.data['diaryId'],
-            }),
-          );
-        }
+        await _notificationService.showNotification(
+          title:
+              message.data['title'] ??
+              'message.data[title]이 null. foreground임니다용',
+          body: message.data['body'] ?? '',
+          payload: jsonEncode({
+            'type': message.data['type'],
+            'diaryId': message.data['diaryId'],
+          }),
+        );
       }
     });
   }
@@ -108,8 +106,8 @@ class FCMServiceImpl implements FCMService {
   Future<void> _setupTerminatedHandler() async {
     if (Platform.isIOS) {
       // iOS: Terminated 상태에서 FCM 노티로 실행된 경우
-      // 버그 회피를 위해 500ms 딜레이 추가
-      await Future.delayed(const Duration(milliseconds: 500));
+      // 위젯트리가 생성되고 라우터 생성이 될 때까지 충분한 딜레이 추가
+      await Future.delayed(const Duration(milliseconds: 2000));
       final initialMessage = await FirebaseMessaging.instance
           .getInitialMessage();
       if (initialMessage?.notification != null) {
@@ -132,11 +130,14 @@ class FCMServiceImpl implements FCMService {
       final diaryId = message.data['diaryId'];
 
       if (type == 'FEEDBACK') {
-        AppLogger.log('diary detail 페이지로 이동합니다');
-        AppRouter.router.push(
-          '/diary-detail',
-          extra: int.parse(diaryId.toString()),
-        );
+        AppRouter.router.go('/diary-calendar');
+        Future.delayed(const Duration(milliseconds: 100), () {
+          AppLogger.log('diary detail 페이지로 이동합니다');
+          AppRouter.router.push(
+            '/diary-detail',
+            extra: int.parse(diaryId.toString()),
+          );
+        });
       }
     } catch (e) {
       AppLogger.error('fcm service 알림 탭 처리 실패: $e');

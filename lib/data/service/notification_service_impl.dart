@@ -24,7 +24,11 @@ class NotificationServiceImpl implements NotificationService {
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
     );
-    const iosSettings = DarwinInitializationSettings();
+    const iosSettings = DarwinInitializationSettings(
+      requestSoundPermission: true,
+      requestBadgePermission: true,
+      requestAlertPermission: true,
+    );
 
     await _localNotifications.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
@@ -79,11 +83,14 @@ class NotificationServiceImpl implements NotificationService {
       final diaryId = data['diaryId'];
 
       if (type == 'FEEDBACK') {
-        AppLogger.log('diary detail 페이지로 이동합니다');
-        AppRouter.router.push(
-          '/diary-detail',
-          extra: int.parse(diaryId.toString()),
-        );
+        AppRouter.router.go('/diary-calendar');
+        Future.delayed(const Duration(milliseconds: 100), () {
+          AppLogger.log('diary detail 페이지로 이동합니다');
+          AppRouter.router.push(
+            '/diary-detail',
+            extra: int.parse(diaryId.toString()),
+          );
+        });
       }
     } catch (e) {
       AppLogger.error('notification service 알림 탭 처리 실패: $e');
