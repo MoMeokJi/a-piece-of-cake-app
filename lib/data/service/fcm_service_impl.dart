@@ -28,12 +28,12 @@ class FCMServiceImpl implements FCMService {
 
   @override
   Future<void> initialize() async {
-    // await FirebaseMessaging.instance
-    //     .setForegroundNotificationPresentationOptions(
-    //       alert: true,
-    //       badge: false,
-    //       sound: true,
-    //     );
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: false,
+          sound: true,
+        );
 
     // 1. 알림 권한 확인 및 요청
     if (!await _permissionHandlerService.checkPermission(
@@ -72,17 +72,22 @@ class FCMServiceImpl implements FCMService {
         AppLogger.log('diaryId: ${message.data['diaryId']}');
         AppLogger.log('click_action: ${message.data["click_action"]}');
 
-        // Foreground에서는 시스템 푸시가 안 보이므로 로컬 노티로 표시
-        await _notificationService.showNotification(
-          title:
-              message.data['title'] ??
-              'message.data[title]이 null. foreground임니다용',
-          body: message.data['body'] ?? '',
-          payload: jsonEncode({
-            'type': message.data['type'],
-            'diaryId': message.data['diaryId'],
-          }),
-        );
+        if (Platform.isIOS) {
+          _handleMessageTap(message);
+        } else {
+          if (Platform.isAndroid) {
+            await _notificationService.showNotification(
+              title:
+                  message.data['title'] ??
+                  'message.data[title]이 null. foreground임니다용',
+              body: message.data['body'] ?? '',
+              payload: jsonEncode({
+                'type': message.data['type'],
+                'diaryId': message.data['diaryId'],
+              }),
+            );
+          }
+        }
       }
     });
   }
