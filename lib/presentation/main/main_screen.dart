@@ -34,8 +34,8 @@ class MainScreen extends StatelessWidget {
       ),
       floatingActionButton: RawMaterialButton(
         constraints: BoxConstraints.tightFor(
-          width: getWidth(80),
-          height: getHeight(80),
+          width: getWidth(70),
+          height: getHeight(70),
         ),
         shape: const CircleBorder(),
         elevation: 2,

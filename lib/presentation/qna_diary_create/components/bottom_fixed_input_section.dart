@@ -52,7 +52,11 @@ class BottomFixedInputSection extends StatelessWidget {
                     onCompleted();
                   }
                 },
-                style: TextStyle(color: Colors.black, fontSize: getWidth(14)),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: getWidth(14),
+                  fontFamily: 'Pretendard',
+                ),
                 decoration: InputDecoration(
                   hintText: '답변을 입력해주세요',
                   hintStyle: TextStyle(
@@ -81,7 +85,7 @@ class BottomFixedInputSection extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 8),
+            SizedBox(width: getWidth(8)),
 
             // 전송 버튼
             ValueListenableBuilder<TextEditingValue>(

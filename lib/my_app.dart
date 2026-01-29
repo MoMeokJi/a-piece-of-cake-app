@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
         // 탭하고 있을 때의 배경색 -> expansionTile같은데서 적용됨
         highlightColor: Colors.grey.withValues(alpha: 0.1),
         fontFamily: 'NanumSquareRound',
+        fontFamilyFallback: const ['Pretendard'],
       ),
       debugShowCheckedModeBanner: false,
       routerConfig: AppRouter.router,

@@ -1,5 +1,4 @@
 class ApiConfig {
   ApiConfig._();
-  static String get baseUrl =>
-      'https://nakedly-interpetaloid-xander.ngrok-free.dev';
+  static String get baseUrl => 'https://piece-of-cake.click:8080';
 }

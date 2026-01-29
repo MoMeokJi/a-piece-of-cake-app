@@ -47,10 +47,10 @@ class BodySection extends StatelessWidget {
             Text(
               diary.body,
               style: const TextStyle(
-                fontSize: TextConfig.diaryFontSize,
+                fontSize: TextConfig.diaryGaramFontSize,
                 color: ColorConfig.diaryTextColor,
-                fontWeight: FontWeight.w500,
-                height: 1.6,
+                fontFamily: 'NanumGaram',
+                height: 1.5,
               ),
             ),
           ],

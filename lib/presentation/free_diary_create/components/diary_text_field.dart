@@ -29,6 +29,7 @@ class DiaryTextField extends StatelessWidget {
       style: TextStyle(
         color: ColorConfig.diaryTextColor,
         fontSize: getWidth(14),
+        fontFamily: 'Pretendard',
       ),
       decoration: InputDecoration(
         filled: true,

@@ -126,7 +126,7 @@ class DiaryCalendarScreen extends StatelessWidget {
 
         // 일기 리스트 영역
         (viewModel.selectedDayDiaryList.isEmpty)
-            ? _buildEmptyText()
+            ? Expanded(child: _buildEmptyText())
             : Expanded(
                 child: ListView.separated(
                   padding: EdgeInsets.only(
@@ -150,9 +150,9 @@ class DiaryCalendarScreen extends StatelessWidget {
   Widget _buildEmptyText() {
     return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(height: getHeight(50)),
           Text(
             '작성한 일기가 없습니다.',
             style: TextStyle(fontSize: getWidth(16), color: ColorConfig.gray1),

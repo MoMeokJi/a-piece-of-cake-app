@@ -9,7 +9,7 @@ class MainBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: getHeight(210),
+      height: getHeight(200),
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/main_banner.png'),
@@ -28,7 +28,7 @@ class MainBanner extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: getHeight(35)),
+            SizedBox(height: getHeight(60)),
             Text(
               '오늘은 어떤 하루였나요?',
               style: TextStyle(

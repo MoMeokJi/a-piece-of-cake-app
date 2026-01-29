@@ -39,6 +39,7 @@ abstract class BaseApi {
 
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/auth/login'),
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'deviceId': deviceId}),
     );
 

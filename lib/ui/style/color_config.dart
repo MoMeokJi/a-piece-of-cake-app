@@ -34,6 +34,7 @@ class ColorConfig {
 
   //diary color
   static const Color diaryTextColor = Color(0xff444444);
+  static const Color diaryGaramTextColor = Color(0xff070707);
   static const Color diaryDateColor = Color(0xff7C7C7C);
   static const Color diaryMusicTextColor = Color(0xff7C7C7C);
 
