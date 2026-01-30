@@ -104,10 +104,10 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       );
       return [
         "지금 기분이 어때?",
-        "오늘 특별한 일이나 기록하고 싶은 일이 있어?",
-        "오늘 가장 아쉬운 점을 말해줘",
-        "내일의 나에게 해주고 싶은 말이 있다면?",
-        "오늘 널 가장 힘들게한 일이 뭐야?",
+        "오늘 특별한 일이나 기록하고 싶은 일이 있었어? ",
+        "요즘 너의 최대 관심사는뭐야?",
+        "오늘 가장 후회되는 지출이 있어? 꼭 오늘이 아니어도 괜찮아",
+        "오늘의 너에게 해주고 싶은 말이 있다면?",
       ];
     }
   }
@@ -169,6 +169,26 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       return deleteDiary(id: id);
     } else {
       throw ApiException(response.statusCode, 'deleteDiary 기타 에러');
+    }
+  }
+
+  @override
+  Future<void> updateDiaryText({required int id, required String text}) async {
+    final response = await http.patch(
+      Uri.parse('${ApiConfig.baseUrl}/diaries/$id'),
+      headers: await getHeaders(),
+      body: jsonEncode({'text': text}),
+    );
+
+    if (response.statusCode == 200) {
+      await saveAllTokensFromHeader(response.headers);
+    } else if (response.statusCode == 401) {
+      await reissueTokens();
+      return updateDiaryText(id: id, text: text);
+    } else if (response.statusCode == 400) {
+      throw ApiException(response.statusCode, 'updateDiaryText text없음 에러');
+    } else {
+      throw ApiException(response.statusCode, 'updateDiaryText 기타 에러');
     }
   }
 }

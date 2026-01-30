@@ -13,7 +13,6 @@ abstract interface class DiaryRepository {
     required int month,
   });
   Future<bool> isAbleToWriteDiaryToday();
-  Future<void> removeDiary(int id);
 
   Future<DiaryDetail> getDiary({required int id});
 
@@ -25,4 +24,7 @@ abstract interface class DiaryRepository {
     required String text,
     required List<XFile> images,
   });
+
+  Future<void> editDiaryText({required int id, required String editText});
+  Future<void> removeDiary(int id);
 }

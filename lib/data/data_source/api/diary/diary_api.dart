@@ -24,6 +24,9 @@ abstract interface class DiaryApi {
   // 문답일기 생성
   Future<String> requestQnaDiary({required List<QnaRequestDto> qnaListDto});
 
+  // 일기 텍스트 수정
+  Future<void> updateDiaryText({required int id, required String text});
+
   // 일기 삭제하기
   Future<void> deleteDiary({required int id});
 }

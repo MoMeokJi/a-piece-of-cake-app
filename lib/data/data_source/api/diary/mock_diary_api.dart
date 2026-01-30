@@ -132,4 +132,10 @@ class MockDiaryApi implements DiaryApi {
       summary: '퇴사해야겠다 진짜로',
     );
   }
+
+  @override
+  Future<void> updateDiaryText({required int id, required String text}) {
+    // TODO: implement updateDiaryText
+    throw UnimplementedError();
+  }
 }
