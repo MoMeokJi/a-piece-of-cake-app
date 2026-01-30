@@ -25,6 +25,13 @@ class DiaryDetailViewModel with ChangeNotifier {
   String? _toastMessage;
   String? get toastMessage => _toastMessage;
 
+  final TextEditingController _editTextController = TextEditingController();
+  TextEditingController get editTextController => _editTextController;
+
+  final FocusNode _focusNode = FocusNode();
+  FocusNode get focusNode => _focusNode;
+
+  bool get isEditModified => _editTextController.text != _diary.body;
   Future<void> initialize(DiaryDetail? detail, int? id) async {
     try {
       if (detail != null) {
@@ -68,10 +75,42 @@ class DiaryDetailViewModel with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       AppLogger.error('일기삭제 에러: ${e.toString()}');
-      _toastMessage = '일기 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+      _toastMessage = '일기를 삭제하지 못하였습니다. 잠시 후 다시 시도해 주세요.';
       _removeState = ResultState.error;
       notifyListeners();
     }
+  }
+
+  Future<void> updateDiaryContent() async {
+    if (!isEditModified) {
+      return;
+    }
+
+    try {
+      final editText = _editTextController.text;
+
+      await _diaryRepo.editDiaryText(id: _diary.id, editText: editText);
+
+      _diary = _diary.copyWith(body: editText);
+      _toastMessage = '일기가 수정되었습니다';
+
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('일기수정 에러: ${e.toString()}');
+      _toastMessage = '일기를 수정하지 못하였습니다. 잠시 후 다시 시도해 주세요.';
+      notifyListeners();
+    }
+  }
+
+  // Dialog 열릴 때 호출 - 초기화만
+  void prepareEditMode() {
+    _editTextController.text = _diary.body;
+    _focusNode.requestFocus();
+  }
+
+  // Dialog 닫힐 때 호출 - 포커스만 해제
+  void closeEditMode() {
+    _focusNode.unfocus();
   }
 
   void clearToastMessage() {
@@ -80,5 +119,12 @@ class DiaryDetailViewModel with ChangeNotifier {
 
   void resetRemoveState() {
     _removeState = ResultState.none;
+  }
+
+  @override
+  void dispose() {
+    _editTextController.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 }

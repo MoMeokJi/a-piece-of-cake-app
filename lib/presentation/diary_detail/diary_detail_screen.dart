@@ -3,6 +3,7 @@ import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/presentation/diary_detail/components/body_section.dart';
 import 'package:cake/presentation/diary_detail/components/colors_section.dart';
+import 'package:cake/presentation/diary_detail/components/diary_edit_dialog.dart';
 import 'package:cake/presentation/diary_detail/components/empty_feedback_section.dart';
 import 'package:cake/presentation/diary_detail/components/feedback_section.dart';
 import 'package:cake/presentation/diary_detail/components/image_grid_thumbnail.dart';
@@ -84,6 +85,30 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                     context: context,
                     builder: (BuildContext context) => CupertinoActionSheet(
                       actions: [
+                        CupertinoActionSheetAction(
+                          onPressed: () {
+                            context.pop(); // 액션시트 닫기
+
+                            // Edit Mode 준비
+                            viewModel.prepareEditMode();
+
+                            // Dialog 열기
+                            showDialog(
+                              context: context,
+                              barrierColor: Colors.transparent,
+                              builder: (context) => DiaryEditDialog(
+                                textController: viewModel.editTextController,
+                                focusNode: viewModel.focusNode,
+                                isModified: () => viewModel.isEditModified,
+                                onComplete: viewModel.updateDiaryContent,
+                              ),
+                            ).then((_) {
+                              // Dialog 닫힐 때 포커스만 해제
+                              viewModel.closeEditMode();
+                            });
+                          },
+                          child: Text('수정하기', style: TextStyle(fontSize: 16)),
+                        ),
                         CupertinoActionSheetAction(
                           isDestructiveAction: true,
                           onPressed: () async {
