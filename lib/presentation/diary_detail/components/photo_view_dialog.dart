@@ -6,21 +6,21 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-class PhotoViewPage extends StatefulWidget {
+class PhotoViewDialog extends StatefulWidget {
   final List<String> imageUrls;
   final int currentIndex;
 
-  const PhotoViewPage({
+  const PhotoViewDialog({
     super.key,
     required this.imageUrls,
     required this.currentIndex,
   });
 
   @override
-  State<PhotoViewPage> createState() => _PhotoViewPageState();
+  State<PhotoViewDialog> createState() => _PhotoViewDialogState();
 }
 
-class _PhotoViewPageState extends State<PhotoViewPage> {
+class _PhotoViewDialogState extends State<PhotoViewDialog> {
   late PageController _controller;
   late int _currentIndex;
 
@@ -39,9 +39,10 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.zero,
+      child: Stack(
         children: [
           PhotoViewGallery.builder(
             scrollPhysics: const BouncingScrollPhysics(),

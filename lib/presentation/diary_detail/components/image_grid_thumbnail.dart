@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/model/diary_detail.dart';
-import 'package:cake/presentation/diary_detail/components/photo_view_page.dart';
+import 'package:cake/presentation/diary_detail/components/photo_view_dialog.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 
@@ -46,13 +46,13 @@ class ImageGridThumbnail extends StatelessWidget {
         return GestureDetector(
           onTap: isRealImage
               ? () {
-                  // 굳이 라우터 관리가 필요없기 때문에 navigator사용
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => PhotoViewPage(
-                        imageUrls: diary.imageUrls,
-                        currentIndex: index,
-                      ),
+                  showDialog(
+                    context: context,
+                    barrierColor: Colors.black,
+                    useSafeArea: false,
+                    builder: (context) => PhotoViewDialog(
+                      imageUrls: diary.imageUrls,
+                      currentIndex: index,
                     ),
                   );
                 }
