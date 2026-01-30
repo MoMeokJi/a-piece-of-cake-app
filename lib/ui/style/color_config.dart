@@ -33,7 +33,8 @@ class ColorConfig {
   static const Color markerDotColor = Color(0xffEEB5BE);
 
   //diary color
-  static const Color diaryTextColor = Color(0xff444444);
+  static const Color diaryTextColor = Color(0xff333333);
+  static const Color diarySummaryColor = Color(0xff595959);
   static const Color diaryGaramTextColor = Color(0xff070707);
   static const Color diaryDateColor = Color(0xff7C7C7C);
   static const Color diaryMusicTextColor = Color(0xff7C7C7C);

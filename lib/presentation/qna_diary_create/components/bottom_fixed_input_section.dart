@@ -69,18 +69,18 @@ class BottomFixedInputSection extends StatelessWidget {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ColorConfig.gray4),
+                    borderSide: BorderSide(color: ColorConfig.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ColorConfig.gray4),
+                    borderSide: BorderSide(color: ColorConfig.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: ColorConfig.primary),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: ColorConfig.white,
                 ),
               ),
             ),

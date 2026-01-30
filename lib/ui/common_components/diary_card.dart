@@ -56,7 +56,7 @@ class DiaryCard extends StatelessWidget {
                   diary.summary,
                   style: const TextStyle(
                     fontSize: TextConfig.diaryDefaultFontSize,
-                    color: ColorConfig.diaryTextColor,
+                    color: ColorConfig.diarySummaryColor,
                     fontWeight: FontWeight.w600,
                     height: 1.5,
                   ),

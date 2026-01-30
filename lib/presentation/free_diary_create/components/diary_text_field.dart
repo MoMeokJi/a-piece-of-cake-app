@@ -27,7 +27,7 @@ class DiaryTextField extends StatelessWidget {
       focusNode: focusNode,
       keyboardType: TextInputType.multiline,
       style: TextStyle(
-        color: ColorConfig.diaryTextColor,
+        color: ColorConfig.black,
         fontSize: getWidth(14),
         fontFamily: 'Pretendard',
       ),

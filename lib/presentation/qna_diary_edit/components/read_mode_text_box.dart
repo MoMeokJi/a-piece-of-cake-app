@@ -40,7 +40,7 @@ class ReadModeTextBox extends StatelessWidget {
               content,
               style: const TextStyle(
                 fontSize: TextConfig.diaryGaramFontSize,
-                color: ColorConfig.diaryTextColor,
+                color: ColorConfig.diaryGaramTextColor,
                 fontFamily: 'NanumGaram',
                 height: 1.5,
               ),
