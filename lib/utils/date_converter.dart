@@ -10,7 +10,7 @@ class DateConverter {
   /// 시간까지 표시 (디테일 페이지에서 사용)
   /// ex. "2025년 9월 12일 일요일 오후 9시"
   static String dateToFullString(DateTime date) {
-    return DateFormat('yyyy년 M월 d일 EEEE a h시', 'ko').format(date);
+    return DateFormat('yyyy년 M월 d일 EEEE a h시 mm분', 'ko').format(date);
   }
 
   /// 요일까지 표시(메인 화면에서 사용)
