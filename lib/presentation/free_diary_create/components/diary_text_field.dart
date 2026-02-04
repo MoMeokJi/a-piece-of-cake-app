@@ -1,6 +1,7 @@
 import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/ui/style/color_config.dart';
+import 'package:cake/ui/style/text_config.dart';
 import 'package:flutter/material.dart';
 
 class DiaryTextField extends StatelessWidget {
@@ -28,7 +29,7 @@ class DiaryTextField extends StatelessWidget {
       keyboardType: TextInputType.multiline,
       style: TextStyle(
         color: ColorConfig.black,
-        fontSize: getWidth(14),
+        fontSize: TextConfig.diaryDefaultFontSize,
         fontFamily: 'Pretendard',
       ),
       decoration: InputDecoration(
@@ -38,7 +39,7 @@ class DiaryTextField extends StatelessWidget {
         hintStyle: TextStyle(color: ColorConfig.gray3, fontSize: getWidth(14)),
         helperStyle: TextStyle(
           color: ColorConfig.gray3,
-          fontSize: getWidth(14),
+          fontSize: TextConfig.diaryDefaultFontSize,
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: getWidth(16),

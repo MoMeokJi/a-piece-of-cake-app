@@ -1,6 +1,5 @@
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
-import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/presentation/diary_detail/components/body_section.dart';
 import 'package:cake/presentation/diary_detail/components/colors_section.dart';
 import 'package:cake/presentation/diary_detail/components/diary_edit_dialog.dart';
@@ -18,28 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:toastification/toastification.dart';
 
-class DiaryDetailScreen extends StatefulWidget {
-  final DiaryDetail? diaryDetail;
-  final int? id;
-
-  const DiaryDetailScreen({super.key, this.diaryDetail, this.id});
-
-  @override
-  State<DiaryDetailScreen> createState() => _DiaryDetailScreenState();
-}
-
-class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() async {
-      if (!mounted) return;
-      context.read<DiaryDetailViewModel>().initialize(
-        widget.diaryDetail,
-        widget.id,
-      );
-    });
-  }
+class DiaryDetailScreen extends StatelessWidget {
+  const DiaryDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +26,9 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 토스트 메시지 표시
       if (viewModel.toastMessage != null) {
-        final isSuccess = viewModel.removeState == ResultState.success;
+        final isSuccess =
+            viewModel.removeState == ResultState.success ||
+            viewModel.updateState == ResultState.success;
         toastification.show(
           context: context,
           type: isSuccess
@@ -71,6 +52,11 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         context.go('/diary-calendar');
         viewModel.resetRemoveState();
       }
+
+      // 수정 성공
+      if (viewModel.updateState == ResultState.success) {
+        viewModel.resetUpdateState();
+      }
     });
 
     return Stack(
@@ -85,6 +71,70 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                     context: context,
                     builder: (BuildContext context) => CupertinoActionSheet(
                       actions: [
+                        CupertinoActionSheetAction(
+                          isDestructiveAction: true,
+                          onPressed: () async {
+                            context.pop(); // 액션시트 먼저 닫기
+
+                            // 삭제 확인 다이얼로그
+                            final shouldDelete =
+                                await showCupertinoDialog<bool>(
+                                  context: context,
+                                  builder: (context) => CupertinoAlertDialog(
+                                    title: Text(
+                                      '일기를 삭제할까요?',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: ColorConfig.gray1,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      '한 번 삭제하면 되돌릴 수 없어요',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: ColorConfig.gray1,
+                                      ),
+                                    ),
+                                    actions: [
+                                      CupertinoDialogAction(
+                                        isDefaultAction: true,
+                                        onPressed: () => context.pop(false),
+                                        child: Text(
+                                          '취소',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: ColorConfig.confirm,
+                                          ),
+                                        ),
+                                      ),
+                                      CupertinoDialogAction(
+                                        isDestructiveAction: true,
+                                        onPressed: () => context.pop(true),
+                                        child: Text(
+                                          '삭제',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: ColorConfig.caution,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                            // 삭제 확인했을 때만 실행
+                            if (shouldDelete == true) {
+                              await viewModel.removeDiary();
+                            }
+                          },
+                          child: Text(
+                            '삭제하기',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: ColorConfig.caution,
+                            ),
+                          ),
+                        ),
                         CupertinoActionSheetAction(
                           onPressed: () {
                             context.pop(); // 액션시트 닫기
@@ -107,20 +157,24 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                               viewModel.closeEditMode();
                             });
                           },
-                          child: Text('수정하기', style: TextStyle(fontSize: 16)),
-                        ),
-                        CupertinoActionSheetAction(
-                          isDestructiveAction: true,
-                          onPressed: () async {
-                            context.pop();
-                            await viewModel.removeDiary();
-                          },
-                          child: Text('삭제하기', style: TextStyle(fontSize: 16)),
+                          child: Text(
+                            '수정하기',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: ColorConfig.black,
+                            ),
+                          ),
                         ),
                       ],
                       cancelButton: CupertinoActionSheetAction(
                         onPressed: () => context.pop(),
-                        child: Text('취소', style: TextStyle(fontSize: 16)),
+                        child: Text(
+                          '취소',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: ColorConfig.confirm,
+                          ),
+                        ),
                       ),
                     ),
                   );
@@ -168,7 +222,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           ),
         ),
         // 삭제 로딩 중일 때만 반투명 오버레이
-        if (viewModel.removeState == ResultState.loading)
+        if (viewModel.removeState == ResultState.loading ||
+            viewModel.updateState == ResultState.loading)
           Container(
             color: Colors.black.withValues(alpha: 0.5),
             child: const Center(

@@ -115,8 +115,9 @@ class AppRouter {
           }
 
           return ChangeNotifierProvider(
-            create: (context) => getIt<DiaryDetailViewModel>(),
-            child: DiaryDetailScreen(diaryDetail: diaryDetail, id: id),
+            create: (context) =>
+                getIt<DiaryDetailViewModel>()..initialize(diaryDetail, id),
+            child: DiaryDetailScreen(),
           );
         },
       ),

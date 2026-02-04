@@ -22,6 +22,9 @@ class DiaryDetailViewModel with ChangeNotifier {
   ResultState _removeState = ResultState.none;
   ResultState get removeState => _removeState;
 
+  ResultState _updateState = ResultState.none;
+  ResultState get updateState => _updateState;
+
   String? _toastMessage;
   String? get toastMessage => _toastMessage;
 
@@ -87,17 +90,20 @@ class DiaryDetailViewModel with ChangeNotifier {
     }
 
     try {
-      final editText = _editTextController.text;
+      _updateState = ResultState.loading;
+      notifyListeners();
 
+      final editText = _editTextController.text;
       await _diaryRepo.editDiaryText(id: _diary.id, editText: editText);
 
       _diary = _diary.copyWith(body: editText);
       _toastMessage = '일기가 수정되었습니다';
-
+      _updateState = ResultState.success;
       notifyListeners();
     } catch (e) {
       AppLogger.error('일기수정 에러: ${e.toString()}');
       _toastMessage = '일기를 수정하지 못하였습니다. 잠시 후 다시 시도해 주세요.';
+      _updateState = ResultState.error;
       notifyListeners();
     }
   }
@@ -119,6 +125,10 @@ class DiaryDetailViewModel with ChangeNotifier {
 
   void resetRemoveState() {
     _removeState = ResultState.none;
+  }
+
+  void resetUpdateState() {
+    _updateState = ResultState.none;
   }
 
   @override

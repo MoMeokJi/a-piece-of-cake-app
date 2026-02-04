@@ -98,7 +98,7 @@ class DiaryEditDialog extends StatelessWidget {
                   style: TextStyle(
                     fontSize: getWidth(16),
                     fontWeight: FontWeight.w600,
-                    color: ColorConfig.gray1,
+                    color: ColorConfig.gray3,
                   ),
                 ),
               ),
@@ -120,8 +120,9 @@ class DiaryEditDialog extends StatelessWidget {
                       ? ColorConfig.primary
                       : ColorConfig.gray2,
                   textStyle: TextStyle(
-                    fontSize: getWidth(14),
-                    fontWeight: FontWeight.w500,
+                    fontSize: getWidth(16),
+                    fontWeight: FontWeight.w600,
+                    color: modified ? ColorConfig.primary : ColorConfig.gray2,
                   ),
                 ),
               ),
