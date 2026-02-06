@@ -127,4 +127,9 @@ class DiaryRepositoryImpl implements DiaryRepository {
     // 본문은 매번 서버에서 가져오기 때문에 로컬디비에 수정할거 없음. 서버에만 요청
     await _diaryApi.updateDiaryText(id: id, text: editText);
   }
+
+  @override
+  Future<void> removeAllDiaries() async {
+    await _diaryDao.deleteAll();
+  }
 }

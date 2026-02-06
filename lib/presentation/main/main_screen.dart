@@ -20,12 +20,30 @@ class MainScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: ColorConfig.background,
-      body: Column(
+      body: Stack(
         children: [
-          // 상단 고정 배너
-          MainBanner(),
-          // 하단 탭 컨텐츠
-          Expanded(child: navigationShell),
+          Column(
+            children: [
+              // 상단 고정 배너
+              MainBanner(),
+              // 하단 탭 컨텐츠
+              Expanded(child: navigationShell),
+            ],
+          ),
+          // 배너 위에 떠있는 설정 버튼
+          Positioned(
+            top: getHeight(210),
+            right: getWidth(12),
+            child: IconButton(
+              onPressed: () {
+                // 설정 페이지로 이동
+                context.push('/settings');
+              },
+              icon: Icon(Icons.settings_outlined),
+              color: ColorConfig.disabled,
+              iconSize: getWidth(28),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavi(

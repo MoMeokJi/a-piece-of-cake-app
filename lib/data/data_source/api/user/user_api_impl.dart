@@ -5,6 +5,7 @@ import 'package:cake/config/api_config.dart';
 import 'package:cake/data/data_source/api/api_exception.dart';
 import 'package:cake/data/data_source/api/base_api.dart';
 import 'package:cake/data/data_source/api/user/user_api.dart';
+import 'package:cake/utils/app_logger.dart';
 import 'package:http/http.dart' as http;
 
 class UserApiImpl extends BaseApi implements UserApi {
@@ -39,8 +40,11 @@ class UserApiImpl extends BaseApi implements UserApi {
       headers: await getHeaders(),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 204) {
+      // TODO: 이게 필요한가?
       await saveAllTokensFromHeader(response.headers);
+    } else if (response.statusCode == 404) {
+      AppLogger.log('deleteUser 404 이미 삭제된 유저.');
     } else if (response.statusCode == 401) {
       await reissueTokens();
       return deleteUser();

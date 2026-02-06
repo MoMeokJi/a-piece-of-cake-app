@@ -27,4 +27,6 @@ abstract interface class DiaryRepository {
 
   Future<void> editDiaryText({required int id, required String editText});
   Future<void> removeDiary(int id);
+
+  Future<void> removeAllDiaries();
 }

@@ -30,6 +30,7 @@ import 'package:cake/presentation/free_diary_create/free_diary_create_view_model
 import 'package:cake/presentation/main/main_view_model.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
 import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
+import 'package:cake/presentation/settings/settings_view_model.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:get_it/get_it.dart';
@@ -136,5 +137,12 @@ Future<void> diSetup() async {
 
   getIt.registerFactory(
     () => QnaDiaryEditViewModel(diaryRepo: getIt<DiaryRepository>()),
+  );
+
+  getIt.registerFactory(
+    () => SettingsViewModel(
+      userRepo: getIt<UserRepository>(),
+      diaryRepo: getIt<DiaryRepository>(),
+    ),
   );
 }
