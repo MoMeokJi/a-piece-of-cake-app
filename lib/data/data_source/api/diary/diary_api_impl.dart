@@ -44,7 +44,10 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       await reissueTokens();
       return createQnaDiary(text: text, images: images);
     } else {
-      throw ApiException(streamedResponse.statusCode, 'createQnaDiary 기타 에러');
+      throw await ApiException.fromStreamedResponse(
+        streamedResponse,
+        'createQnaDiary',
+      );
     }
   }
 
@@ -79,7 +82,10 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       await reissueTokens();
       return createFreeDiary(text: text, images: images);
     } else {
-      throw ApiException(streamedResponse.statusCode, 'createFreeDiary 기타 에러');
+      throw await ApiException.fromStreamedResponse(
+        streamedResponse,
+        'createFreeDiary',
+      );
     }
   }
 
@@ -132,7 +138,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       await reissueTokens();
       return requestQnaDiary(qnaListDto: qnaListDto);
     } else {
-      throw ApiException(response.statusCode, 'requestQnaDiary 기타 에러');
+      throw ApiException.fromResponse(response, 'requestQnaDiary');
     }
   }
 
@@ -151,7 +157,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       await reissueTokens();
       return fetchDiary(id: id);
     } else {
-      throw ApiException(response.statusCode, 'fetchDiary 기타 에러');
+      throw ApiException.fromResponse(response, 'fetchDiary');
     }
   }
 
@@ -168,7 +174,7 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       await reissueTokens();
       return deleteDiary(id: id);
     } else {
-      throw ApiException(response.statusCode, 'deleteDiary 기타 에러');
+      throw ApiException.fromResponse(response, 'deleteDiary');
     }
   }
 
@@ -185,10 +191,8 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
     } else if (response.statusCode == 401) {
       await reissueTokens();
       return updateDiaryText(id: id, text: text);
-    } else if (response.statusCode == 400) {
-      throw ApiException(response.statusCode, 'updateDiaryText text없음 에러');
     } else {
-      throw ApiException(response.statusCode, 'updateDiaryText 기타 에러');
+      throw ApiException.fromResponse(response, 'updateDiaryText');
     }
   }
 }

@@ -45,9 +45,9 @@ abstract class BaseApi {
 
     if (response.statusCode == 204) {
       await saveAllTokensFromHeader(response.headers);
-    } else {
-      throw ApiException(response.statusCode, 'reissueTokens 에러');
-    }
+  } else {
+  throw ApiException.fromResponse(response, 'reissueTokens');
+}
   }
 
   // 헤더에서 토큰을 빼내서 저장.

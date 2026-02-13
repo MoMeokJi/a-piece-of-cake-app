@@ -26,7 +26,6 @@ class UserRepositoryImpl implements UserRepository {
   Future<void> withdraw() async {
     await _userApi.deleteUser();
     await _tokenRepo.clearJwtTokens();
-    await _tokenRepo.clearFcmToken();
     await _resetAppState();
   }
 

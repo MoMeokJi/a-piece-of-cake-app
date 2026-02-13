@@ -29,7 +29,7 @@ class UserApiImpl extends BaseApi implements UserApi {
       await saveAllTokensFromHeader(response.headers);
       return;
     } else {
-      throw ApiException(response.statusCode, 'createUser 실패');
+      throw ApiException.fromResponse(response, 'createUser');
     }
   }
 
@@ -49,7 +49,7 @@ class UserApiImpl extends BaseApi implements UserApi {
       await reissueTokens();
       return deleteUser();
     } else {
-      throw ApiException(response.statusCode, 'deleteUser 실패');
+      throw ApiException.fromResponse(response, 'deleteUser');
     }
   }
 }

@@ -33,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(fontSize: getWidth(14)),
           ),
           autoCloseDuration: const Duration(seconds: 2),
-          alignment: Alignment.center,
+          alignment: Alignment.bottomCenter,
           showProgressBar: false,
         );
         viewModel.resetWithdrawState();
