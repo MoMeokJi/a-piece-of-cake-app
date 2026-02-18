@@ -129,8 +129,5 @@ class DiaryRepositoryImpl implements DiaryRepository {
     await _diaryApi.updateDiaryText(id: id, text: editText);
   }
 
-  @override
-  Future<void> removeAllDiaries() async {
-    await _diaryDao.deleteAll();
-  }
+  
 }

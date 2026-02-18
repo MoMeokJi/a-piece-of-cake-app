@@ -100,6 +100,7 @@ Future<void> diSetup() async {
     () => UserRepositoryImpl(
       userApi: getIt<UserApi>(),
       tokenRepo: getIt<TokenRepository>(),
+      diaryDao: getIt<DiaryDao>(),
     ),
   );
 
@@ -142,7 +143,6 @@ Future<void> diSetup() async {
   getIt.registerFactory(
     () => SettingsViewModel(
       userRepo: getIt<UserRepository>(),
-      diaryRepo: getIt<DiaryRepository>(),
     ),
   );
 }

@@ -1,5 +1,4 @@
 import 'package:cake/domain/enum/result_state.dart';
-import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/domain/repository/user_repository.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsViewModel with ChangeNotifier {
   final UserRepository _userRepo;
-  final DiaryRepository _diaryRepo;
 
   ResultState _withdrawState = ResultState.none;
   ResultState get withdrawState => _withdrawState;
@@ -19,9 +17,7 @@ class SettingsViewModel with ChangeNotifier {
 
   SettingsViewModel({
     required UserRepository userRepo,
-    required DiaryRepository diaryRepo,
-  }) : _userRepo = userRepo,
-       _diaryRepo = diaryRepo {
+  }) : _userRepo = userRepo {
     _initPackageInfo();
   }
 
@@ -42,7 +38,6 @@ class SettingsViewModel with ChangeNotifier {
       notifyListeners();
 
       await _userRepo.withdraw();
-      await _diaryRepo.removeAllDiaries();
 
       _withdrawState = ResultState.success;
     } catch (e) {

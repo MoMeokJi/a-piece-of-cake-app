@@ -1,4 +1,5 @@
 import 'package:cake/data/data_source/api/user/user_api.dart';
+import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/repository/user_repository.dart';
@@ -9,13 +10,15 @@ import 'package:get_it/get_it.dart';
 class UserRepositoryImpl implements UserRepository {
   final UserApi _userApi;
   final TokenRepository _tokenRepo;
+  final DiaryDao _diaryDao;
   final GetIt _getIt = GetIt.instance;
 
   UserRepositoryImpl({
     required UserApi userApi,
     required TokenRepository tokenRepo,
+    required DiaryDao diaryDao,
   }) : _userApi = userApi,
-       _tokenRepo = tokenRepo;
+       _tokenRepo = tokenRepo, _diaryDao =diaryDao;
 
   @override
   Future<void> signUp({required DiaryPreference diaryPreference}) async {
@@ -26,6 +29,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<void> withdraw() async {
     await _userApi.deleteUser();
     await _tokenRepo.clearJwtTokens();
+    await _diaryDao.deleteAllDiaries();
     await _resetAppState();
   }
 

@@ -104,7 +104,7 @@ class DiaryDao {
   }
 
   // 전체 db 삭제
-  Future<int> deleteAll() => _db.delete(DatabaseHelper.diaryTableName);
+  Future<int> deleteAllDiaries() => _db.delete(DatabaseHelper.diaryTableName);
 
   // Map을 Diary 객체로 변환하는 헬퍼 메서드
   List<Diary> _mapToDiaries(List<Map<String, dynamic>> maps) {
