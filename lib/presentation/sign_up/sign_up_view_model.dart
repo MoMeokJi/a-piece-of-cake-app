@@ -14,6 +14,16 @@ class SignUpViewModel with ChangeNotifier {
   ResultState _resultState = ResultState.none;
   ResultState get state => _resultState;
 
+    bool _hasShownTermsSheet = false;
+  bool get hasShownTermsSheet => _hasShownTermsSheet;
+
+  void markTermsSheetAsShown() {
+    _hasShownTermsSheet = true;
+    // notifyListeners() 안 함 (rebuild 방지)
+  }
+
+ 
+
   void selectType(DiaryPreference type) {
     _selectedType = type;
     notifyListeners();

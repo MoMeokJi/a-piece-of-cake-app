@@ -23,19 +23,7 @@ class SettingsScreen extends StatelessWidget {
     // build 시점에 각 상태 체크하여 처리
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (viewModel.withdrawState == ResultState.success) {
-        toastification.show(
-          context: context,
-          type: ToastificationType.success,
-          style: ToastificationStyle.flat,
-          primaryColor: ColorConfig.primary,
-          title: Text(
-            '모든 일기 데이터가 삭제되었습니다.',
-            style: TextStyle(fontSize: getWidth(14)),
-          ),
-          autoCloseDuration: const Duration(seconds: 2),
-          alignment: Alignment.bottomCenter,
-          showProgressBar: false,
-        );
+     // 전체 삭제 성공시 토스트 메세지 노출하지 않음
         viewModel.resetWithdrawState();
         context.go('/splash');
         return;

@@ -12,4 +12,7 @@ class ServiceConfig {
 
   // 채팅 최대 글자수
   static const int maxChatLenght = 100;
+
+  // 하루 최대 작성 가능 일기 수 
+  static const int maxDiaryCount = 3;
 }

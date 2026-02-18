@@ -164,7 +164,7 @@ class DiaryCalendarScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '작성한 일기가 없습니다.',
+            '오늘 작성한 일기가 없습니다.',
             style: TextStyle(fontSize: getWidth(16), color: ColorConfig.gray1),
           ),
           SizedBox(height: getHeight(5)),

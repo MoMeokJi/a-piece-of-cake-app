@@ -1,3 +1,4 @@
+import 'package:cake/config/api_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/domain/enum/result_state.dart';
@@ -9,9 +10,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // 최초 1회만 약관 동의 바텀시트 표시
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final viewModel = context.read<SignUpViewModel>();
+      if (!viewModel.hasShownTermsSheet) {
+        viewModel.markTermsSheetAsShown();
+        _showTermsBottomSheet();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +55,11 @@ class SignUpScreen extends StatelessWidget {
           body: SafeArea(
             child: Column(
               children: [
-                // 상단 타이틀 영역
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: getWidth(24)),
                   child: Column(
                     children: [
                       SizedBox(height: getHeight(60)),
-
-                      // 타이틀
                       Text(
                         '어떤 일기를\n선호하시나요?',
                         textAlign: TextAlign.center,
@@ -51,10 +69,7 @@ class SignUpScreen extends StatelessWidget {
                           height: 1.4,
                         ),
                       ),
-
                       SizedBox(height: getHeight(8)),
-
-                      // 서브 타이틀
                       Text(
                         '마음에 드는 일기 레시피를 골라주세요',
                         style: TextStyle(
@@ -62,13 +77,10 @@ class SignUpScreen extends StatelessWidget {
                           color: ColorConfig.gray2,
                         ),
                       ),
-
                       SizedBox(height: getHeight(50)),
                     ],
                   ),
                 ),
-
-                // 옵션 리스트 (스크롤 가능)
                 Expanded(
                   child: ListView(
                     padding: EdgeInsets.symmetric(horizontal: getWidth(24)),
@@ -116,8 +128,6 @@ class SignUpScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // 하단 버튼 (고정)
                 Padding(
                   padding: EdgeInsets.all(getWidth(24)),
                   child: BasicButton(
@@ -140,6 +150,107 @@ class SignUpScreen extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  void _showTermsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.all(getWidth(24)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: getHeight(8)),
+            
+            // 타이틀
+            Text(
+              '서비스 이용을 위해\n아래 항목에 동의해 주세요',
+              style: TextStyle(
+                fontSize: getWidth(22),
+                fontWeight: FontWeight.bold,
+                height: 1.4,
+                fontFamily: 'Pretendard'
+              ),
+            ),
+
+            SizedBox(height: getHeight(24)),
+
+            // 약관 링크 - 조각케이크 스타일로
+            InkWell(
+              onTap: () => launchUrl(Uri.parse(ApiConfig.serviceTermUrl)),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: getHeight(4)),
+                child: Text(
+                  '[조각케이크] 서비스 이용약관 (필수)',
+                  style: TextStyle(
+                    fontSize: getWidth(16),
+                    color: ColorConfig.gray2,
+                    decoration: TextDecoration.underline,
+                    fontFamily: 'Pretendard'
+                  ),
+                ),
+              ),
+            ),
+
+            SizedBox(height: getHeight(12)),
+
+            InkWell(
+              onTap: () => launchUrl(Uri.parse(ApiConfig.privacyPolicyUrl)),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: getHeight(4)),
+                child: Text(
+                  '[조각케이크] 개인정보 처리방침 (필수)',
+                  style: TextStyle(
+                    fontSize: getWidth(16),
+                    color: ColorConfig.gray2,
+                    decoration: TextDecoration.underline,
+                    fontFamily: 'Pretendard'
+                  ),
+                ),
+              ),
+            ),
+
+            SizedBox(height: getHeight(32)),
+
+            // 동의 버튼
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorConfig.primary,
+                  padding: EdgeInsets.symmetric(vertical: getHeight(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  '동의하고 계속하기',
+                  style: TextStyle(
+                    fontSize: getWidth(16),
+                    color: Colors.white,
+                    fontFamily: 'Pretendard'
+                  ),
+                ),
+              ),
+            ),
+
+            SizedBox(height: getHeight(16)),
+          ],
+        ),
+      ),
     );
   }
 }

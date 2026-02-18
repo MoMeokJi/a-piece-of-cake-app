@@ -1,3 +1,4 @@
+import 'package:cake/config/service_config.dart';
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
@@ -44,7 +45,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
   @override
   Future<bool> isAbleToWriteDiaryToday() async {
     final count = await _diaryDao.getTodayDiaryCount();
-    return count < 10;
+    return count < ServiceConfig.maxDiaryCount;
   }
 
   @override
