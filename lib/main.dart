@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:cake/config/di.dart';
 import 'package:cake/data/data_source/shared_preferences/storage.dart';
 import 'package:cake/domain/repository/token_repository.dart';
@@ -9,6 +10,7 @@ import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/my_app.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -112,6 +114,15 @@ void main() async {
 
 Future<void> _initializeFirebase() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Crashlytics 설정
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   AppLogger.log(
     '파이어베이스 초기화 appId : ${DefaultFirebaseOptions.currentPlatform.appId}',
   );

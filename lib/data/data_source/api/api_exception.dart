@@ -1,4 +1,5 @@
 import 'package:cake/utils/app_logger.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
@@ -13,9 +14,14 @@ class ApiException implements Exception {
   }) {
     AppLogger.error('API 에러 [$endpoint]: $statusCode');
     AppLogger.log('Response Body: $responseBody');
+    FirebaseCrashlytics.instance.recordError(
+      this,
+      StackTrace.current,
+      fatal: false,
+      reason: '[$statusCode] $endpoint',
+    );
   }
 
-  // 일반 Response용
   factory ApiException.fromResponse(http.Response response, String endpoint) {
     return ApiException(
       statusCode: response.statusCode,
@@ -24,7 +30,6 @@ class ApiException implements Exception {
     );
   }
 
-  // StreamedResponse용
   static Future<ApiException> fromStreamedResponse(
     http.StreamedResponse streamedResponse,
     String endpoint,
