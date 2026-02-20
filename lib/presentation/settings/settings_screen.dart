@@ -5,7 +5,7 @@ import 'package:cake/presentation/settings/components/menu_list_tile.dart';
 import 'package:cake/presentation/settings/settings_view_model.dart';
 import 'package:cake/ui/common_components/common_main_app_bar.dart';
 import 'package:cake/ui/style/color_config.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cake/utils/dialog/dialog_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
@@ -20,10 +20,8 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<SettingsViewModel>();
 
-    // build 시점에 각 상태 체크하여 처리
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (viewModel.withdrawState == ResultState.success) {
-     // 전체 삭제 성공시 토스트 메세지 노출하지 않음
         viewModel.resetWithdrawState();
         context.go('/splash');
         return;
@@ -78,60 +76,21 @@ class SettingsScreen extends StatelessWidget {
                   title: '개인정보 처리방침',
                   onTap: () => launchUrl(Uri.parse(ApiConfig.privacyPolicyUrl)),
                 ),
-
                 MenuListTile(
                   title: '전체 데이터 삭제',
                   color: ColorConfig.gray2,
                   onTap: () async {
-                    final confirmed = await showCupertinoDialog<bool>(
+                    final confirmed = await DialogUtils.showDeleteConfirmDialog(
                       context: context,
-                      builder: (context) => CupertinoAlertDialog(
-                        title: Text(
-                          '모든 일기를 삭제할까요?',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: ColorConfig.black,
-                          ),
-                        ),
-                        content: Text(
-                          '한 번 삭제하면 되돌릴 수 없어요',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: ColorConfig.gray1,
-                          ),
-                        ),
-                        actions: [
-                          CupertinoDialogAction(
-                            isDefaultAction: true,
-                            onPressed: () => context.pop(false),
-                            child: Text(
-                              '취소',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: ColorConfig.confirm,
-                              ),
-                            ),
-                          ),
-                          CupertinoDialogAction(
-                            isDestructiveAction: true,
-                            onPressed: () => context.pop(true),
-                            child: Text(
-                              '삭제',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: ColorConfig.caution,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      title: '조각케이크의 모든 데이터를 삭제하시겠어요?',
+                      content: '삭제 후에는 다시 되돌릴 수 없어요'
                     );
-
                     if (confirmed == true) {
                       await viewModel.confirmWithdraw();
                     }
                   },
                 ),
+           
               ],
             ),
           ),

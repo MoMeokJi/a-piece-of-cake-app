@@ -15,4 +15,7 @@ class ServiceConfig {
 
   // 하루 최대 작성 가능 일기 수 
   static const int maxDiaryCount = 3;
+
+  // 비활성 유저 판단 기준 (서버 180일보다 이틀 앞서 처리)
+  static const int inactivityThresholdDays = 178;
 }

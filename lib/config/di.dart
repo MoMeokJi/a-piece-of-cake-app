@@ -51,7 +51,9 @@ Future<void> diSetup() async {
   getIt.registerLazySingleton<Storage>(() => Storage());
 
   // 얘는 data source에서 다 쓸 확률이 높기 때문에 앞에서 선언
-  getIt.registerLazySingleton<TokenRepository>(() => TokenRepositoryImpl());
+  getIt.registerLazySingleton<TokenRepository>(
+    () => TokenRepositoryImpl(getIt<Storage>()),
+  );
 
   //api -> LazySignleton
   getIt.registerLazySingleton<UserApi>(
@@ -117,6 +119,8 @@ Future<void> diSetup() async {
     () => SplashViewModel(
       tokenRepo: getIt<TokenRepository>(),
       appStoreCheckService: getIt<AppStoreCheckService>(),
+      storage: getIt<Storage>(),
+      diaryDao: getIt<DiaryDao>(),
     ),
   );
   getIt.registerFactory(
@@ -141,8 +145,6 @@ Future<void> diSetup() async {
   );
 
   getIt.registerFactory(
-    () => SettingsViewModel(
-      userRepo: getIt<UserRepository>(),
-    ),
+    () => SettingsViewModel(userRepo: getIt<UserRepository>()),
   );
 }
