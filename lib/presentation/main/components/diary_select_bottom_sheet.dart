@@ -1,5 +1,6 @@
 import 'package:cake/config/size_config.dart';
 import 'package:cake/ui/style/color_config.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -52,6 +53,9 @@ class DiarySelectBottomSheet extends StatelessWidget {
                         ),
                         borderColor: ColorConfig.primary.withValues(alpha: 0.2),
                         onTap: () {
+                          FirebaseAnalytics.instance.logEvent(
+                            name: 'qna_diary_start',
+                          );
                           context.pop();
                           context.push('/qna-diary');
                         },
@@ -74,6 +78,9 @@ class DiarySelectBottomSheet extends StatelessWidget {
                           alpha: 0.2,
                         ),
                         onTap: () {
+                          FirebaseAnalytics.instance.logEvent(
+                            name: 'free_diary_start',
+                          );
                           context.pop();
                           context.push('/free-diary');
                         },

@@ -1,6 +1,7 @@
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/repository/user_repository.dart';
 import 'package:cake/utils/app_logger.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -36,6 +37,8 @@ class SettingsViewModel with ChangeNotifier {
     try {
       _withdrawState = ResultState.loading;
       notifyListeners();
+
+      FirebaseAnalytics.instance.logEvent(name: 'account_delete');
 
       await _userRepo.withdraw();
 

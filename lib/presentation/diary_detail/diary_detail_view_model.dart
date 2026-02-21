@@ -5,6 +5,7 @@ import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/utils/app_logger.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 
 class DiaryDetailViewModel with ChangeNotifier {
@@ -66,6 +67,7 @@ class DiaryDetailViewModel with ChangeNotifier {
       _removeState = ResultState.loading;
       notifyListeners();
 
+      FirebaseAnalytics.instance.logEvent(name: 'diary_detail_delete');
       await _diaryRepo.removeDiary(_diary.id);
 
       final diaryCalendarVM = getIt<DiaryCalendarViewModel>();
@@ -92,6 +94,8 @@ class DiaryDetailViewModel with ChangeNotifier {
     try {
       _updateState = ResultState.loading;
       notifyListeners();
+
+      FirebaseAnalytics.instance.logEvent(name: 'diary_detail_edit');
 
       final editText = _editTextController.text;
       await _diaryRepo.editDiaryText(id: _diary.id, editText: editText);
