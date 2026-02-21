@@ -7,6 +7,7 @@ import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
 import 'package:cake/utils/app_logger.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -53,6 +54,8 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
       _resultState = ResultState.loading;
       notifyListeners();
 
+      FirebaseAnalytics.instance.logEvent(name: 'free_diary_complete');
+
       _completedDiary = await _diaryRepo.saveDiary(
         diaryType: DiaryType.free,
         text: _textController.text,
@@ -69,7 +72,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
     } catch (e) {
       _toastMessage = '일기 작성에 실패했습니다';
       _resultState = ResultState.error;
-      AppLogger.error('자유 일기 작성 에러: ${e.toString()}');
+      AppLogger.error('자유 일기 확정 에러: ${e.toString()}');
     }
     notifyListeners();
   }
