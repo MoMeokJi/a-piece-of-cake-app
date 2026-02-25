@@ -33,4 +33,10 @@ class MockFirebaseMessagingManager implements FirebaseMessagingManagerImpl {
   void setMessageTapListener(void Function(RemoteMessage p1) onTap) async {
     FirebaseMessaging.onMessageOpenedApp.listen(onTap);
   }
+  
+  @override
+  Future<void> deleteToken() {
+    // TODO: implement deleteToken
+    throw UnimplementedError();
+  }
 }

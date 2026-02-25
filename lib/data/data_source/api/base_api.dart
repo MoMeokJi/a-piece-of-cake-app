@@ -67,4 +67,9 @@ abstract class BaseApi {
       );
     }
   }
+
+  // 탈퇴 시 jwt 토큰 정리
+  Future<void> deleteJwtTokens() async {
+  await _tokenRepository.clearJwtTokens();
+}
 }

@@ -48,4 +48,9 @@ class FirebaseMessagingManagerImpl implements FirebaseMessagingManager {
   void setMessageTapListener(void Function(RemoteMessage) onTap) {
     FirebaseMessaging.onMessageOpenedApp.listen(onTap);
   }
+  
+  @override
+  Future<void> deleteToken() async{
+   await _messaging.deleteToken();
+  }
 }

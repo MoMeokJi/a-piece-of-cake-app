@@ -101,8 +101,8 @@ Future<void> diSetup() async {
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(
       userApi: getIt<UserApi>(),
-      tokenRepo: getIt<TokenRepository>(),
       diaryDao: getIt<DiaryDao>(),
+      fcmService:  getIt<FCMService>(),
     ),
   );
 

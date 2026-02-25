@@ -61,6 +61,12 @@ class FCMServiceImpl implements FCMService {
     await _tokenRepository.saveFcmToken(token);
   }
 
+  @override
+Future<void> deleteFCMToken() async {
+  await _messagingManager.deleteToken();
+  await _tokenRepository.clearFcmToken();
+}
+
   void _setupForegroundHandler() {
     // Foreground 상태에서 메시지 수신
     FirebaseMessaging.onMessage.listen((message) async {

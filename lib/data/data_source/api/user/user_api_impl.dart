@@ -27,6 +27,7 @@ class UserApiImpl extends BaseApi implements UserApi {
     // 회원가입은 401이 있을수없음.
     if (response.statusCode == 204) {
       await saveAllTokensFromHeader(response.headers);
+      AppLogger.log('가입된 deviceId : $fcmToken');
       return;
     } else {
       throw ApiException.fromResponse(response, 'createUser');
@@ -41,8 +42,7 @@ class UserApiImpl extends BaseApi implements UserApi {
     );
 
     if (response.statusCode == 204) {
-      // TODO: 이게 필요한가?
-      await saveAllTokensFromHeader(response.headers);
+      await deleteJwtTokens();
     } else if (response.statusCode == 404) {
       AppLogger.log('deleteUser 404 이미 삭제된 유저.');
     } else if (response.statusCode == 401) {
