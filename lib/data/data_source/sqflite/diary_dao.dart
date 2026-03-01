@@ -45,23 +45,19 @@ class DiaryDao {
   }
 
   // 특정 년/월의 일기 가져오기
-  Future<List<Diary>> getDiariesByMonth(int year, int month) async {
-    final startDate = DateTime(year, month, 1);
-    final endDate = DateTime(
-      year,
-      month + 1,
-      1,
-    ).subtract(const Duration(days: 1));
+Future<List<Diary>> getDiariesByMonth(int year, int month) async {
+  final startDate = DateTime(year, month, 1);
+  final endDate = DateTime(year, month + 1, 1);
 
-    final List<Map<String, dynamic>> maps = await _db.query(
-      DatabaseHelper.diaryTableName,
-      where: 'createdAt >= ? AND createdAt <= ? AND isDeleted = ?',
-      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String(), 0],
-      orderBy: 'createdAt DESC',
-    );
+  final List<Map<String, dynamic>> maps = await _db.query(
+    DatabaseHelper.diaryTableName,
+    where: 'createdAt >= ? AND createdAt < ? AND isDeleted = ?', 
+    whereArgs: [startDate.toIso8601String(), endDate.toIso8601String(), 0],
+    orderBy: 'createdAt DESC',
+  );
 
-    return _mapToDiaries(maps);
-  }
+  return _mapToDiaries(maps);
+}
 
   // 현재 월의 일기 가져오기
   Future<List<Diary>> getCurrentMonthDiaries() async {
