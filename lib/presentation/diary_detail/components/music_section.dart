@@ -148,7 +148,7 @@ class MusicSection extends StatelessWidget {
               child: YoutubePlayer(
                 controller: YoutubePlayerController.fromVideoId(
                   videoId: diary.youtubeVideoId,
-                  autoPlay: true,
+                  autoPlay: false,
                   params: const YoutubePlayerParams(
                     mute: false,
                     showControls: true,
