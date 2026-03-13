@@ -1,4 +1,5 @@
 import 'package:cake/ui/style/color_config.dart';
+import 'package:cake/utils/dialog/exit_diary_dialog.dart';
 import 'package:cake/utils/dialog/inactive_dialog.dart';
 import 'package:cake/utils/dialog/update_dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -69,4 +70,13 @@ class DialogUtils {
       ),
     );
   }
+
+static Future<bool?> showExitDiaryDialog({
+  required BuildContext context,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) => const ExitDiaryDialog(),
+  );
+}
 }

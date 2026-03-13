@@ -8,6 +8,7 @@ class CommonMainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? titleWidget;
   final List<Widget>? actions;
   final bool allowPop;
+  final VoidCallback? onBackPressed;
   final bool centerTitle;
 
   const CommonMainAppBar({
@@ -15,6 +16,7 @@ class CommonMainAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.titleWidget,
     this.actions,
     this.allowPop = true,
+    this.onBackPressed,
     this.centerTitle = true,
     super.key,
   });
@@ -31,17 +33,21 @@ class CommonMainAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
 
       centerTitle: centerTitle,
-      leading: (allowPop)
-          ? IconButton(
-              icon: const Icon(Icons.chevron_left),
-              color: ColorConfig.black,
-              iconSize: getWidth(28),
-              onPressed: () {
-                FocusScope.of(context).unfocus(); // 모든 포커스 해제
-                context.pop();
-              },
-            )
-          : null,
+       leading: (allowPop)
+      ? IconButton(
+          icon: const Icon(Icons.chevron_left),
+          color: ColorConfig.black,
+          iconSize: getWidth(28),
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            if (onBackPressed != null) {
+              onBackPressed!(); 
+            } else {
+              context.pop(); 
+            }
+          },
+        )
+      : null,
       title: titleText != null
           ? Text(
               '$titleText',

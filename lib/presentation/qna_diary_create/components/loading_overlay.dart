@@ -9,36 +9,51 @@ class LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black.withValues(alpha: 0.8),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SpinKitPouringHourGlass(
-              color: ColorConfig.secondary,
-              size: 35.0,
-            ),
-            SizedBox(height: getHeight(15)),
-            DefaultTextStyle(
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: getWidth(18),
-                color: ColorConfig.white,
-                letterSpacing: 2.0,
+    return Material(
+        color: Colors.transparent,
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.8),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SpinKitPouringHourGlass(
+                color: ColorConfig.secondary,
+                size: 35.0,
               ),
-              child: AnimatedTextKit(
-                animatedTexts: [
-                  TyperAnimatedText(
-                    '일기를 생성하는 중입니다...',
-                    speed: Duration(milliseconds: 150),
+              SizedBox(height: getHeight(20)),
+              DefaultTextStyle(
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: getWidth(20),
+                  color: ColorConfig.white,
+                  letterSpacing: 2.0,
+                ),
+                child: AnimatedTextKit(
+                  animatedTexts: [
+                    WavyAnimatedText(
+                      '오늘의 조각을 만들고 있어요',
+                    ),
+                  ],
+                  isRepeatingAnimation: true,
+                ),
+              ),
+              SizedBox(height: getHeight(35)),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: getWidth(32)),
+                child: Text(
+                  '화면을 벗어나면 일기 작성이\n취소될 수 있습니다',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: getWidth(14),
+                    color: ColorConfig.white.withValues(alpha: 0.8),
+                    letterSpacing: 0.3,
+                    height: 1.6,
                   ),
-                ],
-                isRepeatingAnimation: true,
+                ),
               ),
-            ),
-            SizedBox(height: getHeight(50)),
-          ],
+            ],
+          ),
         ),
       ),
     );
