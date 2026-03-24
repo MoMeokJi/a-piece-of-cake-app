@@ -17,6 +17,7 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
   List<Qna> _qnaList = [];
   final List<ChatListItem> _chatList = [];
   int _currentQnaIndex = 0;
+  int? _editingQnaIndex;
   String _generatedDiary = '';
 
   final TextEditingController _textController = TextEditingController();
@@ -24,11 +25,12 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
   final ScrollController _scrollController = ScrollController();
 
   ResultState get state => _resultState;
-  List<ChatListItem> get chatList => _chatList;
+  List<ChatListItem> get chatList => List.unmodifiable(_chatList);
   TextEditingController get textController => _textController;
   FocusNode get focusNode => _focusNode;
   ScrollController get scrollController => _scrollController;
   String get generatedDiary => _generatedDiary;
+  bool get isEditMode => _editingQnaIndex != null;
 
   bool get isAllQuestionsAnswered => _currentQnaIndex >= _qnaList.length;
 
@@ -36,7 +38,6 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
     try {
       _qnaList = await _diaryRepo.getQuestionList();
       _chatList.add(ChatListItem.bot(_qnaList[_currentQnaIndex].question));
-
       _focusNode.addListener(_onFocusChange);
     } catch (e) {
       _resultState = ResultState.error;
@@ -44,22 +45,67 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  // 답변 전송
-  Future<void> saveAnswer() async {
-    _chatList.add(ChatListItem.user(_textController.text));
+  // 이전 답변 편집 시작
+  void startEditAnswer(int qnaIndex) {
+    if (_resultState == ResultState.loading) return;
+    _editingQnaIndex = qnaIndex;
+    _textController.text = _qnaList[qnaIndex].answer;
+    _focusNode.requestFocus();
+    notifyListeners();
+  }
 
+  // 편집 취소
+  void cancelEditAnswer() {
+    _editingQnaIndex = null;
+    _textController.clear();
+    unfocusKeyboard();
+    notifyListeners();
+  }
+
+  // 답변 전송 (편집 모드 / 일반 모드 분기)
+  Future<void> saveAnswer() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    if (isEditMode) {
+      _applyEditedAnswer(text);
+      return;
+    }
+
+    // 모든 질문에 답변 완료 상태에서 호출되면 재시도로 처리
+    if (isAllQuestionsAnswered) {
+      if (_resultState != ResultState.loading) {
+        await _submitToServer();
+      }
+      return;
+    }
+
+    _chatList.add(ChatListItem.user(text, qnaIndex: _currentQnaIndex));
     _qnaList[_currentQnaIndex] = _qnaList[_currentQnaIndex].copyWith(
-      answer: _textController.text.trim(),
+      answer: text,
     );
     _currentQnaIndex++;
 
     _textController.clear();
     notifyListeners();
-
-    // 유저 메시지 추가 후 스크롤
     _scrollToBottom();
 
     await _addNextQuestion();
+  }
+
+  void _applyEditedAnswer(String text) {
+    final idx = _editingQnaIndex!;
+    _qnaList[idx] = _qnaList[idx].copyWith(answer: text);
+
+    final chatIdx = _chatList.indexWhere((item) => item.qnaIndex == idx);
+    if (chatIdx != -1) {
+      _chatList[chatIdx] = ChatListItem.user(text, qnaIndex: idx);
+    }
+
+    _editingQnaIndex = null;
+    _textController.clear();
+    unfocusKeyboard();
+    notifyListeners();
   }
 
   Future<void> _addNextQuestion() async {
@@ -69,16 +115,18 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
       return;
     }
 
-    // 다음 질문 추가하기 전 살짝 딜레이
     await Future.delayed(Duration(milliseconds: 200));
     _chatList.add(ChatListItem.bot(_qnaList[_currentQnaIndex].question));
     notifyListeners();
-
-    // 봇 메시지 추가 후 스크롤
     _scrollToBottom();
   }
 
-  // 스크롤 맨 아래로
+  // API 재시도 (에러 상태에서 호출)
+  Future<void> retrySubmit() async {
+    if (!isAllQuestionsAnswered || _resultState == ResultState.loading) return;
+    await _submitToServer();
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -91,7 +139,6 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
     });
   }
 
-  // 키보드 닫기
   void unfocusKeyboard() {
     _focusNode.unfocus();
   }
@@ -114,7 +161,6 @@ class QnaDiaryCreateViewModel with ChangeNotifier {
 
   void _onFocusChange() {
     if (_focusNode.hasFocus) {
-      // 키보드가 완전히 올라온 후 스크롤
       Future.delayed(Duration(milliseconds: 500), () {
         _scrollToBottom();
       });

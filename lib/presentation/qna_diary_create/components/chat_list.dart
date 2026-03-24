@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 class ChatList extends StatelessWidget {
   final List<ChatListItem> chatList;
   final ScrollController scrollController;
+  final Function(int qnaIndex)? onEditAnswer;
 
   const ChatList({
     super.key,
     required this.chatList,
     required this.scrollController,
+    this.onEditAnswer,
   });
 
   @override
@@ -27,7 +29,12 @@ class ChatList extends StatelessWidget {
         itemCount: chatList.length,
         itemBuilder: (context, index) {
           final item = chatList[index];
-          return ChatBubble(item: item);
+          return ChatBubble(
+            item: item,
+            onEdit: (item.isUser && item.qnaIndex != null && onEditAnswer != null)
+                ? () => onEditAnswer!(item.qnaIndex!)
+                : null,
+          );
         },
       ),
     );

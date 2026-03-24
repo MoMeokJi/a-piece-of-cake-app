@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatListItem item;
-  const ChatBubble({super.key, required this.item});
+  final VoidCallback? onEdit;
+
+  const ChatBubble({super.key, required this.item, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
-    // 화면 너비 대비 말풍선 최대 너비 설정
     final maxBubbleWidth = MediaQuery.of(context).size.width * 0.72;
 
     return Padding(
@@ -19,7 +20,7 @@ class ChatBubble extends StatelessWidget {
         mainAxisAlignment: item.isUser
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (!item.isUser) ...[
             Padding(
@@ -31,7 +32,20 @@ class ChatBubble extends StatelessWidget {
             ),
           ],
 
-          // 말풍선 컨테이너
+          // 편집 아이콘 (user 버블 왼쪽)
+          if (item.isUser && onEdit != null)
+            GestureDetector(
+              onTap: onEdit,
+              child: Padding(
+                padding: EdgeInsets.only(right: getWidth(6)),
+                child: Icon(
+                  Icons.edit_outlined,
+                  size: getWidth(14),
+                  color: ColorConfig.gray3,
+                ),
+              ),
+            ),
+
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxBubbleWidth),
             child: Container(
@@ -63,14 +77,12 @@ class ChatBubble extends StatelessWidget {
       height: 1.3,
     );
 
-    // 유저 메시지는 그냥 텍스트
     if (item.isUser) {
       return Text(item.content, style: textStyle);
     }
 
-    // 봇 메시지만 타이핑 애니메이션
     return AnimatedTextKit(
-      key: ValueKey(item.content), // content 바뀔 때마다 새로 생성
+      key: ValueKey(item.content),
       isRepeatingAnimation: false,
       totalRepeatCount: 1,
       animatedTexts: [

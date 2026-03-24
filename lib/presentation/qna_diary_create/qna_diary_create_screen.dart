@@ -14,14 +14,25 @@ import 'package:provider/provider.dart';
 class QnaDiaryCreateScreen extends StatelessWidget {
   const QnaDiaryCreateScreen({super.key});
 
-Future<void> _handleBackPress(BuildContext context, bool isLoading) async {
-  if (isLoading) return;
-
-  final shouldExit = await DialogUtils.showExitDiaryDialog(context: context);
-  if (shouldExit == true && context.mounted) {
-    context.pop();
+  Future<void> _handleBackPress(BuildContext context, bool isLoading) async {
+    if (isLoading) return;
+    final shouldExit = await DialogUtils.showExitDiaryDialog(context: context);
+    if (shouldExit == true && context.mounted) {
+      context.pop();
+    }
   }
-}
+
+  void _showRetrySnackbar(BuildContext context, VoidCallback onRetry) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('일기 생성에 실패했어요.'),
+          action: SnackBarAction(label: '다시 시도', onPressed: onRetry),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +56,7 @@ Future<void> _handleBackPress(BuildContext context, bool isLoading) async {
                     extra: viewModel.generatedDiary,
                   );
                 } else if (viewModel.state == ResultState.error) {
-                  //TODO: error 처리
+                  _showRetrySnackbar(context, viewModel.retrySubmit);
                 }
               });
 
@@ -59,10 +70,19 @@ Future<void> _handleBackPress(BuildContext context, bool isLoading) async {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => viewModel.unfocusKeyboard(),
+                          onTap: () {
+                            if (viewModel.isEditMode) {
+                              viewModel.cancelEditAnswer();
+                            } else {
+                              viewModel.unfocusKeyboard();
+                            }
+                          },
                           child: ChatList(
                             chatList: viewModel.chatList,
                             scrollController: viewModel.scrollController,
+                            onEditAnswer: isLoading
+                                ? null
+                                : viewModel.startEditAnswer,
                           ),
                         ),
                       ),
