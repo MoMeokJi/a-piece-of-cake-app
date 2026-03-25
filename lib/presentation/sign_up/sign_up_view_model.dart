@@ -1,6 +1,7 @@
 import 'package:cake/domain/enum/diary_preference.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/repository/user_repository.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 
 class SignUpViewModel with ChangeNotifier {
@@ -31,6 +32,8 @@ class SignUpViewModel with ChangeNotifier {
 
   Future<void> signUp() async {
     if (_selectedType == null) return;
+
+     FirebaseAnalytics.instance.logEvent(name: 'sign_up');
 
     _resultState = ResultState.loading;
     notifyListeners();

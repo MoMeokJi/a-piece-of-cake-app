@@ -41,6 +41,7 @@ class QnaDiaryEditViewModel with ChangeNotifier {
   bool get editMode => _isEditMode;
 
   void initialize(String initialContent) {
+     FirebaseAnalytics.instance.logEvent(name: 'qna_diary_initial_generation');
     textController.text = initialContent; // 텍스트필드 초기값으로 생성된 일기 지정
   }
 

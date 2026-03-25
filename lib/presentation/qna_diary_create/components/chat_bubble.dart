@@ -37,10 +37,10 @@ class ChatBubble extends StatelessWidget {
             GestureDetector(
               onTap: onEdit,
               child: Padding(
-                padding: EdgeInsets.only(right: getWidth(6)),
+                padding: EdgeInsets.symmetric(vertical: getHeight(8),horizontal: getWidth(6)),
                 child: Icon(
                   Icons.edit_outlined,
-                  size: getWidth(14),
+                  size: getWidth(18),
                   color: ColorConfig.gray3,
                 ),
               ),
@@ -73,6 +73,7 @@ class ChatBubble extends StatelessWidget {
   Widget _buildContentWidget(ChatListItem item) {
     final textStyle = TextStyle(
       color: item.isUser ? Colors.white : ColorConfig.gray1,
+      fontFamily: 'NanumSquareNeo',
       fontSize: getWidth(14),
       height: 1.3,
     );

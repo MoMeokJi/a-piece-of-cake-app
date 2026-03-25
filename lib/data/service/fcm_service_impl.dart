@@ -7,6 +7,7 @@ import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/utils/app_logger.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -133,14 +134,16 @@ Future<void> deleteFCMToken() async {
   }
 
   void _handleMessageTap(RemoteMessage message) {
-    AppLogger.log(
-      'fcm service 알림 탭 처리 시작. message: ${message.data.toString()}',
-    );
-    try {
-      final type = message.data['type'];
-      final diaryId = message.data['diaryId'];
+  AppLogger.log(
+    'fcm service 알림 탭 처리 시작. message: ${message.data.toString()}',
+  );
+  try {
+    final type = message.data['type'];
+    final diaryId = message.data['diaryId'];
 
-      if (type == 'FEEDBACK') {
+    switch (type) {
+      case 'FEEDBACK':
+        FirebaseAnalytics.instance.logEvent(name: 'fcm_feedback_tapped');
         AppRouter.router.go('/diary-calendar');
         Future.delayed(const Duration(milliseconds: 100), () {
           AppLogger.log('diary detail 페이지로 이동합니다');
@@ -149,9 +152,11 @@ Future<void> deleteFCMToken() async {
             extra: int.parse(diaryId.toString()),
           );
         });
-      }
-    } catch (e) {
-      AppLogger.error('fcm service 알림 탭 처리 실패: $e');
+      case 'REMINDER':
+        FirebaseAnalytics.instance.logEvent(name: 'fcm_reminder_tapped');
     }
+  } catch (e) {
+    AppLogger.error('fcm service 알림 탭 처리 실패: $e');
   }
+}
 }
