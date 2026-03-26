@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cake/config/service_config.dart';
 import 'package:cake/config/size_config.dart';
 import 'package:cake/ui/style/color_config.dart';
@@ -21,8 +23,8 @@ class DiaryTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      minLines: isKeyboardVisible ? 13 : 23,
-      maxLines: isKeyboardVisible ? 13 : 23,
+      minLines: isKeyboardVisible ? (Platform.isAndroid ? 12 : 13) : 23,
+maxLines: isKeyboardVisible ? (Platform.isAndroid ? 12 : 13) : 23,
       maxLength: ServiceConfig.maxDiaryLength,
       controller: textController,
       focusNode: focusNode,

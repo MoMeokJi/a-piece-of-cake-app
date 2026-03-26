@@ -44,11 +44,7 @@ class FreeDiaryCreateViewModel with ChangeNotifier {
       _toastMessage = '일기는 ${ServiceConfig.minDiaryLength}자 이상 작성해주세요';
       notifyListeners();
       return;
-    } else if (_pickedImages.isEmpty) {
-      _toastMessage = '1장 이상의 사진을 첨부해야합니다';
-      notifyListeners();
-      return;
-    }
+    } 
 
     try {
       _resultState = ResultState.loading;

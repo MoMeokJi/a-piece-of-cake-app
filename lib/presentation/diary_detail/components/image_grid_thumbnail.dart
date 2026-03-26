@@ -17,9 +17,9 @@ class ImageGridThumbnail extends StatelessWidget {
 
     final position = index + 1;
     if (position % 2 == 1) {
-      return 'assets/images/default_blueberry_image.png';
+      return 'assets/images/blueberry_blur.png';
     } else {
-      return 'assets/images/default_strawberry_image.png';
+      return 'assets/images/strawberry_blur.png';
     }
   }
 
@@ -29,6 +29,7 @@ class ImageGridThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (diary.imageUrls.isEmpty) return const SizedBox.shrink();
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

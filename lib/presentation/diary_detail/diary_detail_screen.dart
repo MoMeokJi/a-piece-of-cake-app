@@ -147,7 +147,7 @@ class DiaryDetailScreen extends StatelessWidget {
                     BodySection(diary: viewModel.diary),
                     SizedBox(height: getHeight(8)),
                     ImageGridThumbnail(diary: viewModel.diary),
-                    SizedBox(height: getHeight(16)),
+                    SizedBox(height: getHeight(8)),
                     if (viewModel.diary.feedback != null &&
                         viewModel.diary.feedback!.isNotEmpty) ...[
                       FeedbackSection(diary: viewModel.diary),
