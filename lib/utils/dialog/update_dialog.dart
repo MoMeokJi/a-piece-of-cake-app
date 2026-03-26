@@ -21,7 +21,7 @@ class UpdateDialog extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('업데이트 알림'),
         titleTextStyle: TextStyle(fontSize: getWidth(24), color: ColorConfig.black,fontWeight: FontWeight.bold,),
-        content: Text('새로운 앱 버전이 출시되었습니다 🙌\n\n지금 바로 업데이트 할까요?'),
+        content: Text('새로운 버전이 도착했어요!\n\n더 맛있어진 조각케이크, 지금 만나보세요 🍰'),
         contentTextStyle: TextStyle(fontSize: getWidth(18), color: ColorConfig.gray1),
         contentPadding: EdgeInsets.symmetric(vertical: getHeight(30), horizontal: getWidth(24)),
         actions: [

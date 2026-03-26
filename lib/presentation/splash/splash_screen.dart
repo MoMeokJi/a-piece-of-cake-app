@@ -22,7 +22,7 @@ class SplashScreen extends StatelessWidget {
           DialogUtils.showUpdateDialog(
             context: context,
             onUpdatePressed: () => viewModel.openStore(),
-            onLaterPressed: () => viewModel.skipUpdate(),
+            // onLaterPressed: () => viewModel.skipUpdate(),
           );
         case AppInitState.showInactivityDialog:
           DialogUtils.showInactivityDialog(
