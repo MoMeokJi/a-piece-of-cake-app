@@ -12,18 +12,16 @@ class SignUpViewModel with ChangeNotifier {
   DiaryPreference? _selectedType;
   DiaryPreference? get selectedType => _selectedType;
 
-  ResultState _resultState = ResultState.none;
-  ResultState get state => _resultState;
+  ResultState _signUpState = ResultState.none;
+  ResultState get signUpState => _signUpState;
 
-    bool _hasShownTermsSheet = false;
+  bool _hasShownTermsSheet = false;
   bool get hasShownTermsSheet => _hasShownTermsSheet;
 
   void markTermsSheetAsShown() {
     _hasShownTermsSheet = true;
     // notifyListeners() 안 함 (rebuild 방지)
   }
-
- 
 
   void selectType(DiaryPreference type) {
     _selectedType = type;
@@ -33,18 +31,22 @@ class SignUpViewModel with ChangeNotifier {
   Future<void> signUp() async {
     if (_selectedType == null) return;
 
-     FirebaseAnalytics.instance.logEvent(name: 'sign_up');
+    FirebaseAnalytics.instance.logEvent(name: 'sign_up');
 
-    _resultState = ResultState.loading;
+    _signUpState = ResultState.loading;
     notifyListeners();
 
     try {
       await _userRepo.signUp(diaryPreference: _selectedType!);
-      _resultState = ResultState.success;
+      _signUpState = ResultState.success;
     } catch (e) {
-      _resultState = ResultState.error;
+      _signUpState = ResultState.error;
     } finally {
       notifyListeners();
     }
+  }
+
+  void resetSignUpState() {
+    _signUpState = ResultState.none;
   }
 }

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -23,7 +24,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     // 최초 1회만 약관 동의 바텀시트 표시
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<SignUpViewModel>();
@@ -38,13 +39,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<SignUpViewModel>();
 
-    if (viewModel.state == ResultState.success) {
+    if (viewModel.signUpState == ResultState.success) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.go('/diary-calendar');
       });
-    } else if (viewModel.state == ResultState.error) {
+    } else if (viewModel.signUpState == ResultState.error) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        //TODO: error 처리
+        toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          style: ToastificationStyle.flat,
+          primaryColor: ColorConfig.error,
+          title: Text(
+            '회원가입에 실패하였습니다. 잠시 후 다시 시도해 주세요.',
+            style: TextStyle(fontSize: getWidth(14)),
+          ),
+          autoCloseDuration: const Duration(seconds: 2),
+          alignment: Alignment.bottomCenter,
+          showProgressBar: false,
+        );
+        viewModel.resetSignUpState();
       });
     }
 
@@ -134,7 +148,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     text: '시작하기',
                     isEnabled:
                         viewModel.selectedType != null &&
-                        viewModel.state != ResultState.loading,
+                        viewModel.signUpState != ResultState.loading,
                     onPressed: () => viewModel.signUp(),
                   ),
                 ),
@@ -142,7 +156,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
         ),
-        if (viewModel.state == ResultState.loading)
+        if (viewModel.signUpState == ResultState.loading)
           Container(
             color: Colors.black.withValues(alpha: 0.5),
             child: const Center(
@@ -170,7 +184,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: getHeight(8)),
-            
+
             // 타이틀
             Text(
               '서비스 이용을 위해\n아래 항목에 동의해 주세요',
@@ -178,7 +192,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontSize: getWidth(22),
                 fontWeight: FontWeight.bold,
                 height: 1.4,
-                fontFamily: 'Pretendard'
+                fontFamily: 'Pretendard',
               ),
             ),
 
@@ -196,7 +210,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     fontSize: getWidth(16),
                     color: ColorConfig.gray2,
                     decoration: TextDecoration.underline,
-                    fontFamily: 'Pretendard'
+                    fontFamily: 'Pretendard',
                   ),
                 ),
               ),
@@ -215,7 +229,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     fontSize: getWidth(16),
                     color: ColorConfig.gray2,
                     decoration: TextDecoration.underline,
-                    fontFamily: 'Pretendard'
+                    fontFamily: 'Pretendard',
                   ),
                 ),
               ),
@@ -241,7 +255,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   style: TextStyle(
                     fontSize: getWidth(16),
                     color: Colors.white,
-                    fontFamily: 'Pretendard'
+                    fontFamily: 'Pretendard',
                   ),
                 ),
               ),
