@@ -1,5 +1,6 @@
 import 'package:cake/config/api_config.dart';
 import 'package:cake/data/data_source/api/auth_interceptor.dart';
+import 'package:cake/data/data_source/api/error_reporting_interceptor.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:dio/dio.dart';
 
@@ -40,5 +41,9 @@ Dio buildDio(TokenRepository tokenRepository, {HttpClientAdapter? adapter}) {
         retryDio: retryDio,
         reissueDio: reissueDio,
       ),
-    );
+    )
+    // AuthInterceptor 다음에 붙여야 한다: 401이 재발급+재시도로 복구되면
+    // handler.resolve()로 끝나 이 인터셉터의 onError까지 오지 않는다.
+    // 복구되지 않은 실패만 여기서 보고된다.
+    ..interceptors.add(ErrorReportingInterceptor());
 }

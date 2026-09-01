@@ -101,11 +101,16 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
       final response = await _dio.get('/diaries/question');
       return List<String>.from(response.data['questions']);
     } on DioException catch (e) {
+      // 응답을 받은 실패에만 fallback을 적용한다.
+      // 네트워크 단절/타임아웃은 기존처럼 예외로 올려보낸다 — 오프라인 사용자에게
+      // 기본 질문을 주면 답을 다 쓴 뒤 generateQnaDiary에서 실패한다.
+      if (e.response == null) rethrow;
+
       // 서버 에러를 사용자에게 보여주기보다 기본 질문으로 대체한다.
       AppLogger.error(
         'fetchQuestions 서버 에러. statusCode : ${e.response?.statusCode}',
       );
-      return const [
+      return [
         "지금 기분이 어때?",
         "오늘 특별한 일이나 기록하고 싶은 일이 있었어? ",
         "요즘 너의 최대 관심사는뭐야?",

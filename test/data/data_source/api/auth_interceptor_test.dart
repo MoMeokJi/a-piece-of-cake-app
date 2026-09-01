@@ -9,6 +9,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../fakes/fake_token_repository.dart';
 
+class _RecordingCrashReporter implements CrashReporter {
+  final List<String> reasons = [];
+
+  @override
+  void recordError(Object error, StackTrace stack, {required String reason}) {
+    reasons.add(reason);
+  }
+}
+
 class _FakeAdapter implements HttpClientAdapter {
   final List<RequestOptions> requests = [];
   late ResponseBody Function(RequestOptions options) responder;
@@ -246,6 +255,52 @@ void main() {
       // 다시 재발급+재시도를 트리거해 diariesCalls가 2를 넘어선다.
       // 이 테스트는 buildDio가 실제로 만드는 배선 자체를 검증한다.
       expect(diariesCalls, 2);
+    });
+
+    test('응답을 받은 실패(500)는 한 번 보고된다', () async {
+      final reporter = _RecordingCrashReporter();
+      ApiException.reporter = reporter;
+
+      adapter.responder = (_) => ResponseBody.fromString('server error', 500);
+
+      final builtDio = buildDio(tokenRepository, adapter: adapter);
+
+      await expectLater(
+        builtDio.get('/diaries'),
+        throwsA(isA<DioException>()),
+      );
+
+      expect(reporter.reasons, ['[500] /diaries']);
+    });
+
+    test('401이 재발급+재시도로 복구되면 보고되지 않는다', () async {
+      final reporter = _RecordingCrashReporter();
+      ApiException.reporter = reporter;
+
+      tokenRepository.fcmToken = 'device-1';
+      var diariesCalls = 0;
+
+      adapter.responder = (options) {
+        if (options.path.contains('/auth/login')) {
+          return ResponseBody.fromString(
+            '',
+            204,
+            headers: {
+              'authorization': ['Bearer reissued'],
+              'refresh-token': ['reissued-refresh'],
+            },
+          );
+        }
+        diariesCalls++;
+        return _json(diariesCalls == 1 ? 401 : 200);
+      };
+
+      final builtDio = buildDio(tokenRepository, adapter: adapter);
+
+      final response = await builtDio.get('/diaries');
+
+      expect(response.statusCode, 200);
+      expect(reporter.reasons, isEmpty);
     });
   });
 }
