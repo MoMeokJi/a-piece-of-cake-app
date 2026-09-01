@@ -17,7 +17,9 @@
 - **신규 런타임 의존성은 `dio` 하나만 추가한다.** 테스트용 패키지는 추가하지 않는다 — 손으로 쓴 Fake를 쓴다 (`lib/data/data_source/api/diary/mock_diary_api.dart`가 기존 선례다)
 - **제거 대상 의존성:** `http`(Task 8), `flutter_dotenv`(Task 2, 미사용), `mockito`(Task 2, 미사용)
 - 상태관리 교체(Riverpod/bloc), 화면 구조 변경, sqflite 스키마 변경은 이 계획의 범위가 아니다
-- 각 태스크는 다음을 만족해야 끝난다: `flutter analyze` 무경고, `flutter test` 통과
+- 각 태스크는 다음을 만족해야 끝난다: `flutter test` 통과, 그리고 `flutter analyze`가 **베이스라인 대비 새 이슈 0건**
+  - 베이스라인은 `858cd3f` 기준 6건이다 — `di.dart`의 미사용 mock import 2건(주석 처리된 mock 토글을 살려두기 위해 의도적으로 남음), `app_logger.dart`의 `avoid_print` 3건과 `mock_diary_api.dart` 1건(AppLogger가 print를 감싸는 것이 설계 의도)
+  - 이 6건은 이 계획의 범위 밖이다. 건드리지 않는다
 - 커밋 메시지는 한국어. 기존 컨벤션을 따른다 — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
 - 테스트 파일은 `test/` 아래에 `lib/`의 디렉터리 구조를 그대로 반영해 배치한다
 - 공용 Fake는 `test/fakes/` 아래 한 파일에 하나씩 둔다
