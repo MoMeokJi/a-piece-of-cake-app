@@ -1507,9 +1507,14 @@ class UserApiImpl implements UserApi {
       final response = await _dio.get('/diaries/question');
       return List<String>.from(response.data['questions']);
     } on DioException catch (e) {
+      // 응답을 받은 실패에만 fallback을 적용한다.
+      // 네트워크 단절/타임아웃은 기존처럼 예외로 올려보낸다 — 오프라인 사용자에게
+      // 기본 질문을 주면 답을 다 쓴 뒤 generateQnaDiary에서 실패한다.
+      if (e.response == null) rethrow;
+
       // 서버 에러를 사용자에게 보여주기보다 기본 질문으로 대체한다.
       AppLogger.error('fetchQuestions 서버 에러. statusCode : ${e.response?.statusCode}');
-      return const [
+      return [
         "지금 기분이 어때?",
         "오늘 특별한 일이나 기록하고 싶은 일이 있었어? ",
         "요즘 너의 최대 관심사는뭐야?",
@@ -1552,6 +1557,36 @@ getIt.registerLazySingleton<DiaryApi>(
   ),
 );
 ```
+
+- [ ] **Step 4b: API 에러 텔레메트리 복원**
+
+`ApiException`의 생성자가 이 앱의 유일한 API 에러 Crashlytics 훅이었다. dio로 옮기면 비2xx가 `DioException`으로 던져지고 상위 ViewModel들이 이를 `ResultState.error`로 삼켜, **출시된 앱에서 API 실패가 아무 데도 보고되지 않는다.** 마이그레이션이 잘못됐을 때 현장에서 알아챌 신호가 사라지는 것이므로 복원한다.
+
+`lib/data/data_source/api/error_reporting_interceptor.dart`:
+
+```dart
+import 'package:cake/data/data_source/api/api_exception.dart';
+import 'package:dio/dio.dart';
+
+/// 응답을 받은 실패만 크래시 리포터에 남기고 그대로 통과시킨다.
+/// dio 전환 이전 ApiException 생성자가 하던 역할을 대신한다.
+class ErrorReportingInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final response = err.response;
+    if (response != null) {
+      ApiException.reporter.recordError(
+        err,
+        err.stackTrace,
+        reason: '[${response.statusCode}] ${err.requestOptions.path}',
+      );
+    }
+    handler.next(err);
+  }
+}
+```
+
+`buildDio`에서 **바깥 `dio`에만, `AuthInterceptor` 뒤에** 등록한다. 순서가 중요하다 — 401이 재발급 후 재시도로 복구되면 `onError` 체인 끝까지 오지 않으므로 보고되지 않고, 복구에 실패한 것만 보고된다. `retryDio`와 `reissueDio`에는 붙이지 않는다(재발급 실패는 `AuthInterceptor`가 이미 보고한다).
 
 - [ ] **Step 5: 테스트와 분석**
 
