@@ -1663,7 +1663,15 @@ git commit -m "refactor: 비멀티파트 API를 dio로 전환
     required String endpointName,
   }) async {
     final formData = FormData.fromMap({
-      'text': text,
+      // 일반 String으로 넣으면 FormData.fields로 가서 content-type이 붙지 않는다.
+      // 옛 http 구현은 비ASCII 값(한글 본문)에 항상
+      // `content-type: text/plain; charset=utf-8`을 실어 보냈다
+      // (package:http MultipartRequest._headerForField). 서버가 이 선언에
+      // 의존해 왔을 수 있으므로 MultipartFile로 감싸 같은 선언을 유지한다.
+      'text': MultipartFile.fromString(
+        text,
+        contentType: DioMediaType('text', 'plain', {'charset': 'utf-8'}),
+      ),
       'images': [
         for (final image in images)
           await MultipartFile.fromFile(image.path),
@@ -1676,6 +1684,9 @@ git commit -m "refactor: 비멀티파트 API를 dio로 전환
       return DiaryDetailDto.fromJson(response.data as Map<String, dynamic>);
     }
 
+    // dio의 기본 validateStatus는 2xx만 통과시키므로 4xx/5xx는 여기 오기 전에
+    // DioException으로 던져진다. 이 분기는 200/202/204처럼 2xx이지만 201이
+    // 아닌 응답에서만 실행된다 (auth_interceptor.dart:130-131과 동일한 패턴).
     throw ApiException(
       statusCode: response.statusCode ?? -1,
       endpoint: endpointName,
@@ -1761,6 +1772,7 @@ Expected: 모두 통과, 무경고
 
 1. **자유일기 작성 + 이미지 2장 이상 첨부 → 저장 성공.**
    실패 증상: 저장 버튼을 눌러도 에러 토스트가 뜨거나 로딩에서 멈춘다. `FormData`의 필드명(`text`/`images`)이 서버 기대와 다르면 서버가 400을 반환한다.
+   저장 실패 시 로그에 `type 'String' is not a subtype of type 'Map<String, dynamic>'`가 있으면 서버 응답의 Content-Type이 JSON이 아니라는 뜻이다. 이 경우 서버에는 일기가 이미 생성됐는데 앱은 실패로 보이므로, 재시도하면 중복 생성되고 하루 3개 제한을 소진한다.
 2. **문답일기 작성 + 이미지 첨부 → 저장 성공.**
    실패 증상: 1과 동일. `createQnaDiary`/`createFreeDiary`는 같은 비공개 헬퍼(`_createDiary`)를 쓰므로 한쪽만 성공하고 다른 쪽만 실패한다면 헬퍼가 아니라 호출부(`path`)의 문제다.
 3. **이미지 4장(도메인 상한, `ServiceConfig.maxDiaryCount`가 아니라 이미지 개수 상한)까지 첨부 → 저장 성공.**
@@ -1772,6 +1784,8 @@ Expected: 모두 통과, 무경고
 6. **만료된 토큰 상태에서 이미지 첨부 일기 저장 — 이 태스크가 존재하는 이유 그 자체.**
    액세스 토큰을 만료시킨 뒤(서버 측에서 무효화하거나, 세션을 오래 열어둔 뒤) 이미지 첨부 일기 저장을 시도한다 → 401 → 인터셉터가 토큰을 재발급하고 `FormData.clone()`으로 본문을 복제해 한 번 재시도 → 저장 성공.
    실패 증상: 다른 항목은 다 되는데 이 시나리오에서만 저장이 실패하며 에러 토스트가 뜬다. 로그(또는 Crashlytics)에 `"The FormData has already been finalized"`가 남아 있으면 `AuthInterceptor.onError`의 `data.clone()` 호출이 빠졌거나 회귀한 것이다 — 정확히 `auth_interceptor_test.dart`의 새 테스트가 잡는 것과 같은 실패다.
+7. **저장 직후 상세 화면에서 한글 본문이 입력한 그대로 보이는지 확인.**
+   깨져 보이면 `text` 파트의 charset 선언 문제다. `text`는 이제 일반 String이 아니라 `MultipartFile.fromString(text, contentType: DioMediaType('text', 'plain', {'charset': 'utf-8'}))`으로 감싸 보낸다 — 옛 `http` 구현이 비ASCII 값에 항상 실어 보내던 `content-type: text/plain; charset=utf-8` 선언과 wire 포맷을 맞추기 위해서다(`diary_api_impl_test.dart`가 이 헤더를 고정한다). 이 항목은 그 자동 검증이 실기기·실서버 경로에서도 성립하는지에 대한 경험적 확인이다.
 
 - [ ] **Step 7: 커밋**
 
