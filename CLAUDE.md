@@ -67,8 +67,8 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 | `flutter-presentation-mvvm` | 적용된다. `context.watch/read` + ChangeNotifier getter 방식이 이 앱과 같다 |
 | `flutter-data-layer` | 적용된다. DataSource 인터페이스 + Repository + DTO/매퍼 구조가 같다 |
 | `flutter-testing` | 적용된다 |
-| `flutter-widget-ui` | 적용된다 |
-| `flutter-di-get-it` | 등록 규칙만 적용된다 (Repository/DataSource는 singleton, ViewModel은 factory). 경로는 다르다 — 스킬은 `lib/core/di/di_setup.dart`, 이 앱은 `lib/config/di.dart` |
+| `flutter-widget-ui` | 적용된다. 단 공용 위젯 경로는 다르다 — 스킬은 `lib/core/presentation/components/`, 이 앱은 `lib/ui/common_components/` |
+| `flutter-di-get-it` | 개념은 적용되지만 세부는 이 문서가 기준이다. 등록 규칙은 위 "화면 하나를 추가할 때" 3번을 따른다. 경로도 다르다 — 스킬은 `lib/core/di/di_setup.dart`, 이 앱은 `lib/config/di.dart` |
 | `flutter-navigation-go-router` | 라우팅 개념만 적용된다. 경로는 다르다 — 스킬은 `lib/core/routing/`, 이 앱은 `lib/config/app_router.dart` |
 | `flutter-project-structure` | **적용되지 않는다.** `lib/core/` + `lib/domain/use_case/` 레이아웃을 서술하며 예시도 다른 앱의 것이다. 이 앱의 구조는 위 "레이어" 절이 기준이다 |
 | `flutter-presentation-mvi` | **적용되지 않는다.** 이 앱은 sealed Action도 Root/Screen 분리도 쓰지 않는다 |
