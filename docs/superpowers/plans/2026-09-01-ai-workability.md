@@ -1496,7 +1496,31 @@ class UserApiImpl implements UserApi {
 
 `fetchQuestions`와 `requestQnaDiary`는 기존 구현의 응답 파싱 로직(`jsonDecode` 이후 부분)을 그대로 옮긴다. dio가 JSON을 이미 파싱해 `response.data`로 주므로 `jsonDecode`와 `utf8.decode` 호출은 제거한다.
 
-비2xx는 dio가 `DioException`으로 던지므로 개별 분기가 필요 없다. `ApiException`으로 감쌀 필요가 있는 곳은 상위에서 판단한다.
+비2xx는 dio가 `DioException`으로 던지므로, 단순히 예외를 던지던 메서드에는 개별 분기가 필요 없다.
+
+**단 `fetchQuestions`는 예외다.** 기존 구현은 비200 응답에서 예외를 던지지 않고 기본 질문 5개를 반환한다 — 서버가 죽어도 사용자가 문답일기를 계속 쓸 수 있게 한 의도적인 처리이며 코드에 주석으로 남아 있다. 이 동작을 유지해야 한다. dio 전환 후에는 `DioException`을 잡아 같은 기본 목록을 반환한다.
+
+```dart
+  @override
+  Future<List<String>> fetchQuestions() async {
+    try {
+      final response = await _dio.get('/diaries/question');
+      return List<String>.from(response.data['questions']);
+    } on DioException catch (e) {
+      // 서버 에러를 사용자에게 보여주기보다 기본 질문으로 대체한다.
+      AppLogger.error('fetchQuestions 서버 에러. statusCode : ${e.response?.statusCode}');
+      return const [
+        "지금 기분이 어때?",
+        "오늘 특별한 일이나 기록하고 싶은 일이 있었어? ",
+        "요즘 너의 최대 관심사는뭐야?",
+        "오늘 가장 후회되는 지출이 있어? 꼭 오늘이 아니어도 괜찮아",
+        "오늘의 너에게 해주고 싶은 말이 있다면?",
+      ];
+    }
+  }
+```
+
+인터셉터가 401 재발급과 1회 재시도를 이미 시도한 뒤에야 `DioException`이 여기까지 오므로, 이 fallback은 진짜 실패에만 걸린다. 기존의 무한 재귀와 달리 지속적인 401도 기본 질문으로 떨어진다.
 
 `createQnaDiary`와 `createFreeDiary` 두 메서드는 **이 태스크에서 건드리지 않는다.** 아직 `BaseApi`를 통해 `http`를 쓰도록 남겨둔다. 그러려면 이 태스크 동안 `DiaryApiImpl`이 `BaseApi`를 계속 상속하면서 `Dio`도 함께 받는 과도기 형태가 된다. 생성자는 다음과 같다.
 
