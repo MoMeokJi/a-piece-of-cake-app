@@ -130,5 +130,12 @@ void main() {
         adapter.capturedOptions!.headers[Headers.contentTypeHeader];
     expect(sentContentType, contains('charset=utf-8'));
     expect(sentContentType, contains('application/json'));
+
+    // 헤더 선언만으로는 dio가 실제로 JSON을 인코딩했는지 알 수 없다 —
+    // Map.toString()의 결과({text: 한글 본문 수정})도 부분 문자열 검사는
+    // 통과한다. jsonDecode가 성공하고 필드가 온전해야 실제 JSON 직렬화다.
+    final decoded =
+        jsonDecode(utf8.decode(adapter.capturedBody!)) as Map<String, dynamic>;
+    expect(decoded['text'], '한글 본문 수정');
   });
 }
