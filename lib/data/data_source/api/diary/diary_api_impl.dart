@@ -6,12 +6,17 @@ import 'package:cake/data/data_source/api/base_api.dart';
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
 import 'package:cake/data/dto/qna_request_dto.dart';
-import 'package:cake/utils/app_logger.dart';
+import 'package:cake/domain/repository/token_repository.dart';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class DiaryApiImpl extends BaseApi implements DiaryApi {
-  DiaryApiImpl(super._tokenRepository);
+  final Dio _dio;
+
+  DiaryApiImpl({required Dio dio, required TokenRepository tokenRepository})
+    : _dio = dio,
+      super(tokenRepository);
 
   @override
   Future<DiaryDetailDto> createQnaDiary({
@@ -91,108 +96,39 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
 
   @override
   Future<List<String>> fetchQuestions() async {
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/diaries/question'),
-      headers: await getHeaders(),
-    );
+    final response = await _dio.get('/diaries/question');
 
-    if (response.statusCode == 200) {
-      await saveAllTokensFromHeader(response.headers);
-      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
-      return List<String>.from(jsonData['questions']);
-    } else if (response.statusCode == 401) {
-      await reissueTokens();
-      return fetchQuestions();
-    } else {
-      // 여기서는 에러나면 굳이 그 에러를 보여주기보다는 defaultdata를 주는게 나을지도?
-      AppLogger.error(
-        'fetchQuestions 서버 에러. statusCode : ${response.statusCode}',
-      );
-      return [
-        "지금 기분이 어때?",
-        "오늘 특별한 일이나 기록하고 싶은 일이 있었어? ",
-        "요즘 너의 최대 관심사는뭐야?",
-        "오늘 가장 후회되는 지출이 있어? 꼭 오늘이 아니어도 괜찮아",
-        "오늘의 너에게 해주고 싶은 말이 있다면?",
-      ];
-    }
+    return List<String>.from(response.data['questions']);
   }
 
   @override
   Future<String> requestQnaDiary({
     required List<QnaRequestDto> qnaListDto,
   }) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/diaries/qna'),
-      headers: await getHeaders(),
-      body: jsonEncode({
-        'target_set': qnaListDto.map((qna) => qna.toJson()).toList(),
-      }),
+    final response = await _dio.post(
+      '/diaries/qna',
+      data: {'target_set': qnaListDto.map((qna) => qna.toJson()).toList()},
     );
 
-    if (response.statusCode == 200) {
-      await saveAllTokensFromHeader(response.headers);
-      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
-      return jsonData['content'] as String;
-    } else if (response.statusCode == 401) {
-      await reissueTokens();
-      return requestQnaDiary(qnaListDto: qnaListDto);
-    } else {
-      throw ApiException.fromResponse(response, 'requestQnaDiary');
-    }
+    return response.data['content'] as String;
   }
 
   @override
   Future<DiaryDetailDto> fetchDiary({required int id}) async {
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/diaries/$id'),
-      headers: await getHeaders(),
-    );
-
-    if (response.statusCode == 200) {
-      await saveAllTokensFromHeader(response.headers);
-      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
-      return DiaryDetailDto.fromJson(jsonData);
-    } else if (response.statusCode == 401) {
-      await reissueTokens();
-      return fetchDiary(id: id);
-    } else {
-      throw ApiException.fromResponse(response, 'fetchDiary');
-    }
+    final response = await _dio.get('/diaries/$id');
+    return DiaryDetailDto.fromJson(response.data as Map<String, dynamic>);
   }
 
   @override
   Future<void> deleteDiary({required int id}) async {
-    final response = await http.delete(
-      Uri.parse('${ApiConfig.baseUrl}/diaries/$id'),
-      headers: await getHeaders(),
-    );
-
-    if (response.statusCode == 204) {
-      await saveAllTokensFromHeader(response.headers);
-    } else if (response.statusCode == 401) {
-      await reissueTokens();
-      return deleteDiary(id: id);
-    } else {
-      throw ApiException.fromResponse(response, 'deleteDiary');
-    }
+    await _dio.delete('/diaries/$id');
   }
 
   @override
-  Future<void> updateDiaryText({required int id, required String text}) async {
-    final response = await http.patch(
-      Uri.parse('${ApiConfig.baseUrl}/diaries/$id'),
-      headers: await getHeaders(),
-      body: jsonEncode({'text': text}),
-    );
-
-    if (response.statusCode == 200) {
-      await saveAllTokensFromHeader(response.headers);
-    } else if (response.statusCode == 401) {
-      await reissueTokens();
-      return updateDiaryText(id: id, text: text);
-    } else {
-      throw ApiException.fromResponse(response, 'updateDiaryText');
-    }
+  Future<void> updateDiaryText({
+    required int id,
+    required String text,
+  }) async {
+    await _dio.patch('/diaries/$id', data: {'text': text});
   }
 }

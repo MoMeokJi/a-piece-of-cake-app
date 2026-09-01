@@ -1,6 +1,7 @@
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/data_source/api/diary/diary_api_impl.dart';
 import 'package:cake/data/data_source/api/diary/mock_diary_api.dart';
+import 'package:cake/data/data_source/api/dio_client.dart';
 import 'package:cake/data/data_source/api/user/mock_user_api.dart';
 import 'package:cake/data/data_source/api/user/user_api.dart';
 import 'package:cake/data/data_source/api/user/user_api_impl.dart';
@@ -33,6 +34,7 @@ import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart'
 import 'package:cake/presentation/settings/settings_view_model.dart';
 import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -55,14 +57,22 @@ Future<void> diSetup() async {
     () => TokenRepositoryImpl(getIt<Storage>()),
   );
 
+  getIt.registerLazySingleton<Dio>(() => buildDio(getIt<TokenRepository>()));
+
   //api -> LazySignleton
   getIt.registerLazySingleton<UserApi>(
-    () => UserApiImpl(getIt<TokenRepository>()),
+    () => UserApiImpl(
+      dio: getIt<Dio>(),
+      tokenRepository: getIt<TokenRepository>(),
+    ),
   );
 
   // getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
   getIt.registerLazySingleton<DiaryApi>(
-    () => DiaryApiImpl(getIt<TokenRepository>()),
+    () => DiaryApiImpl(
+      dio: getIt<Dio>(),
+      tokenRepository: getIt<TokenRepository>(),
+    ),
   );
 
   getIt.registerLazySingleton<FirebaseMessagingManager>(

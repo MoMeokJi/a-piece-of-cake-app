@@ -1,55 +1,75 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cake/config/api_config.dart';
 import 'package:cake/data/data_source/api/api_exception.dart';
-import 'package:cake/data/data_source/api/base_api.dart';
+import 'package:cake/data/data_source/api/auth_interceptor.dart';
 import 'package:cake/data/data_source/api/user/user_api.dart';
+import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/utils/app_logger.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
-class UserApiImpl extends BaseApi implements UserApi {
-  UserApiImpl(super._tokenRepository);
+class UserApiImpl implements UserApi {
+  final Dio _dio;
+  final TokenRepository _tokenRepository;
+
+  UserApiImpl({required Dio dio, required TokenRepository tokenRepository})
+    : _dio = dio,
+      _tokenRepository = tokenRepository;
 
   @override
   Future<void> createUser({required String preference}) async {
-    final fcmToken = await getFCMToken();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/users'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    final fcmToken = await _tokenRepository.getFcmToken();
+
+    // 회원가입은 아직 토큰이 없으므로 인증 헤더를 붙이지 않는다.
+    final response = await _dio.post(
+      '/users',
+      data: {
         'deviceId': fcmToken,
         'preference': preference,
         'mobileOS': Platform.isAndroid ? 'AND' : 'IOS',
-      }),
+      },
+      options: Options(
+        extra: {AuthInterceptor.needsAuthKey: false},
+        validateStatus: (status) => status != null && status < 500,
+      ),
     );
 
-    // 회원가입은 401이 있을수없음.
     if (response.statusCode == 204) {
-      await saveAllTokensFromHeader(response.headers);
       AppLogger.log('가입된 deviceId : $fcmToken');
       return;
-    } else {
-      throw ApiException.fromResponse(response, 'createUser');
     }
+
+    throw ApiException(
+      statusCode: response.statusCode ?? -1,
+      endpoint: 'createUser',
+      responseBody: response.data?.toString() ?? '',
+    );
   }
 
   @override
   Future<void> deleteUser() async {
-    final response = await http.delete(
-      Uri.parse('${ApiConfig.baseUrl}/users'),
-      headers: await getHeaders(),
+    final response = await _dio.delete(
+      '/users',
+      options: Options(
+        // 401은 통과시키지 않는다. DioException으로 떨어져야
+        // 인터셉터가 재발급 후 재시도할 수 있다.
+        validateStatus: (status) => status == 204 || status == 404,
+      ),
     );
 
     if (response.statusCode == 204) {
-      await deleteJwtTokens();
-    } else if (response.statusCode == 404) {
-      AppLogger.log('deleteUser 404 이미 삭제된 유저.');
-    } else if (response.statusCode == 401) {
-      await reissueTokens();
-      return deleteUser();
-    } else {
-      throw ApiException.fromResponse(response, 'deleteUser');
+      await _tokenRepository.clearJwtTokens();
+      return;
     }
+
+    if (response.statusCode == 404) {
+      AppLogger.log('deleteUser 404 이미 삭제된 유저.');
+      return;
+    }
+
+    throw ApiException(
+      statusCode: response.statusCode ?? -1,
+      endpoint: 'deleteUser',
+      responseBody: response.data?.toString() ?? '',
+    );
   }
 }
