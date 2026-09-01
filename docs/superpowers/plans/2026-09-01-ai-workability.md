@@ -681,6 +681,7 @@ void main() {
 
   test('생성 시 최신순으로 목록을 불러온다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
+    addTearDown(viewModel.dispose);
     await Future.delayed(Duration.zero);
 
     expect(viewModel.sortType, SortType.latest);
@@ -690,6 +691,7 @@ void main() {
 
   test('정렬을 바꾸면 해당 순서로 다시 불러오고 리스너에 알린다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
+    addTearDown(viewModel.dispose);
     await Future.delayed(Duration.zero);
 
     var notifyCount = 0;
@@ -701,10 +703,15 @@ void main() {
     expect(viewModel.diaryList.map((d) => d.id), [1, 2]);
     expect(repository.getOldestCallCount, 1);
     expect(notifyCount, 1);
+
+    // 전제를 명시한다. animateTo는 notifyListeners를 부르지 않으므로
+    // notifyCount로는 애니메이션 분기를 탔는지 구분할 수 없다.
+    expect(viewModel.scrollController.hasClients, isFalse);
   });
 
   test('같은 정렬을 다시 선택하면 재조회하지 않는다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
+    addTearDown(viewModel.dispose);
     await Future.delayed(Duration.zero);
 
     await viewModel.setSortType(SortType.latest);
@@ -720,7 +727,9 @@ void main() {
 Run: `flutter test test/presentation/diary_list/diary_list_view_model_test.dart`
 Expected: PASS (3개)
 
-`ScrollController`가 위젯 트리에 붙지 않아 `hasClients`가 false이므로 애니메이션 경로는 타지 않는다. `TestWidgetsFlutterBinding.ensureInitialized()`가 필요한 이유는 `ScrollController` 생성이 바인딩을 요구하기 때문이다.
+`ScrollController`가 위젯 트리에 붙지 않아 `hasClients`가 false이므로 애니메이션 경로는 타지 않는다. 이 전제는 두 번째 테스트가 `expect(viewModel.scrollController.hasClients, isFalse)`로 직접 확인한다 — **`notifyCount`로는 확인할 수 없다.** `animateTo`는 `ScrollController` API라 `notifyListeners`를 부르지 않으므로, 분기를 타든 안 타든 `notifyCount`는 1이다. 이 테스트는 이후 ViewModel 테스트의 본보기가 되므로 전제를 추론에 맡기지 않고 명시한다.
+
+`TestWidgetsFlutterBinding.ensureInitialized()`가 필요한 이유는 `ScrollController` 생성이 바인딩을 요구하기 때문이다. 각 테스트는 `addTearDown(viewModel.dispose)`로 `ScrollController`를 정리한다.
 
 - [ ] **Step 4: 전체 테스트와 분석**
 
