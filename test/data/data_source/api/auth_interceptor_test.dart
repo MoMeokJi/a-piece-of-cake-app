@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cake/data/data_source/api/api_exception.dart';
@@ -127,6 +128,8 @@ void main() {
 
     expect(tokenRepository.accessToken, 'new-access');
     expect(tokenRepository.refreshToken, 'new-refresh');
+    // 이중 저장(예: onResponse가 두 번 걸리는 회귀)이 조용히 통과하지 않도록 한다.
+    expect(tokenRepository.saveJwtTokensCallCount, 1);
   });
 
   test('401이면 재발급 후 한 번 재시도하고 성공 응답을 반환한다', () async {
@@ -255,6 +258,14 @@ void main() {
       // 다시 재발급+재시도를 트리거해 diariesCalls가 2를 넘어선다.
       // 이 테스트는 buildDio가 실제로 만드는 배선 자체를 검증한다.
       expect(diariesCalls, 2);
+      // base_api_test.dart가 검증하던 기본 Content-Type: BaseApi.getHeaders는
+      // 이를 직접 넣었으나, dio 전환 후에는 dio_client.dart의 BaseOptions가
+      // 담당한다. AuthInterceptor는 이 헤더를 건드리지 않으므로 buildDio를
+      // 실제로 거쳐야만 이 배선을 검증할 수 있다.
+      expect(
+        adapter.requests.first.headers[Headers.contentTypeHeader],
+        Headers.jsonContentType,
+      );
     });
 
     test('응답을 받은 실패(500)는 한 번 보고된다', () async {
@@ -321,9 +332,20 @@ void main() {
 
       final builtDio = buildDio(tokenRepository, adapter: adapter);
 
+      // 프로덕션 경로(MultipartFile.fromFile)를 그대로 써야 clone()이
+      // 실제로 재현하는 상황(file.clone()이 file.openRead()를 다시 호출)을
+      // 검증한다. fromString은 메모리 바이트를 감싸므로 이 경로를 안 탄다.
+      final tempFile = await File(
+        '${Directory.systemTemp.path}/auth_interceptor_test_${DateTime.now().microsecondsSinceEpoch}.jpg',
+      ).create();
+      await tempFile.writeAsBytes([1, 2, 3, 4]);
+      addTearDown(() async {
+        if (await tempFile.exists()) await tempFile.delete();
+      });
+
       final formData = FormData.fromMap({
         'text': 'hello',
-        'images': [MultipartFile.fromString('fake-bytes', filename: 'a.jpg')],
+        'images': [await MultipartFile.fromFile(tempFile.path)],
       });
 
       final response = await builtDio.post('/diaries', data: formData);

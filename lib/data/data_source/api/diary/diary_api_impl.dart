@@ -18,7 +18,15 @@ class DiaryApiImpl implements DiaryApi {
     required String endpointName,
   }) async {
     final formData = FormData.fromMap({
-      'text': text,
+      // 일반 String으로 넣으면 FormData.fields로 가서 content-type이 붙지 않는다.
+      // 옛 http 구현은 비ASCII 값(한글 본문)에 항상
+      // `content-type: text/plain; charset=utf-8`을 실어 보냈다
+      // (package:http MultipartRequest._headerForField). 서버가 이 선언에
+      // 의존해 왔을 수 있으므로 MultipartFile로 감싸 같은 선언을 유지한다.
+      'text': MultipartFile.fromString(
+        text,
+        contentType: DioMediaType('text', 'plain', {'charset': 'utf-8'}),
+      ),
       'images': [
         for (final image in images) await MultipartFile.fromFile(image.path),
       ],
@@ -30,6 +38,9 @@ class DiaryApiImpl implements DiaryApi {
       return DiaryDetailDto.fromJson(response.data as Map<String, dynamic>);
     }
 
+    // dio의 기본 validateStatus는 2xx만 통과시키므로 4xx/5xx는 여기 오기 전에
+    // DioException으로 던져진다. 이 분기는 200/202/204처럼 2xx이지만 201이
+    // 아닌 응답에서만 실행된다 (auth_interceptor.dart:130-131과 동일한 패턴).
     throw ApiException(
       statusCode: response.statusCode ?? -1,
       endpoint: endpointName,
