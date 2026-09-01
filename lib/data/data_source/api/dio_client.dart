@@ -4,9 +4,18 @@ import 'package:cake/data/data_source/api/error_reporting_interceptor.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:dio/dio.dart';
 
+// package:http의 Request.body setter는 Content-Type에 charset이 없으면
+// 항상 charset=utf-8을 덧붙였다 (dart:http Request._body). 그 결과 이 앱이
+// 보낸 모든 JSON 요청은 `application/json; charset=utf-8`로 나갔다. dio는
+// charset을 자동으로 붙이지 않으므로 여기서 명시한다. 바이트 자체는 항상
+// UTF-8이었으니 선언만 복원하는 것이다.
+// Transformer.isJsonMimeType은 MediaType을 파싱해 mimeType만 보므로
+// charset 파라미터가 붙어도 JSON 인코딩은 그대로 동작한다.
 BaseOptions _baseOptions() => BaseOptions(
   baseUrl: ApiConfig.baseUrl,
-  headers: {Headers.contentTypeHeader: Headers.jsonContentType},
+  headers: {
+    Headers.contentTypeHeader: '${Headers.jsonContentType}; charset=utf-8',
+  },
 );
 
 /// 앱이 쓰는 Dio 인스턴스를 만든다.

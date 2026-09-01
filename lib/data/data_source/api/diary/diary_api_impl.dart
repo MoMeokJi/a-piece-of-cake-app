@@ -28,7 +28,14 @@ class DiaryApiImpl implements DiaryApi {
         contentType: DioMediaType('text', 'plain', {'charset': 'utf-8'}),
       ),
       'images': [
-        for (final image in images) await MultipartFile.fromFile(image.path),
+        for (final image in images)
+          // http.MultipartFile.fromPath가 contentType: null → application/octet-stream을 보냈으므로
+          // 와이어 포맷을 맞춘다. mime 추론(image/jpeg)이 더 정확하지만, 서버가 선언된 타입을
+          // 검증하거나 저장한다면 동작이 바뀌므로 별도 판단과 실기기 검증을 거쳐 바꿀 것.
+          await MultipartFile.fromFile(
+            image.path,
+            contentType: DioMediaType('application', 'octet-stream'),
+          ),
       ],
     });
 

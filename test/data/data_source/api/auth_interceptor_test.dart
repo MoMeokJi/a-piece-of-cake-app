@@ -262,9 +262,11 @@ void main() {
       // 이를 직접 넣었으나, dio 전환 후에는 dio_client.dart의 BaseOptions가
       // 담당한다. AuthInterceptor는 이 헤더를 건드리지 않으므로 buildDio를
       // 실제로 거쳐야만 이 배선을 검증할 수 있다.
+      // charset=utf-8은 package:http가 항상 덧붙이던 선언을 복원한 것이다
+      // (dio_client.dart의 _baseOptions 참고).
       expect(
         adapter.requests.first.headers[Headers.contentTypeHeader],
-        Headers.jsonContentType,
+        '${Headers.jsonContentType}; charset=utf-8',
       );
     });
 
