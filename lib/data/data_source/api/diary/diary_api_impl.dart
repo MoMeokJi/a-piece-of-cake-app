@@ -7,6 +7,7 @@ import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
 import 'package:cake/data/dto/qna_request_dto.dart';
 import 'package:cake/domain/repository/token_repository.dart';
+import 'package:cake/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -96,9 +97,22 @@ class DiaryApiImpl extends BaseApi implements DiaryApi {
 
   @override
   Future<List<String>> fetchQuestions() async {
-    final response = await _dio.get('/diaries/question');
-
-    return List<String>.from(response.data['questions']);
+    try {
+      final response = await _dio.get('/diaries/question');
+      return List<String>.from(response.data['questions']);
+    } on DioException catch (e) {
+      // 서버 에러를 사용자에게 보여주기보다 기본 질문으로 대체한다.
+      AppLogger.error(
+        'fetchQuestions 서버 에러. statusCode : ${e.response?.statusCode}',
+      );
+      return const [
+        "지금 기분이 어때?",
+        "오늘 특별한 일이나 기록하고 싶은 일이 있었어? ",
+        "요즘 너의 최대 관심사는뭐야?",
+        "오늘 가장 후회되는 지출이 있어? 꼭 오늘이 아니어도 괜찮아",
+        "오늘의 너에게 해주고 싶은 말이 있다면?",
+      ];
+    }
   }
 
   @override
