@@ -30,4 +30,9 @@ class UserRepositoryImpl implements UserRepository {
     await _fcmService.deleteFCMToken();
     await _diaryDao.deleteAllDiaries();
   }
+
+  @override
+  Future<void> clearLocalDiaries() async {
+    await _diaryDao.deleteAllDiaries();
+  }
 }

@@ -69,5 +69,5 @@ void main() {
     });
 
     expect(violations, isEmpty, reason: 'presentation → data_source 직접 의존');
-  }, skip: 'Task 10에서 SplashViewModel의 DAO 의존을 제거하며 해제한다');
+  });
 }

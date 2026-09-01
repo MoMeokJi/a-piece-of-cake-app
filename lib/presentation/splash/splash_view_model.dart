@@ -1,7 +1,7 @@
 import 'package:cake/data/data_source/shared_preferences/storage.dart';
-import 'package:cake/data/data_source/sqflite/diary_dao.dart';
 import 'package:cake/domain/enum/app_init_state.dart';
 import 'package:cake/domain/repository/token_repository.dart';
+import 'package:cake/domain/repository/user_repository.dart';
 import 'package:cake/domain/service/app_store_check_service.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
@@ -10,17 +10,17 @@ class SplashViewModel extends ChangeNotifier {
   final TokenRepository _tokenRepo;
   final AppStoreCheckService _appStoreCheckService;
   final Storage _storage;
-  final DiaryDao _diaryDao;
+  final UserRepository _userRepo;
 
   SplashViewModel({
     required TokenRepository tokenRepo,
     required AppStoreCheckService appStoreCheckService,
     required Storage storage,
-    required DiaryDao diaryDao,
+    required UserRepository userRepo,
   }) : _tokenRepo = tokenRepo,
        _appStoreCheckService = appStoreCheckService,
        _storage = storage,
-       _diaryDao = diaryDao {
+       _userRepo = userRepo {
     _init();
   }
 
@@ -80,7 +80,7 @@ class SplashViewModel extends ChangeNotifier {
 
   Future<void> clearDataAndProceed() async {
     await Future.wait([
-      _diaryDao.deleteAllDiaries(),
+      _userRepo.clearLocalDiaries(),
       _tokenRepo.clearAllSecureData(),
       _storage.clearLocalPrefs(),
     ]);

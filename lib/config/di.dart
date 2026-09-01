@@ -125,7 +125,7 @@ Future<void> diSetup() async {
       tokenRepo: getIt<TokenRepository>(),
       appStoreCheckService: getIt<AppStoreCheckService>(),
       storage: getIt<Storage>(),
-      diaryDao: getIt<DiaryDao>(),
+      userRepo: getIt<UserRepository>(),
     ),
   );
   getIt.registerFactory(
