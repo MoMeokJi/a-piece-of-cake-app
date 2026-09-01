@@ -1,8 +1,11 @@
 import 'package:cake/utils/app_logger.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:cake/utils/crash_reporter.dart';
 import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
+  /// 테스트에서 NoopCrashReporter로 교체한다.
+  static CrashReporter reporter = const FirebaseCrashReporter();
+
   final int statusCode;
   final String endpoint;
   final String responseBody;
@@ -14,10 +17,9 @@ class ApiException implements Exception {
   }) {
     AppLogger.error('API 에러 [$endpoint]: $statusCode');
     AppLogger.log('Response Body: $responseBody');
-    FirebaseCrashlytics.instance.recordError(
+    reporter.recordError(
       this,
       StackTrace.current,
-      fatal: false,
       reason: '[$statusCode] $endpoint',
     );
   }
