@@ -1305,10 +1305,19 @@ BaseOptions _baseOptions() => BaseOptions(
 ///
 /// 401 처리를 갖지 않는 retryDio / reissueDio를 따로 두어
 /// 재시도와 재발급이 다시 401 처리를 타지 않도록 한다.
-Dio buildDio(TokenRepository tokenRepository) {
-  final reissueDio = Dio(_baseOptions());
+///
+/// [adapter]는 테스트 전용이다. 세 인스턴스 모두에 적용되므로
+/// 이 배선 자체를 실제 네트워크 없이 검증할 수 있다.
+Dio buildDio(TokenRepository tokenRepository, {HttpClientAdapter? adapter}) {
+  Dio create() {
+    final dio = Dio(_baseOptions());
+    if (adapter != null) dio.httpClientAdapter = adapter;
+    return dio;
+  }
 
-  final retryDio = Dio(_baseOptions())
+  final reissueDio = create();
+
+  final retryDio = create()
     ..interceptors.add(
       AuthInterceptor(
         tokenRepository: tokenRepository,
@@ -1316,7 +1325,7 @@ Dio buildDio(TokenRepository tokenRepository) {
       ),
     );
 
-  return Dio(_baseOptions())
+  return create()
     ..interceptors.add(
       AuthInterceptor(
         tokenRepository: tokenRepository,
@@ -1326,6 +1335,8 @@ Dio buildDio(TokenRepository tokenRepository) {
       ),
     );
 }
+
+`adapter` 매개변수가 없으면 `buildDio`의 배선은 테스트할 수 없다. 그런데 이 배선의 단 한 줄(`retryDio`의 `handleUnauthorized`)이 `true`가 되는 순간 무한 재귀가 되살아난다 — 이 태스크가 존재하는 이유 그 자체다. 인터셉터만 테스트하고 배선을 테스트하지 않으면, 정확히 그 실수가 여섯 개 테스트를 모두 통과한다.
 ```
 
 - [ ] **Step 6: 테스트 실행하여 통과 확인**
