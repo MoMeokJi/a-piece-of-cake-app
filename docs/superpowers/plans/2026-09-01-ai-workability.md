@@ -639,7 +639,7 @@ class FakeDiaryRepository implements DiaryRepository {
 
 - [ ] **Step 2: 실패하는 테스트 작성**
 
-`test/presentation/diary_list/diary_list_view_model_test.dart`. `DiaryListViewModel`은 생성자에서 비동기 로드를 시작하므로, 각 테스트는 `pump` 대신 `await Future.microtask(() {})`로 최초 로드가 끝나기를 기다린다.
+`test/presentation/diary_list/diary_list_view_model_test.dart`. `DiaryListViewModel`은 생성자에서 비동기 로드를 시작하므로, 각 테스트는 `await Future.delayed(Duration.zero)`로 최초 로드가 끝나기를 기다린다. 로드 체인이 여러 await 지점을 거치므로 마이크로태스크 하나를 기다리는 것으로는 부족하다 — 이벤트 루프 한 턴은 대기 중인 마이크로태스크를 모두 소진한다.
 
 ```dart
 import 'package:cake/domain/enum/sort_type.dart';
@@ -678,7 +678,7 @@ void main() {
 
   test('생성 시 최신순으로 목록을 불러온다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
-    await Future.microtask(() {});
+    await Future.delayed(Duration.zero);
 
     expect(viewModel.sortType, SortType.latest);
     expect(viewModel.diaryList.map((d) => d.id), [2, 1]);
@@ -687,7 +687,7 @@ void main() {
 
   test('정렬을 바꾸면 해당 순서로 다시 불러오고 리스너에 알린다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
-    await Future.microtask(() {});
+    await Future.delayed(Duration.zero);
 
     var notifyCount = 0;
     viewModel.addListener(() => notifyCount++);
@@ -702,7 +702,7 @@ void main() {
 
   test('같은 정렬을 다시 선택하면 재조회하지 않는다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
-    await Future.microtask(() {});
+    await Future.delayed(Duration.zero);
 
     await viewModel.setSortType(SortType.latest);
 
@@ -1541,6 +1541,7 @@ git commit -m "refactor: 비멀티파트 API를 dio로 전환
 - Modify: `lib/data/data_source/api/diary/diary_api_impl.dart`
 - Modify: `lib/data/data_source/api/api_exception.dart`
 - Delete: `lib/data/data_source/api/base_api.dart`
+- Delete: `test/data/data_source/api/base_api_test.dart`
 - Modify: `pubspec.yaml`
 
 **Interfaces:**
@@ -1607,6 +1608,8 @@ git commit -m "refactor: 비멀티파트 API를 dio로 전환
 - [ ] **Step 2: BaseApi 상속 제거**
 
 `DiaryApiImpl`의 `extends BaseApi`를 걷어내고 `Dio`와 `TokenRepository`만 받는 형태로 정리한다. `lib/data/data_source/api/base_api.dart`를 삭제한다.
+
+**`test/data/data_source/api/base_api_test.dart`도 함께 삭제한다.** `BaseApi`가 사라지면 컴파일되지 않는다. 이 테스트가 검증하던 헤더 구성과 토큰 저장 동작은 Task 6의 `auth_interceptor_test.dart`가 대체 구현에 대해 이미 검증하므로, 전환의 안전망 역할을 마친 시점에 수명이 끝난다.
 
 Run: `grep -rn "BaseApi" lib test`
 Expected: 출력 없음
@@ -1713,7 +1716,7 @@ void main() {
     });
 
     expect(violations, isEmpty, reason: 'domain 레이어의 외부 패키지 의존');
-  });
+  });   // Step 2에서 skip을 건다 (Task 11이 해제)
 
   test('data는 presentation을 import하지 않는다', () {
     final violations = <String>[];
@@ -1744,20 +1747,36 @@ void main() {
     });
 
     expect(violations, isEmpty, reason: 'presentation → data_source 직접 의존');
-  });
+  });   // Step 2에서 skip을 건다 (Task 10이 해제)
 }
 ```
 
-- [ ] **Step 2: 테스트 실행하여 실패 확인**
+- [ ] **Step 2: 실패 확인 후, 후속 태스크 몫을 skip 처리**
+
+먼저 세 개가 모두 빨간지 눈으로 확인한다.
 
 Run: `flutter test test/architecture_test.dart`
 Expected: 3개 중 3개 모두 FAIL
 
-- `domain` — `diary_repository.dart`의 `image_picker`, `permission_handler_service.dart`의 `permission_handler` (Task 11에서 고친다)
-- `data → presentation` — `user_repository_impl.dart`의 ViewModel import 2건 (이 태스크에서 고친다)
-- `presentation → data_source` — `splash_view_model.dart`의 `DiaryDao` (Task 10에서 고친다)
+- `domain` — `diary_repository.dart`의 `image_picker`, `permission_handler_service.dart`의 `permission_handler` (Task 11이 고친다)
+- `data → presentation` — `user_repository_impl.dart`의 ViewModel import 2건 (이 태스크가 고친다)
+- `presentation → data_source` — `splash_view_model.dart`의 `DiaryDao` (Task 10이 고친다)
 
-이 태스크는 두 번째 것만 통과시킨다. 나머지 둘은 Task 10, 11에서 통과시킨다.
+세 개가 모두 실패하는 것을 확인했으면, **이 태스크가 고치지 않는 두 개에 `skip`을 건다.** Global Constraints가 각 태스크 종료 시 `flutter test` 통과를 요구하므로, 아직 손대지 않은 위반이 스위트를 빨갛게 둘 수 없다.
+
+domain 테스트의 닫는 괄호를 이렇게 바꾼다.
+
+```dart
+  }, skip: 'Task 11에서 domain의 플랫폼 의존을 제거하며 해제한다');
+```
+
+presentation 테스트의 닫는 괄호를 이렇게 바꾼다.
+
+```dart
+  }, skip: 'Task 10에서 SplashViewModel의 DAO 의존을 제거하며 해제한다');
+```
+
+`data는 presentation을 import하지 않는다`에는 skip을 걸지 않는다 — 이 태스크가 통과시킨다.
 
 - [ ] **Step 3: di.dart에 ViewModel 리셋 함수 추가**
 
@@ -1824,7 +1843,7 @@ class UserRepositoryImpl implements UserRepository {
 
 - [ ] **Step 5: SettingsViewModel에서 리셋 호출**
 
-`lib/presentation/settings/settings_view_model.dart`에서 `withdraw()`를 호출하는 자리를 찾아, 성공한 직후 `resetDiaryTabViewModels()`를 호출한다. `import 'package:cake/config/di.dart';`를 추가한다.
+`lib/presentation/settings/settings_view_model.dart` 43행의 `await _userRepo.withdraw();` 바로 다음 줄에 `resetDiaryTabViewModels()` 호출을 넣는다. 45행에서 성공 상태를 설정하므로 그 사이다. `import 'package:cake/config/di.dart';`를 추가한다.
 
 ```dart
     await _userRepo.withdraw();
@@ -1834,7 +1853,7 @@ class UserRepositoryImpl implements UserRepository {
 - [ ] **Step 6: 아키텍처 테스트 재실행**
 
 Run: `flutter test test/architecture_test.dart`
-Expected: `data는 presentation을 import하지 않는다` PASS. 나머지 둘은 여전히 FAIL (Task 10, 11에서 처리)
+Expected: `data는 presentation을 import하지 않는다` PASS, 나머지 둘 skipped. 실패 0건
 
 - [ ] **Step 7: 실기기 확인 — 탈퇴**
 
@@ -1940,15 +1959,17 @@ class SplashViewModel extends ChangeNotifier {
   );
 ```
 
-- [ ] **Step 4: 아키텍처 테스트 재실행**
+- [ ] **Step 4: 아키텍처 테스트의 skip 해제 후 재실행**
+
+`test/architecture_test.dart`에서 `presentation은 data_source를 직접 import하지 않는다` 테스트의 `skip:` 인자를 제거한다.
 
 Run: `flutter test test/architecture_test.dart`
-Expected: `presentation은 data_source를 직접 import하지 않는다` PASS. `domain` 테스트만 FAIL로 남는다
+Expected: 2개 PASS, `domain` 1개 skipped (Task 11이 해제). 실패 0건
 
 - [ ] **Step 5: 테스트와 분석**
 
 Run: `flutter test && flutter analyze`
-Expected: 아키텍처 테스트의 domain 항목을 제외하고 모두 통과, 무경고
+Expected: 모두 통과 (domain 항목은 skipped), 무경고
 
 - [ ] **Step 6: 커밋**
 
@@ -2057,10 +2078,15 @@ abstract interface class PermissionHandlerService {
 
 `test/fakes/fake_diary_api.dart`와 `test/fakes/fake_diary_repository.dart`의 `image_picker` import를 `local_image.dart`로 바꾸고 시그니처의 `List<XFile>`를 `List<LocalImage>`로 바꾼다.
 
-- [ ] **Step 6: 아키텍처 테스트 전체 통과 확인**
+- [ ] **Step 6: 마지막 skip 해제 후 전체 통과 확인**
+
+`test/architecture_test.dart`에서 `domain은 cake와 freezed_annotation 외의 패키지에 의존하지 않는다` 테스트의 `skip:` 인자를 제거한다. 이로써 파일에 남은 skip이 없어야 한다.
+
+Run: `grep -n "skip:" test/architecture_test.dart`
+Expected: 출력 없음
 
 Run: `flutter test test/architecture_test.dart`
-Expected: 3개 모두 PASS
+Expected: 3개 모두 PASS, skipped 0건
 
 - [ ] **Step 7: 테스트와 분석**
 
