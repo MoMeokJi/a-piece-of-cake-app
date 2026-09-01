@@ -60,4 +60,16 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 
 ## 패턴 참고
 
-코딩 패턴은 `~/.claude/skills/`의 `flutter-*` 스킬을 따른다. 이 문서는 그 내용을 반복하지 않는다.
+이 저장소의 규칙은 이 문서가 기준이다. `~/.claude/skills/`의 `flutter-*` 스킬은 여러 Flutter 프로젝트에서 공용으로 쓰는 일반 문서라 **경로와 구조가 이 앱과 다르다.** 충돌하면 이 문서가 이긴다.
+
+| 스킬 | 이 앱에 적용되는가 |
+| --- | --- |
+| `flutter-presentation-mvvm` | 적용된다. `context.watch/read` + ChangeNotifier getter 방식이 이 앱과 같다 |
+| `flutter-data-layer` | 적용된다. DataSource 인터페이스 + Repository + DTO/매퍼 구조가 같다 |
+| `flutter-testing` | 적용된다 |
+| `flutter-widget-ui` | 적용된다 |
+| `flutter-di-get-it` | 등록 규칙만 적용된다 (Repository/DataSource는 singleton, ViewModel은 factory). 경로는 다르다 — 스킬은 `lib/core/di/di_setup.dart`, 이 앱은 `lib/config/di.dart` |
+| `flutter-navigation-go-router` | 라우팅 개념만 적용된다. 경로는 다르다 — 스킬은 `lib/core/routing/`, 이 앱은 `lib/config/app_router.dart` |
+| `flutter-project-structure` | **적용되지 않는다.** `lib/core/` + `lib/domain/use_case/` 레이아웃을 서술하며 예시도 다른 앱의 것이다. 이 앱의 구조는 위 "레이어" 절이 기준이다 |
+| `flutter-presentation-mvi` | **적용되지 않는다.** 이 앱은 sealed Action도 Root/Screen 분리도 쓰지 않는다 |
+| `flutter-error-handling` | **아직 적용되지 않는다.** 이 앱에는 `Result<D, E>`가 없다. 도입 여부는 미정 |
