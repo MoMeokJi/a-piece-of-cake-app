@@ -1645,7 +1645,7 @@ git commit -m "refactor: 비멀티파트 API를 dio로 전환
 - Modify: `lib/data/data_source/api/api_exception.dart`
 - Delete: `lib/data/data_source/api/base_api.dart`
 - Delete: `test/data/data_source/api/base_api_test.dart`
-- Modify: `pubspec.yaml`
+- Modify: `CLAUDE.md`
 
 **Interfaces:**
 - Consumes: `AuthInterceptor`의 `FormData` 복제 처리 (Task 6에서 구현됨)
@@ -1724,15 +1724,30 @@ Expected: 출력 없음
 Run: `grep -rn "fromResponse\|fromStreamedResponse" lib test`
 Expected: 출력 없음
 
-- [ ] **Step 4: http 의존성 제거**
+- [ ] **Step 4: API 계층에서 http 사용 제거**
 
-Run: `grep -rn "package:http/" lib test`
+Run: `grep -rn "package:http/" lib/data/data_source test`
 Expected: 출력 없음
 
-확인되면 `pubspec.yaml`에서 `http` 줄을 삭제하고:
+**`pubspec.yaml`의 `http`는 제거하지 않는다.** 계획 수립 시 파일 조사가 API 계층에만 미쳐서 놓쳤는데, `lib/data/service/app_store_check_service_impl.dart`가 `http`를 별도로 쓴다 — Play 스토어 상세 페이지 HTML을 정규식으로 긁고 iTunes lookup API를 호출하는 **필수 업데이트 확인** 기능이다.
 
-```bash
-flutter pub get
+이 파일은 이번 마이그레이션과 인프라를 전혀 공유하지 않는다. `ApiConfig.baseUrl`도, `AuthInterceptor`도, 토큰도 쓰지 않는다. 공개 웹 페이지를 긁는 별개의 작업이다.
+
+옮기지 않는 이유는 위험 대비 이득이다:
+
+- 테스트가 0인 살아 있는 코드다
+- 실패가 **조용하다.** `checkForUpdate`는 오류 시 `false`를 반환하므로, 깨져도 앱은 정상 동작하는 것처럼 보이고 **필수 업데이트를 더 이상 강제할 수 없게 된 사실을 아무도 모른다**
+- 기계적 이관도 아니다. 현재 코드는 `response.body`를 원문 문자열로 읽는데, dio는 JSON 응답을 자동 파싱하므로 iTunes 경로의 `json.decode(response.body)`가 깨진다. 또 dio는 기본적으로 비2xx에 예외를 던지므로 `statusCode == 200` 분기가 죽는다
+- 얻는 것은 의존성 한 줄뿐이다. API 계층의 일관성은 이미 확보된다
+
+이 서비스의 이관은 **테스트를 먼저 붙인 뒤** 별도 과제로 다룬다. 지금은 `http`를 남기고, 왜 남았는지를 `CLAUDE.md`에 기록한다.
+
+- [ ] **Step 4b: CLAUDE.md에 두 HTTP 클라이언트 공존 사유 기록**
+
+`CLAUDE.md`의 "함정" 절에 추가한다. 이 기록이 없으면 다음 세션이 `http`를 보고 잘못된 쪽을 따라 쓰거나, 이유 없이 남은 의존성으로 오해한다.
+
+```markdown
+- **HTTP 클라이언트가 둘이다.** API 계층(`lib/data/data_source/api/`)은 `dio`를 쓴다 — 인증 헤더, 토큰 재발급, 에러 보고가 인터셉터에 붙어 있다. `lib/data/service/app_store_check_service_impl.dart`만 `http`를 쓰는데, 스토어 페이지를 긁는 별개 작업이라 그 인프라가 필요 없고 테스트가 없어 옮기지 않았다. **새 API 호출은 언제나 `dio`를 쓴다.**
 ```
 
 - [ ] **Step 5: 테스트와 분석**
