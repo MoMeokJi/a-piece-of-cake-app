@@ -18,6 +18,7 @@
 - **제거 대상 의존성:** `http`(Task 8), `flutter_dotenv`(Task 2, 미사용), `mockito`(Task 2, 미사용)
 - 상태관리 교체(Riverpod/bloc), 화면 구조 변경, sqflite 스키마 변경은 이 계획의 범위가 아니다
 - 각 태스크는 다음을 만족해야 끝난다: `flutter test` 통과, 그리고 `flutter analyze`가 **베이스라인 대비 새 이슈 0건**
+  - `flutter test` 통과 요건은 **Task 2부터** 적용된다. 시작 시점에 `test/widget_test.dart`가 이미 실패하고 있으며(존재하지 않는 카운터 UI 검증), Task 2가 이 파일을 삭제한다. Task 1은 문서만 만들므로 이 실패를 고칠 수 없다
   - 베이스라인은 `858cd3f` 기준 6건이다 — `di.dart`의 미사용 mock import 2건(주석 처리된 mock 토글을 살려두기 위해 의도적으로 남음), `app_logger.dart`의 `avoid_print` 3건과 `mock_diary_api.dart` 1건(AppLogger가 print를 감싸는 것이 설계 의도)
   - 이 6건은 이 계획의 범위 밖이다. 건드리지 않는다
 - 커밋 메시지는 한국어. 기존 컨벤션을 따른다 — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
