@@ -108,7 +108,10 @@ void main() {
       options: Options(extra: {AuthInterceptor.needsAuthKey: false}),
     );
 
-    expect(adapter.requests.single.headers.containsKey('Authorization'), isFalse);
+    expect(
+      adapter.requests.single.headers.containsKey('Authorization'),
+      isFalse,
+    );
   });
 
   test('응답 헤더에 토큰이 오면 Bearer를 떼고 저장한다', () async {
@@ -246,10 +249,7 @@ void main() {
 
       final builtDio = buildDio(tokenRepository, adapter: adapter);
 
-      await expectLater(
-        builtDio.get('/diaries'),
-        throwsA(isA<DioException>()),
-      );
+      await expectLater(builtDio.get('/diaries'), throwsA(isA<DioException>()));
 
       // retryDio가 handleUnauthorized: true로 잘못 배선되면 재시도의 401이
       // 다시 재발급+재시도를 트리거해 diariesCalls가 2를 넘어선다.
@@ -265,10 +265,7 @@ void main() {
 
       final builtDio = buildDio(tokenRepository, adapter: adapter);
 
-      await expectLater(
-        builtDio.get('/diaries'),
-        throwsA(isA<DioException>()),
-      );
+      await expectLater(builtDio.get('/diaries'), throwsA(isA<DioException>()));
 
       expect(reporter.reasons, ['[500] /diaries']);
     });
@@ -301,6 +298,41 @@ void main() {
 
       expect(response.statusCode, 200);
       expect(reporter.reasons, isEmpty);
+    });
+
+    test('401 후 FormData 요청도 재발급하고 clone된 본문으로 한 번만 재시도한다', () async {
+      tokenRepository.fcmToken = 'device-1';
+      var uploadCalls = 0;
+
+      adapter.responder = (options) {
+        if (options.path.contains('/auth/login')) {
+          return ResponseBody.fromString(
+            '',
+            204,
+            headers: {
+              'authorization': ['Bearer reissued'],
+              'refresh-token': ['reissued-refresh'],
+            },
+          );
+        }
+        uploadCalls++;
+        return _json(uploadCalls == 1 ? 401 : 201);
+      };
+
+      final builtDio = buildDio(tokenRepository, adapter: adapter);
+
+      final formData = FormData.fromMap({
+        'text': 'hello',
+        'images': [MultipartFile.fromString('fake-bytes', filename: 'a.jpg')],
+      });
+
+      final response = await builtDio.post('/diaries', data: formData);
+
+      expect(response.statusCode, 201);
+      // 원요청 1 + 재시도 1. clone() 없이는 두 번째 전송에서
+      // FormData가 이미 소비된 스트림이라 실패한다.
+      expect(uploadCalls, 2);
+      expect(tokenRepository.accessToken, 'reissued');
     });
   });
 }

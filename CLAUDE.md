@@ -49,6 +49,7 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 - **`lib/config/di.dart`의 mock API 토글.** `MockDiaryApi` 등록 줄이 주석 처리되어 있다. 실수로 주석을 풀고 커밋하면 앱이 목 데이터로 빌드된다
 - **`ApiConfig.baseUrl`이 하드코딩되어 있다.** `flutter_dotenv`는 의존성에 있었지만 쓰이지 않아 제거했다
 - **테스트에서 Firebase를 초기화하지 않는다.** 크래시 보고는 `CrashReporter`를 거치며, 테스트는 `NoopCrashReporter`를 주입한다
+- **HTTP 클라이언트가 둘이다.** API 계층(`lib/data/data_source/api/`)은 `dio`를 쓴다 — 인증 헤더, 토큰 재발급, 에러 보고가 인터셉터에 붙어 있다. `lib/data/service/app_store_check_service_impl.dart`만 `http`를 쓰는데, 스토어 페이지를 긁는 별개 작업이라 그 인프라가 필요 없고 테스트가 없어 옮기지 않았다. **새 API 호출은 언제나 `dio`를 쓴다.**
 
 ## 릴리즈
 

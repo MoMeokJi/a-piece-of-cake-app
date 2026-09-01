@@ -1,6 +1,5 @@
 import 'package:cake/utils/app_logger.dart';
 import 'package:cake/utils/crash_reporter.dart';
-import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
   /// 테스트에서 NoopCrashReporter로 교체한다.
@@ -22,21 +21,5 @@ class ApiException implements Exception {
       StackTrace.current,
       reason: '[$statusCode] $endpoint',
     );
-  }
-
-  factory ApiException.fromResponse(http.Response response, String endpoint) {
-    return ApiException(
-      statusCode: response.statusCode,
-      endpoint: endpoint,
-      responseBody: response.body,
-    );
-  }
-
-  static Future<ApiException> fromStreamedResponse(
-    http.StreamedResponse streamedResponse,
-    String endpoint,
-  ) async {
-    final response = await http.Response.fromStream(streamedResponse);
-    return ApiException.fromResponse(response, endpoint);
   }
 }

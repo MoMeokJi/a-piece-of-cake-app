@@ -68,12 +68,7 @@ Future<void> diSetup() async {
   );
 
   // getIt.registerLazySingleton<DiaryApi>(() => MockDiaryApi());
-  getIt.registerLazySingleton<DiaryApi>(
-    () => DiaryApiImpl(
-      dio: getIt<Dio>(),
-      tokenRepository: getIt<TokenRepository>(),
-    ),
-  );
+  getIt.registerLazySingleton<DiaryApi>(() => DiaryApiImpl(dio: getIt<Dio>()));
 
   getIt.registerLazySingleton<FirebaseMessagingManager>(
     () => FirebaseMessagingManagerImpl(),
@@ -112,7 +107,7 @@ Future<void> diSetup() async {
     () => UserRepositoryImpl(
       userApi: getIt<UserApi>(),
       diaryDao: getIt<DiaryDao>(),
-      fcmService:  getIt<FCMService>(),
+      fcmService: getIt<FCMService>(),
     ),
   );
 
