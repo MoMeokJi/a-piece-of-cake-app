@@ -153,3 +153,20 @@ Future<void> diSetup() async {
     () => SettingsViewModel(userRepo: getIt<UserRepository>()),
   );
 }
+
+/// 탈퇴 후 일기 탭 ViewModel의 잔여 상태를 비운다.
+void resetDiaryTabViewModels() {
+  if (getIt.isRegistered<DiaryCalendarViewModel>()) {
+    getIt.unregister<DiaryCalendarViewModel>();
+    getIt.registerLazySingleton(
+      () => DiaryCalendarViewModel(diaryRepo: getIt<DiaryRepository>()),
+    );
+  }
+
+  if (getIt.isRegistered<DiaryListViewModel>()) {
+    getIt.unregister<DiaryListViewModel>();
+    getIt.registerLazySingleton(
+      () => DiaryListViewModel(diaryRepo: getIt<DiaryRepository>()),
+    );
+  }
+}
