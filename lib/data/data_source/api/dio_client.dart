@@ -12,10 +12,19 @@ BaseOptions _baseOptions() => BaseOptions(
 ///
 /// 401 처리를 갖지 않는 retryDio / reissueDio를 따로 두어
 /// 재시도와 재발급이 다시 401 처리를 타지 않도록 한다.
-Dio buildDio(TokenRepository tokenRepository) {
-  final reissueDio = Dio(_baseOptions());
+///
+/// [adapter]는 테스트 전용이다. 세 인스턴스 모두에 적용되므로
+/// 이 배선 자체를 실제 네트워크 없이 검증할 수 있다.
+Dio buildDio(TokenRepository tokenRepository, {HttpClientAdapter? adapter}) {
+  Dio create() {
+    final dio = Dio(_baseOptions());
+    if (adapter != null) dio.httpClientAdapter = adapter;
+    return dio;
+  }
 
-  final retryDio = Dio(_baseOptions())
+  final reissueDio = create();
+
+  final retryDio = create()
     ..interceptors.add(
       AuthInterceptor(
         tokenRepository: tokenRepository,
@@ -23,7 +32,7 @@ Dio buildDio(TokenRepository tokenRepository) {
       ),
     );
 
-  return Dio(_baseOptions())
+  return create()
     ..interceptors.add(
       AuthInterceptor(
         tokenRepository: tokenRepository,

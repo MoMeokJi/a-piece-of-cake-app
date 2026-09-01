@@ -66,10 +66,22 @@ class AuthInterceptor extends Interceptor {
       return;
     }
 
+    // 재발급은 single-flight가 아니다: 동시에 여러 요청이 401을 받으면
+    // 각각 독립적으로 재발급을 호출한다. TokenRepositoryImpl.saveJwtTokens는
+    // access/refresh를 Future.wait로 병렬 저장하므로(원자적이지 않음),
+    // 겹쳐 실행되는 재발급들이 뒤섞인 access/refresh 쌍을 남길 수 있다.
+    // 오늘은 무해하다 — 인증이 필요한 요청을 동시에 여러 개 쏘는 경로가
+    // 없고, 401에서 토큰을 지우지도 않는다. 나중에 API 호출을 병렬화하면
+    // 이 인터셉터에 공유 in-flight Future<void>? 가드를 두어 해결한다.
     try {
       await _reissueTokens();
     } catch (e) {
       AppLogger.error('토큰 재발급 실패: $e');
+      ApiException.reporter.recordError(
+        e,
+        StackTrace.current,
+        reason: 'reissueTokens 실패',
+      );
       handler.next(err);
       return;
     }
@@ -91,8 +103,10 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<void> _saveTokensFromHeaders(Headers headers) async {
-    final rawAccessToken = headers.value('authorization');
-    final refreshToken = headers.value('refresh-token');
+    // headers.value()는 헤더가 중복으로 오면 예외를 던진다(구 http 맵 병합과 다른
+    // 실패 모드). 첫 값만 읽어 그 위험을 피한다.
+    final rawAccessToken = headers['authorization']?.first;
+    final refreshToken = headers['refresh-token']?.first;
 
     if (rawAccessToken != null && refreshToken != null) {
       await _tokenRepository.saveJwtTokens(
@@ -116,6 +130,8 @@ class AuthInterceptor extends Interceptor {
       return;
     }
 
+    // dio의 기본 validateStatus는 2xx가 아니면 이미 DioException을 던지므로
+    // 여기 도달할 수 있는 상태 코드는 200/201/202뿐이다(204는 위에서 처리).
     throw ApiException(
       statusCode: response.statusCode ?? -1,
       endpoint: 'reissueTokens',
