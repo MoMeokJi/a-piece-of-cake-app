@@ -2,7 +2,6 @@
     <!-- 인터넷 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 카메라 권한 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- 기기 재시작 후 자동으로 앱/서비스 실행. 백그라운드 서비스 자동 시작에 사용 -->
