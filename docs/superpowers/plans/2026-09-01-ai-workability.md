@@ -1623,6 +1623,13 @@ Expected: 모두 통과, 무경고
 6. **Content-Type 예외 상황 (3~4단계에서 자연히 함께 확인됨).**
    dio는 응답의 `Content-Type`이 JSON일 때만 `response.data`를 `Map`/`List`로 파싱한다. 마이그레이션 전 `http` 기반 코드는 헤더와 무관하게 `jsonDecode(utf8.decode(...))`로 항상 파싱을 시도했다. 만약 실제 서버가 `GET /diaries/question`, `GET /diaries/{id}`, `POST /diaries/qna` 중 하나에서라도 `Content-Type: application/json`을 빠뜨리면, `response.data`가 `Map`이 아니라 원문 `String`으로 오고 `response.data['questions']` / `response.data as Map<String, dynamic>` / `response.data['content']` 같은 코드가 `TypeError`를 던진다 — 이는 `DioException`이 아니므로 `fetchQuestions`의 기본 질문 fallback으로도 잡히지 않는다. 3단계(문답일기 질문+생성)와 4단계(일기 상세)를 실제 서버로 실행하면 이 세 엔드포인트가 모두 exercise되므로 별도 단계는 필요 없지만, 여기서 확인할 것은 "데이터가 맞게 보이는가"가 아니라 "애초에 정상적으로 동작하는가"다.
    **문제가 있다면:** 일기 상세나 문답일기 질문 화면을 열 때 (정상적인 `ApiException`/`DioException` 형태의 에러가 아니라) 크래시나 처리되지 않은 예외 화면이 뜬다.
+7. **PATCH의 한글 왕복 (4단계 "수정" 항목의 정밀화 — Fix 1의 경험적 확인).**
+   `updateDiaryText`는 JSON 바디를 보낸다. 옛 `http` 구현은 `Content-Type`에 charset이 없으면 항상 `charset=utf-8`을 붙였는데(`Request.body` setter), dio는 자동으로 붙이지 않아 `dio_client.dart`의 `_baseOptions()`가 이를 명시적으로 복원했다. 일기를 이모지가 섞인 한글 텍스트로 수정해 저장한 뒤, 앱을 완전히 종료했다가 다시 열어 상세 화면에서 방금 수정한 텍스트를 확인한다.
+   **문제가 있다면:** 재실행 후 본문이 깨져 보이거나(예: 이모지가 대체문자 `` 로 보이거나 한글이 물음표/모지박스로 보임) 입력한 것과 바이트 단위로 다르다 — `_baseOptions()`의 charset 선언이 서버에서 지켜지지 않는다는 뜻이다.
+8. **비행기 모드에서 문답일기 질문 조회.**
+   `fetchQuestions`의 `e.response == null` 분기(네트워크 단절/타임아웃)는 이 브랜치에서 가장 많이 손댄 줄이지만 어떤 자동 테스트도 이 경로를 태우지 않는다. 기기를 비행기 모드로 두고 문답일기 작성 화면을 연다.
+   **기대 동작:** 에러(로딩 실패/재시도 안내 등)가 보여야 한다.
+   **문제가 있다면:** 에러 대신 코드에 하드코딩된 기본 질문 5개("지금 기분이 어때?"로 시작하는 문항들)가 그대로 보인다 — 오프라인 사용자에게 기본 질문을 주면, 답변을 다 쓴 뒤 `requestQnaDiary`가 네트워크 없이 실패해 사용자가 작성한 답을 잃는다. 이 분기가 서버 에러(응답 있음)와 네트워크 단절(응답 없음)을 혼동하면 이 증상으로 나타난다.
 
 - [ ] **Step 7: 커밋**
 
@@ -1773,6 +1780,7 @@ Expected: 모두 통과, 무경고
 1. **자유일기 작성 + 이미지 2장 이상 첨부 → 저장 성공.**
    실패 증상: 저장 버튼을 눌러도 에러 토스트가 뜨거나 로딩에서 멈춘다. `FormData`의 필드명(`text`/`images`)이 서버 기대와 다르면 서버가 400을 반환한다.
    저장 실패 시 로그에 `type 'String' is not a subtype of type 'Map<String, dynamic>'`가 있으면 서버 응답의 Content-Type이 JSON이 아니라는 뜻이다. 이 경우 서버에는 일기가 이미 생성됐는데 앱은 실패로 보이므로, 재시도하면 중복 생성되고 하루 3개 제한을 소진한다.
+   이미지 파트는 `application/octet-stream`으로 선언해 보낸다 (옛 `http.MultipartFile.fromPath`가 `contentType: null`로 항상 그렇게 보냈던 것과 동일 — `diary_api_impl.dart`의 주석과 `diary_api_impl_test.dart` 참고). 저장이 400으로 실패하면 서버가 이 선언된 파트 content-type을 검증하거나 다르게 처리하고 있을 가능성도 함께 의심한다.
 2. **문답일기 작성 + 이미지 첨부 → 저장 성공.**
    실패 증상: 1과 동일. `createQnaDiary`/`createFreeDiary`는 같은 비공개 헬퍼(`_createDiary`)를 쓰므로 한쪽만 성공하고 다른 쪽만 실패한다면 헬퍼가 아니라 호출부(`path`)의 문제다.
 3. **이미지 4장(도메인 상한, `ServiceConfig.maxDiaryCount`가 아니라 이미지 개수 상한)까지 첨부 → 저장 성공.**
@@ -1783,7 +1791,8 @@ Expected: 모두 통과, 무경고
    실패 증상: 이미지가 깨지거나 아예 보이지 않는다 — 서버가 돌려준 이미지 URL 필드와 `DiaryDetailDto`의 매핑이 어긋났다는 신호다.
 6. **만료된 토큰 상태에서 이미지 첨부 일기 저장 — 이 태스크가 존재하는 이유 그 자체.**
    액세스 토큰을 만료시킨 뒤(서버 측에서 무효화하거나, 세션을 오래 열어둔 뒤) 이미지 첨부 일기 저장을 시도한다 → 401 → 인터셉터가 토큰을 재발급하고 `FormData.clone()`으로 본문을 복제해 한 번 재시도 → 저장 성공.
-   실패 증상: 다른 항목은 다 되는데 이 시나리오에서만 저장이 실패하며 에러 토스트가 뜬다. 로그(또는 Crashlytics)에 `"The FormData has already been finalized"`가 남아 있으면 `AuthInterceptor.onError`의 `data.clone()` 호출이 빠졌거나 회귀한 것이다 — 정확히 `auth_interceptor_test.dart`의 새 테스트가 잡는 것과 같은 실패다.
+   이미지는 여러 장(2장 이상)으로 시도한다 — 본문이 가장 큰 재시도 경로를 실제로 태워야 한다. `clone()`이 `file.openRead()`를 다시 여는 동작은 이미지 1장으로도 형태상 검증되지만, 여러 장을 순회하며 각각 다시 열어야 하는 경로는 이미지 수가 많을수록 스트림이 부분적으로만 clone되는 회귀를 더 잘 드러낸다.
+   실패 증상: 다른 항목은 다 되는데 이 시나리오에서만 저장이 실패하며 에러 토스트가 뜬다. 로그(또는 Crashlytics)에 `"The FormData has already been finalized"`가 남아 있으면 `AuthInterceptor.onError`의 `data.clone()` 호출이 빠졌거나 회귀한 것이다 — 정확히 `auth_interceptor_test.dart`의 새 테스트가 잡는 것과 같은 실패다. 이미지 중 일부만 누락되거나 깨져 업로드되면, 여러 장 중 일부만 clone이 덜 된 것이다.
 7. **저장 직후 상세 화면에서 한글 본문이 입력한 그대로 보이는지 확인.**
    깨져 보이면 `text` 파트의 charset 선언 문제다. `text`는 이제 일반 String이 아니라 `MultipartFile.fromString(text, contentType: DioMediaType('text', 'plain', {'charset': 'utf-8'}))`으로 감싸 보낸다 — 옛 `http` 구현이 비ASCII 값에 항상 실어 보내던 `content-type: text/plain; charset=utf-8` 선언과 wire 포맷을 맞추기 위해서다(`diary_api_impl_test.dart`가 이 헤더를 고정한다). 이 항목은 그 자동 검증이 실기기·실서버 경로에서도 성립하는지에 대한 경험적 확인이다.
 
@@ -2124,7 +2133,20 @@ Expected: 2개 PASS, `domain` 1개 skipped (Task 11이 해제). 실패 0건
 Run: `flutter test && flutter analyze`
 Expected: 모두 통과 (domain 항목은 skipped), 무경고
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 6: 실기기 확인**
+
+서브에이전트는 실기기 접근이 없어 이 단계를 수행할 수 없다. 브랜치를 머지하기 전에 사람이 `flutter run`으로 직접 확인해야 한다.
+`SplashViewModel`과 `UserRepositoryImpl`은 자동 테스트가 없다 — 이 브랜치에서 사용자에게 보이는 경로 중 자동 검증도 수동 검증도 없는 유일한 곳이다. 각 항목에 실패 시 나타날 증상을 함께 적는다.
+
+1. **앱 최초 실행 → 스플래시 → 메인.**
+   `SplashViewModel`의 생성자와 DI 등록(`lib/config/di.dart`)이 이 태스크에서 바뀌었고, 기존 체크리스트는 모두 "실행이 이미 됐다"는 상태에서 시작한다 — 스플래시 자체가 뜨는지 확인하는 항목이 이제까지 없었다.
+   실패 증상: 앱이 스플래시에서 멈추거나 크래시한다 — DI 등록 순서나 `SplashViewModel` 생성자 인자 배선이 어긋났다는 뜻이다.
+
+2. **비활성 유저 데이터 초기화.**
+   비활성 판정 다이얼로그를 띄운 뒤(예: 비활성 기간을 지난 계정으로 로그인하거나, 테스트용으로 조건을 맞춘다) 진행한다.
+   실패 증상: 다이얼로그 확인 후 일기 목록이 비워지지 않고 남아 있거나, 회원가입 화면으로 넘어가지 못하고 멈추거나 에러가 뜬다 — `clearDataAndProceed`가 `UserRepository.clearLocalDiaries()`를 거치도록 바뀐 경로가 실제로는 로컬 일기를 지우지 못한다는 뜻이다.
+
+- [ ] **Step 7: 커밋**
 
 ```bash
 git add -A
