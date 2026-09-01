@@ -34,6 +34,7 @@ void main() {
 
   test('생성 시 최신순으로 목록을 불러온다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
+    addTearDown(viewModel.dispose);
     await Future.delayed(Duration.zero);
 
     expect(viewModel.sortType, SortType.latest);
@@ -43,6 +44,7 @@ void main() {
 
   test('정렬을 바꾸면 해당 순서로 다시 불러오고 리스너에 알린다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
+    addTearDown(viewModel.dispose);
     await Future.delayed(Duration.zero);
 
     var notifyCount = 0;
@@ -54,10 +56,15 @@ void main() {
     expect(viewModel.diaryList.map((d) => d.id), [1, 2]);
     expect(repository.getOldestCallCount, 1);
     expect(notifyCount, 1);
+
+    // 전제를 명시한다. animateTo는 notifyListeners를 부르지 않으므로
+    // notifyCount로는 애니메이션 분기를 탔는지 구분할 수 없다.
+    expect(viewModel.scrollController.hasClients, isFalse);
   });
 
   test('같은 정렬을 다시 선택하면 재조회하지 않는다', () async {
     final viewModel = DiaryListViewModel(diaryRepo: repository);
+    addTearDown(viewModel.dispose);
     await Future.delayed(Duration.zero);
 
     await viewModel.setSortType(SortType.latest);
