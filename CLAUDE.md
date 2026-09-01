@@ -15,11 +15,19 @@
 
 - `lib/domain/` — 모델, 리포지토리/서비스 인터페이스, enum. **외부 패키지에 의존하지 않는다** (freezed_annotation만 예외)
 - `lib/data/` — API, sqflite DAO, shared_preferences, 리포지토리 구현, DTO, 매퍼. **presentation을 import하지 않는다**
-- `lib/presentation/` — 화면과 ViewModel. **`lib/data/data_source/`를 직접 쓰지 않는다.** 항상 리포지토리를 거친다
+- `lib/presentation/` — 화면과 ViewModel. **`lib/data/data_source/`를 직접 쓰지 않는다.** 항상 리포지토리를 거친다 (단, 아래 예외 참고)
 - `lib/ui/` — 공용 위젯과 디자인 토큰 (`color_config`, `text_config`)
+- `lib/core/` — `extensions/`에 확장 메서드를 둔다 (예: `color_extensions.dart`)
+- `lib/utils/` — `AppLogger`, `CrashReporter`, 날짜 변환, 다이얼로그 유틸
 - `lib/config/` — DI, 라우터, 설정 상수. 합성 루트이므로 모든 레이어를 안다
 
 이 규칙은 `test/architecture_test.dart`가 강제한다. 어기면 테스트가 실패한다.
+
+**예외 — `Storage` (shared_preferences).** `SplashViewModel`은 리포지토리를 거치지 않고
+`lib/data/data_source/shared_preferences/`의 `Storage`를 직접 주입받는다. `architecture_test.dart`의
+"presentation은 data_source를 직접 import하지 않는다" 테스트가 `data_source/shared_preferences/`
+경로만 명시적으로 예외 처리해 이 상태를 기록한다. 임시 상태이며, 리포지토리 뒤로 감추는 것은 별도 과제다.
+새 코드에서 이 예외를 넓히지 말 것 — 새 presentation 코드는 항상 리포지토리를 거친다.
 
 ## 화면 하나를 추가할 때
 
@@ -66,7 +74,7 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 | 스킬 | 이 앱에 적용되는가 |
 | --- | --- |
 | `flutter-presentation-mvvm` | 적용된다. `context.watch/read` + ChangeNotifier getter 방식이 이 앱과 같다 |
-| `flutter-data-layer` | 적용된다. DataSource 인터페이스 + Repository + DTO/매퍼 구조가 같다 |
+| `flutter-data-layer` | 부분적으로 적용된다. DataSource 인터페이스 + Repository + DTO/매퍼 구조는 같다. 단 `rxdart`/`BehaviorSubject`로 만드는 반응형 저장소 절은 **적용되지 않는다** — `rxdart`는 `pubspec.yaml`에 있지만 `lib/`에 `BehaviorSubject`를 쓰는 곳이 없다. 이 패턴을 새로 들이지 말 것 |
 | `flutter-testing` | 적용된다 |
 | `flutter-widget-ui` | 적용된다. 단 공용 위젯 경로는 다르다 — 스킬은 `lib/core/presentation/components/`, 이 앱은 `lib/ui/common_components/` |
 | `flutter-di-get-it` | 개념은 적용되지만 세부는 이 문서가 기준이다. 등록 규칙은 위 "화면 하나를 추가할 때" 3번을 따른다. 경로도 다르다 — 스킬은 `lib/core/di/di_setup.dart`, 이 앱은 `lib/config/di.dart` |
