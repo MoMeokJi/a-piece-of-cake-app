@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cake/data/data_source/api/diary/diary_api_impl.dart';
+import 'package:cake/domain/model/local_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image_picker/image_picker.dart';
 
 /// 요청 본문 바이트를 그대로 캡처하는 fake adapter.
 /// FormData의 실제 wire 포맷(part 헤더 포함)을 검증하려면 dio가 만든
@@ -49,7 +49,7 @@ void main() {
         ..httpClientAdapter = adapter;
       final api = DiaryApiImpl(dio: dio);
 
-      await api.createFreeDiary(text: '안녕하세요', images: const <XFile>[]);
+      await api.createFreeDiary(text: '안녕하세요', images: const <LocalImage>[]);
 
       final body = utf8.decode(adapter.capturedBody!, allowMalformed: true);
 

@@ -3,6 +3,7 @@ import 'package:cake/config/service_config.dart';
 import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/model/diary_detail.dart';
+import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
 import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
@@ -41,7 +42,7 @@ class QnaDiaryEditViewModel with ChangeNotifier {
   bool get editMode => _isEditMode;
 
   void initialize(String initialContent) {
-     FirebaseAnalytics.instance.logEvent(name: 'qna_diary_initial_generation');
+    FirebaseAnalytics.instance.logEvent(name: 'qna_diary_initial_generation');
     textController.text = initialContent; // 텍스트필드 초기값으로 생성된 일기 지정
   }
 
@@ -51,7 +52,7 @@ class QnaDiaryEditViewModel with ChangeNotifier {
       _toastMessage = '일기는 ${ServiceConfig.minDiaryLength}자 이상 작성해주세요';
       notifyListeners();
       return;
-    } 
+    }
 
     try {
       _resultState = ResultState.loading;
@@ -62,7 +63,7 @@ class QnaDiaryEditViewModel with ChangeNotifier {
       _completedDiary = await _diaryRepo.saveDiary(
         diaryType: DiaryType.qna,
         text: _textController.text,
-        images: _pickedImages,
+        images: _pickedImages.map((file) => LocalImage(file.path)).toList(),
       );
       AppLogger.log(_completedDiary.toString());
 

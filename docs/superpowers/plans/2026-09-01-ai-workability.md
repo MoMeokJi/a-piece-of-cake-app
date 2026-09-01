@@ -2248,9 +2248,22 @@ Expected: 모두 통과, 무경고
 
 - [ ] **Step 8: 실기기 확인**
 
-1. 이미지 첨부해 일기 작성 → 저장 성공
-2. 문답일기 수정에서 이미지 추가 → 저장 성공
-3. 알림 권한 요청 동작 확인
+서브에이전트는 실기기 접근이 없어 이 단계를 수행할 수 없다. 브랜치를 머지하기 전에 사람이 `flutter run`으로 직접 확인해야 한다. 이 태스크에서 가장 위험한 대목은 `AppPermission` → `Permission` 매핑이다 — 잘못 매핑해도 컴파일되고 테스트를 통과하며, 실기기에서만 엉뚱한 권한을 요청하는 형태로 드러난다.
+
+1. **자유일기 작성 + 갤러리에서 이미지 1장 이상 첨부 → 저장 성공.**
+   경로: `FreeDiaryCreateViewModel.completeDiary`가 `_pickedImages`(`XFile`)를 `_pickedImages.map((file) => LocalImage(file.path)).toList()`로 변환해 `DiaryRepository.saveDiary`에 넘긴다.
+   실패 증상: 저장 시 에러 토스트("일기 작성에 실패했습니다"). 변환이 깨져 `path`가 비거나 잘못된 파일을 가리키면 `DiaryApiImpl._createDiary`의 `MultipartFile.fromFile(image.path)`가 파일을 찾지 못해 예외를 던지거나 서버가 400을 반환한다.
+2. **자유일기 작성 시 카메라로 촬영해 첨부 → 저장 성공.**
+   `getImageFromCamera` 경로도 1과 동일한 변환을 타므로 갤러리 경로와 별개로 확인한다.
+3. **문답일기 확정 후 편집 화면(`QnaDiaryEditViewModel`)에서 이미지 추가 → 저장 성공.**
+   실패 증상은 1과 동일. `completeDiary`의 변환 코드가 자유일기 ViewModel과 같은 형태로 중복돼 있어 한쪽만 고치고 다른 쪽을 빠뜨렸을 위험이 있다.
+4. **이미지를 첨부하지 않고 저장 (빈 리스트) → 저장 성공.**
+   `_pickedImages.map(...).toList()`가 빈 리스트에서도 정상 동작하는지 확인 — 회귀 위험은 낮지만 흔한 경로다.
+5. **알림 권한 요청/확인 동작 — 이 태스크가 가장 조심해야 하는 시나리오.**
+   `FCMServiceImpl.initialize()`가 `PermissionHandlerService.checkPermission(AppPermission.notification)`을 호출하고, 구현체의 `_toPlatform`이 `AppPermission.notification → Permission.notification`으로 매핑한다.
+   실패 증상: `_toPlatform`의 매핑이 뒤바뀌면(예: `notification`이 실수로 `Permission.camera` 등에 매핑되면) FCM이 알림 권한을 확인하지 못해 알림이 전혀 오지 않거나, 앱을 켤 때마다 불필요한 권한 다이얼로그가 반복된다. 알림을 새로 설치한 기기(권한 미결정 상태)에서 최초 실행 시 알림 권한 다이얼로그가 뜨는지, 허용/거부 각각 이후 FCM 토큰이 정상 저장되는지 확인한다.
+6. **(참고, 실기기 확인 불필요) `AppPermission.camera`/`AppPermission.photos`는 현재 어떤 호출부도 쓰지 않는다.**
+   `image_picker`의 `pickImage`/`pickMultiImage`가 카메라·사진 라이브러리 권한을 OS 다이얼로그로 자체 처리하며 `PermissionHandlerService`를 거치지 않는다 — grep으로 확인함(`Permission.camera`/`Permission.photos`를 참조하는 호출부가 `permission_handler_service_impl.dart`의 `_toPlatform` 정의 외에는 없음). 이 값들을 쓰는 호출부가 나중에 추가되면 그때 `_toPlatform`의 `camera → Permission.camera`, `photos → Permission.photos` 매핑을 실기기에서 다시 검증해야 한다.
 
 - [ ] **Step 9: 커밋**
 

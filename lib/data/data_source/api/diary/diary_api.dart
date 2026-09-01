@@ -1,18 +1,18 @@
 import 'package:cake/data/dto/diary_detail_dto.dart';
 import 'package:cake/data/dto/qna_request_dto.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cake/domain/model/local_image.dart';
 
 abstract interface class DiaryApi {
   // 문답일기 확정하기
   Future<DiaryDetailDto> createQnaDiary({
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   });
 
   // 자유일기 확정하기
   Future<DiaryDetailDto> createFreeDiary({
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   });
 
   // 일기 조회하기

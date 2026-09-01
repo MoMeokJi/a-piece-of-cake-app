@@ -1,9 +1,16 @@
+import 'package:cake/domain/enum/app_permission.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionHandlerServiceImpl implements PermissionHandlerService {
   bool _hasNotificationPermission = false;
+
+  Permission _toPlatform(AppPermission permission) => switch (permission) {
+    AppPermission.camera => Permission.camera,
+    AppPermission.photos => Permission.photos,
+    AppPermission.notification => Permission.notification,
+  };
 
   @override
   Future<void> requestEssentialPermissions() async {
@@ -32,7 +39,8 @@ class PermissionHandlerServiceImpl implements PermissionHandlerService {
   }
 
   @override
-  Future<bool> requestPermission(Permission permission) async {
+  Future<bool> requestPermission(AppPermission appPermission) async {
+    final permission = _toPlatform(appPermission);
     if (await permission.isDenied && !await permission.isPermanentlyDenied) {
       final status = await permission.request();
       if (!status.isGranted) {
@@ -50,14 +58,16 @@ class PermissionHandlerServiceImpl implements PermissionHandlerService {
   }
 
   @override
-  Future<bool> checkPermission(Permission permission) async {
+  Future<bool> checkPermission(AppPermission appPermission) async {
+    final permission = _toPlatform(appPermission);
     bool isGranted = await permission.isGranted;
     AppLogger.log('${permission.toString()} 권한 확인 : $isGranted');
     return isGranted;
   }
 
   @override
-  Future<bool> isPermanentlyDenied(Permission permission) async {
+  Future<bool> isPermanentlyDenied(AppPermission appPermission) async {
+    final permission = _toPlatform(appPermission);
     bool isPermanentlyDenied = await permission.isPermanentlyDenied;
     AppLogger.log(
       '${permission.toString()} 권한 영구 거부 여부 : $isPermanentlyDenied',

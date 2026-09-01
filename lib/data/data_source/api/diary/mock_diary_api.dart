@@ -2,7 +2,7 @@ import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
 import 'package:cake/data/dto/music_dto.dart';
 import 'package:cake/data/dto/qna_request_dto.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cake/domain/model/local_image.dart';
 
 class MockDiaryApi implements DiaryApi {
   @override
@@ -90,7 +90,7 @@ class MockDiaryApi implements DiaryApi {
   @override
   Future<DiaryDetailDto> createFreeDiary({
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   }) async {
     await Future.delayed(Duration(seconds: 5)); // 네트워크 지연 시뮬레이션
 
@@ -113,7 +113,7 @@ class MockDiaryApi implements DiaryApi {
   @override
   Future<DiaryDetailDto> createQnaDiary({
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   }) async {
     await Future.delayed(Duration(seconds: 5)); // 네트워크 지연 시뮬레이션
 

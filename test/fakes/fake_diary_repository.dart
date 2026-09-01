@@ -1,9 +1,9 @@
 import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/model/diary_detail.dart';
+import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/model/qna.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
-import 'package:image_picker/image_picker.dart';
 
 class FakeDiaryRepository implements DiaryRepository {
   List<Diary> latestDiaries = [];
@@ -51,7 +51,7 @@ class FakeDiaryRepository implements DiaryRepository {
   Future<DiaryDetail> saveDiary({
     required DiaryType diaryType,
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   }) => throw UnimplementedError();
 
   @override

@@ -7,9 +7,9 @@ import 'package:cake/data/mapper/qna_mapper.dart';
 import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/model/diary_detail.dart';
+import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/model/qna.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
-import 'package:image_picker/image_picker.dart';
 
 class DiaryRepositoryImpl implements DiaryRepository {
   final DiaryDao _diaryDao;
@@ -52,7 +52,7 @@ class DiaryRepositoryImpl implements DiaryRepository {
   Future<DiaryDetail> saveDiary({
     required DiaryType diaryType,
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   }) async {
     final DiaryDetailDto dto = switch (diaryType) {
       DiaryType.free => await _diaryApi.createFreeDiary(
@@ -128,6 +128,4 @@ class DiaryRepositoryImpl implements DiaryRepository {
     // 본문은 매번 서버에서 가져오기 때문에 로컬디비에 수정할거 없음. 서버에만 요청
     await _diaryApi.updateDiaryText(id: id, text: editText);
   }
-
-  
 }

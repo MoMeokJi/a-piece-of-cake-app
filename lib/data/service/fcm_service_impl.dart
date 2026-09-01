@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cake/config/app_router.dart';
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
+import 'package:cake/domain/enum/app_permission.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
@@ -9,7 +10,6 @@ import 'package:cake/domain/service/permission_handler_service.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class FCMServiceImpl implements FCMService {
   final FirebaseMessagingManager _messagingManager;
@@ -38,7 +38,7 @@ class FCMServiceImpl implements FCMService {
 
     // 1. 알림 권한 확인 및 요청
     if (!await _permissionHandlerService.checkPermission(
-      Permission.notification,
+      AppPermission.notification,
     )) {
       final settings = await _messagingManager.requestPermission();
       if (settings.authorizationStatus != AuthorizationStatus.authorized) {

@@ -17,7 +17,9 @@ Map<String, List<String>> _importsUnder(String directory) {
 
     final imports = entity
         .readAsLinesSync()
-        .where((line) => line.startsWith('import '))
+        .where(
+          (line) => line.startsWith('import ') || line.startsWith('export '),
+        )
         .toList();
     result[entity.path] = imports;
   }
@@ -38,7 +40,7 @@ void main() {
     });
 
     expect(violations, isEmpty, reason: 'domain 레이어의 외부 패키지 의존');
-  }, skip: 'Task 11에서 domain의 플랫폼 의존을 제거하며 해제한다');
+  });
 
   test('data는 presentation을 import하지 않는다', () {
     final violations = <String>[];

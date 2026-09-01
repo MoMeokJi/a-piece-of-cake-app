@@ -2,9 +2,9 @@ import 'package:cake/data/data_source/api/api_exception.dart';
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
 import 'package:cake/data/dto/diary_detail_dto.dart';
 import 'package:cake/data/dto/qna_request_dto.dart';
+import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
 
 class DiaryApiImpl implements DiaryApi {
   final Dio _dio;
@@ -14,7 +14,7 @@ class DiaryApiImpl implements DiaryApi {
   Future<DiaryDetailDto> _createDiary({
     required String path,
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
     required String endpointName,
   }) async {
     final formData = FormData.fromMap({
@@ -51,7 +51,7 @@ class DiaryApiImpl implements DiaryApi {
   @override
   Future<DiaryDetailDto> createQnaDiary({
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   }) => _createDiary(
     path: '/diaries',
     text: text,
@@ -62,7 +62,7 @@ class DiaryApiImpl implements DiaryApi {
   @override
   Future<DiaryDetailDto> createFreeDiary({
     required String text,
-    required List<XFile> images,
+    required List<LocalImage> images,
   }) => _createDiary(
     path: '/diaries/free',
     text: text,
