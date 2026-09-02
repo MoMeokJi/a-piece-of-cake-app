@@ -154,7 +154,7 @@ Future<void> diSetup() async {
   );
 }
 
-/// 탈퇴 후 일기 탭 ViewModel의 잔여 상태를 비운다.
+/// 전체 데이터 삭제 후 일기 탭 ViewModel의 잔여 상태를 비운다.
 void resetDiaryTabViewModels() {
   if (getIt.isRegistered<DiaryCalendarViewModel>()) {
     getIt.unregister<DiaryCalendarViewModel>();
