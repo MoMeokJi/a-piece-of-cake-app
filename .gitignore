@@ -74,3 +74,10 @@ firepit-log.txt
 
 # Keystore files and signing keys
 android/key.properties
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md
+vendor/bundle
