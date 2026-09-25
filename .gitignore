@@ -81,3 +81,6 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/README.md
 vendor/bundle
+
+# Gradle 빌드 리포트
+android/build/
