@@ -104,6 +104,18 @@ rm "$r/notes.txt"
 echo "# 변경" >> "$r/pubspec.yaml"
 expect_fail "수정된 파일을 막는다" "pubspec.yaml" check_clean_tree "$r"
 
+echo "deploy.sh"
+expect_ok "--help는 사용법을 보여준다" "$REPO/scripts/deploy.sh" --help
+expect_fail "인자가 없으면 사용법과 함께 실패" "사용법" "$REPO/scripts/deploy.sh"
+expect_fail "모르는 플랫폼은 거절" "사용법" "$REPO/scripts/deploy.sh" windows
+empty_keys="$(mktemp -d "$TMP_ROOT/keys.XXXXXX")"
+expect_fail "fastlane.env가 없으면 네트워크 전에 멈춘다" "$empty_keys/fastlane.env" \
+  env CAKE_KEYS_DIR="$empty_keys" "$REPO/scripts/deploy.sh" android --check-only
+expect_fail "다른 폴더에서 실행해도 같은 점검을 한다" "$empty_keys/fastlane.env" \
+  bash -c "cd '$REPO/scripts' && CAKE_KEYS_DIR='$empty_keys' ./deploy.sh android --check-only"
+expect_fail "잘못된 인자의 종료 코드는 2" "exit=2" \
+  bash -c "'$REPO/scripts/deploy.sh' windows >/dev/null 2>&1; echo exit=\$?; exit 1"
+
 echo
 echo "통과 $passed, 실패 $failed"
 [[ $failed -eq 0 ]]
