@@ -48,7 +48,16 @@ flutter run                          # 실행
 flutter test                         # 테스트
 flutter analyze                      # 정적 분석
 dart run build_runner build --delete-conflicting-outputs   # freezed / json_serializable 생성
+./scripts/deploy.sh android          # Play 내부 테스트 트랙에 업로드 (ios / all)
+./scripts/deploy.sh all --check-only # 빌드 없이 점검만 (--build-only: 업로드 직전까지)
+bash scripts/test/preflight_test.sh  # 배포 스크립트 테스트
 ```
+
+배포 스크립트는 rbenv Ruby(`.ruby-version`)와 Android SDK의 `aapt2`를 쓴다. 새 맥에서는
+`brew install rbenv ruby-build && rbenv install && bundle install`, 그리고 `~/development/keys/`를
+다른 맥에서 에어드랍으로 받아 같은 경로에 둔다. PATH의 brew가 인텔용(`/usr/local`)인 애플 실리콘 맥은
+Ruby 빌드가 OpenSSL을 못 찾는다 — `/opt/homebrew/bin/brew install openssl@3 libyaml` 후
+`RUBY_CONFIGURE_OPTS="--with-openssl-dir=/opt/homebrew/opt/openssl@3 --with-libyaml-dir=/opt/homebrew/opt/libyaml" rbenv install`
 
 freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다.
 
@@ -58,10 +67,12 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 - **`ApiConfig.baseUrl`이 하드코딩되어 있다.** `flutter_dotenv`는 의존성에 있었지만 쓰이지 않아 제거했다
 - **테스트에서 Firebase를 초기화하지 않는다.** 크래시 보고는 `CrashReporter`를 거치며, 테스트는 `NoopCrashReporter`를 주입한다
 - **HTTP 클라이언트가 둘이다.** API 계층(`lib/data/data_source/api/`)은 `dio`를 쓴다 — 인증 헤더, 토큰 재발급, 에러 보고가 인터셉터에 붙어 있다. `lib/data/service/app_store_check_service_impl.dart`만 `http`를 쓰는데, 스토어 페이지를 긁는 별개 작업이라 그 인프라가 필요 없고 테스트가 없어 옮기지 않았다. **새 API 호출은 언제나 `dio`를 쓴다.**
+- **Xcode에서 바로 Archive하지 않는다.** 버전은 `flutter build`가 `pubspec.yaml`에서 `ios/Flutter/Generated.xcconfig`로 복사할 때 들어간다. Xcode Archive만 하면 예전 번호가 들어간다. 꼭 해야 하면 먼저 `flutter build ipa`를 돌린다
+- **배포 키는 저장소 밖 `~/development/keys/`에 있다.** 무엇이 어디 쓰이는지는 그 폴더의 `README.md`. 키 ID·Issuer ID도 저장소에 적지 않는다
 
 ## 릴리즈
 
-1. 버전 커밋(`android/app/build.gradle.kts`의 versionCode/versionName)을 `dev`에 푸시한다
+1. `pubspec.yaml`의 `version`을 올린 커밋을 `dev`에 푸시하고 `./scripts/deploy.sh all`을 돌린다. 빌드 번호(`+N`)는 두 플랫폼이 같이 쓰며, 두 스토어의 최신 번호보다 커야 한다. 심사 제출은 콘솔에서 직접 한다
 2. **스토어 승인이 난 뒤에** `main`으로 fast-forward 머지하고 태그를 단다
 3. 태그는 lightweight, `android/v1.1.0` · `ios/v1.0.0` 형식. versionName은 그대로인데 versionCode만 오른 재업로드는 `android/v1.1.0+6`
 
