@@ -33,8 +33,8 @@ android {
         applicationId = "com.momeokji.cake"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 6
-        versionName = "1.1.0"
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
     signingConfigs {
