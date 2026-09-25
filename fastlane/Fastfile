@@ -1,0 +1,80 @@
+# 조각케이크 배포 lane. scripts/deploy.sh를 거쳐 실행한다.
+# 로컬 점검, flutter test, fastlane.env 로드는 deploy.sh가 먼저 한다.
+require "fileutils"
+require "tmpdir"
+
+opt_out_usage
+
+ROOT = File.expand_path("..", __dir__)
+PLAY_TRACKS = %w[internal alpha beta production].freeze
+
+# pubspec.yaml의 version → ["1.1.0", 7]
+def pubspec_version
+  raw = File.read(File.join(ROOT, "pubspec.yaml"))[/^version:\s*(\S+)/, 1].to_s
+  name, number = raw.split("+", 2)
+  unless name.to_s.match?(/\A\d+\.\d+\.\d+\z/) && number.to_s.match?(/\A\d+\z/)
+    UI.user_error!("pubspec.yaml의 version이 '1.2.3+4' 형식이 아니다: '#{raw}'")
+  end
+  [name, number.to_i]
+end
+
+def ensure_newer_than_store!(store_label, store_latest)
+  _, number = pubspec_version
+  if number <= store_latest
+    UI.user_error!(
+      "pubspec 빌드 번호(#{number})가 #{store_label} 최신(#{store_latest})보다 커야 한다. " \
+      "pubspec.yaml의 +#{number}를 +#{store_latest + 1} 이상으로 올려 dev에 커밋한 뒤 다시 돌려라"
+    )
+  end
+  UI.success("#{store_label} 최신 #{store_latest} < pubspec #{number}")
+end
+
+def ensure_artifact_version!(label, name, number)
+  want_name, want_number = pubspec_version
+  unless name == want_name && number.to_s == want_number.to_s
+    UI.user_error!("#{label}에 들어간 버전(#{name}+#{number})이 pubspec(#{want_name}+#{want_number})과 다르다. 업로드하지 않는다")
+  end
+  UI.success("#{label} 버전 확인: #{name}+#{number}")
+end
+
+def asc_api_key
+  app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_filepath: ENV.fetch("ASC_KEY_PATH")
+  )
+end
+
+def skip_upload?
+  ENV["CAKE_SKIP_UPLOAD"] == "1"
+end
+
+def flutter_build(target)
+  defines = ENV.fetch("DART_DEFINE_FILES", "").split(":").reject(&:empty?)
+  args = ["flutter", "build", target, "--release"] + defines.map { |f| "--dart-define-from-file=#{f}" }
+  Dir.chdir(ROOT) { sh(*args) }
+end
+
+platform :android do
+  desc "Play의 모든 트랙에서 가장 큰 versionCode보다 pubspec 번호가 큰지 본다 (읽기 전용)"
+  lane :check_store do
+    codes = PLAY_TRACKS.flat_map do |track|
+      google_play_track_version_codes(track: track, json_key: ENV.fetch("PLAY_JSON_KEY_PATH"))
+    rescue StandardError => e
+      UI.important("#{track} 트랙 조회 실패 (한 번도 안 쓴 트랙이면 정상): #{e.message}")
+      []
+    end
+    if codes.empty?
+      UI.user_error!("Play의 어느 트랙도 조회하지 못했다. 서비스 계정 권한을 확인해라 (막 초대했다면 반영까지 최대 하루)")
+    end
+    ensure_newer_than_store!("Play", codes.max)
+  end
+end
+
+platform :ios do
+  desc "TestFlight 최신 빌드 번호보다 pubspec 번호가 큰지 본다 (읽기 전용)"
+  lane :check_store do
+    latest = latest_testflight_build_number(api_key: asc_api_key, initial_build_number: 0)
+    ensure_newer_than_store!("TestFlight", latest.to_i)
+  end
+end

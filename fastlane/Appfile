@@ -1,0 +1,4 @@
+# 공개 정보만 둔다. 비밀 값은 scripts/deploy.sh가 ~/development/keys/fastlane.env에서 읽어 환경변수로 넘긴다
+app_identifier("com.momeokji.cake")
+package_name("com.momeokji.cake")
+team_id("X2Z78T337C")
