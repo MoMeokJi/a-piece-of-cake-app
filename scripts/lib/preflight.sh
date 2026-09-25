@@ -78,3 +78,17 @@ check_clean_tree() {
     return 1
   fi
 }
+
+# 지금 커밋이 origin/dev에 푸시되어 있는지 본다 (CLAUDE.md 릴리즈 1번).
+# 승인 뒤 main에 fast-forward할 커밋이 dev에 있어야 한다
+check_pushed_to_dev() {
+  local root="$1"
+  if ! git -C "$root" fetch -q origin dev; then
+    _fail "origin/dev를 가져오지 못했다. 네트워크를 확인해라"
+    return 1
+  fi
+  if ! git -C "$root" merge-base --is-ancestor HEAD origin/dev; then
+    _fail "지금 커밋($(git -C "$root" rev-parse --short HEAD))이 origin/dev에 없다. dev에 푸시한 커밋으로 배포한다"
+    return 1
+  fi
+}

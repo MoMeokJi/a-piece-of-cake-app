@@ -77,6 +77,7 @@ if [[ ${#BUILD_SECRET_FILES[@]} -gt 0 ]]; then
 fi
 check_no_mock_api "$ROOT"
 check_clean_tree "$ROOT"
+check_pushed_to_dev "$ROOT"
 version="$(read_pubspec_version "$ROOT")"
 read -r version_name build_number <<<"$version"
 commit="$(git -C "$ROOT" rev-parse --short HEAD)"
@@ -103,24 +104,38 @@ if [[ ${#BUILD_SECRET_FILES[@]} -gt 0 ]]; then
 fi
 [[ "$mode" == "build" ]] && export CAKE_SKIP_UPLOAD=1
 
+uploaded=""
+remaining="$platforms"
 for platform in $platforms; do
   step "$platform 빌드·확인·업로드"
-  bundle exec fastlane "$platform" deploy
+  if ! bundle exec fastlane "$platform" deploy; then
+    echo >&2
+    _fail "$platform 단계에서 멈췄다"
+    if [[ -n "$uploaded" ]]; then
+      echo "   이미 올라간 플랫폼:$uploaded (커밋 $commit)" >&2
+      echo "   전체를 다시 돌리면 빌드 번호가 겹쳐 막힌다. 남은 것만 돌려라: ./scripts/deploy.sh $remaining" >&2
+    fi
+    exit 1
+  fi
+  remaining="${remaining#"$platform"}"
+  remaining="${remaining# }"
+  if [[ "$mode" == "build" ]]; then
+    echo "✅ $platform 빌드 완료: $version_name+$build_number (커밋 $commit). 업로드는 하지 않았다"
+  else
+    uploaded="$uploaded $platform"
+    echo "✅ $platform 업로드 완료: $version_name+$build_number (커밋 $commit)"
+  fi
 done
 
-echo
-if [[ "$mode" == "build" ]]; then
-  echo "✅ 빌드 완료: $version_name+$build_number (커밋 $commit). 업로드는 하지 않았다"
-  exit 0
-fi
-echo "✅ 업로드 완료: $version_name+$build_number (커밋 $commit)"
+[[ "$mode" == "build" ]] && exit 0
+
 echo
 echo "다음 할 일"
 echo "  1. 콘솔에서 심사 제출"
 echo "     Play: 내부 테스트 트랙의 이 빌드를 프로덕션으로 승격"
 echo "     iOS: App Store Connect에서 새 버전에 이 빌드를 붙여 제출"
 echo "  2. 승인이 나면 (거절되면 dev에서 고치고 빌드 번호를 올려 다시 돌린다)"
-echo "     git switch main && git merge --ff-only $commit"
+echo "     git switch main && git pull --ff-only && git merge --ff-only $commit"
 for platform in $platforms; do
   echo "     git tag $platform/v$version_name $commit    # 같은 versionName 재업로드면 $platform/v$version_name+$build_number"
 done
