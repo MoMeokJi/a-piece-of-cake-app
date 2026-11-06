@@ -4,10 +4,15 @@
 
 ## 도메인 개념
 
+- **계정** — Apple·Google 소셜 로그인. Android는 Google만. 서버는 `deviceId`(설치당 UUID, secure storage)로 기기를 구분하고, 토큰은 응답 **바디**로 온다 (`AuthSession`)
+- **닉네임** — 완성형 한글·영문·숫자 2~10자 (`ServiceConfig.nicknamePattern`). 중복 허용, 실시간 검사 없음. 가입 직후 설정 화면에서 SDK 이름을 미리 채운다
 - **자유일기 (free)** — 사용자가 직접 쓴다
-- **문답일기 (qna)** — 서버가 준 질문에 답하면 서버가 일기를 생성한다
-- 일기에는 이미지(최대 4장), 요약, 대표 색상 2개, 추천 음악이 붙는다
-- 하루 최대 3개까지 쓸 수 있다 (`ServiceConfig.maxDiaryCount`)
+- **문답일기 (qna)** — 서버가 준 질문에 답하면 서버가 일기를 생성한다. 건너뛴 문항은 서버에 보내지 않고, 전부 건너뛰면 생성 요청을 하지 않는다
+- 일기에는 이미지(최대 4장), 요약, 색상 2개(`{name, hex}`, name은 없을 수 있음), 추천 음악(YouTube, 길이는 없을 수 있음)이 붙는다
+- **시식평(feedback)** — 작성 후 약 10분 뒤 서버 배치가 만든다. 그 전엔 null이라 "곧 도착해요" 상태를 보여준다
+- 하루 한도는 서버 `GET /users/me/stats`의 `dailyLimit`이 기준이고 `ServiceConfig.maxDiaryCount`는 fallback. 초과하면 서버가 429 `DIARY_DAILY_LIMIT_EXCEEDED`
+- 목록·캘린더는 서버가 원본이다 (`GET /diaries` 페이지, `GET /diaries/calendar`). 로컬 DB는 없다
+- 알림은 토글 하나(`PUT /users/me/notification`)로 리마인드·공감 푸시를 함께 켠다. 관리자 공지는 무관
 
 ## 레이어
 
@@ -22,12 +27,12 @@
 - `lib/config/` — DI, 라우터, 설정 상수. 합성 루트이므로 모든 레이어를 안다
 
 이 규칙은 `test/architecture_test.dart`가 강제한다. 어기면 테스트가 실패한다.
+`lib/ui/`도 presentation·data를 import하지 않는다 (공용 위젯은 도메인 모델과 토큰만 안다).
 
-**예외 — `Storage` (shared_preferences).** `SplashViewModel`은 리포지토리를 거치지 않고
-`lib/data/data_source/shared_preferences/`의 `Storage`를 직접 주입받는다. `architecture_test.dart`의
-"presentation은 data_source를 직접 import하지 않는다" 테스트가 `data_source/shared_preferences/`
-경로만 명시적으로 예외 처리해 이 상태를 기록한다. 임시 상태이며, 리포지토리 뒤로 감추는 것은 별도 과제다.
-새 코드에서 이 예외를 넓히지 말 것 — 새 presentation 코드는 항상 리포지토리를 거친다.
+shared_preferences는 `AppPrefsRepository` 뒤에 있다. 예외 없이 presentation은 항상 리포지토리를 거친다.
+
+화면끼리 직접 참조하지 않는다. 일기가 생성·수정·삭제되면 `DiaryChangeNotifier`(DI 싱글턴)를
+울리고, `HomeViewModel`·`MyViewModel`이 듣고 다시 불러온다.
 
 ## 화면 하나를 추가할 때
 
@@ -35,16 +40,22 @@
 
 1. `lib/presentation/<feature>/<feature>_view_model.dart` — `ChangeNotifier` 상속, 리포지토리를 생성자 주입
 2. `lib/presentation/<feature>/<feature>_screen.dart` — `context.watch<T>()`로 구독, `context.read<T>()`로 호출
-3. `lib/config/di.dart` — ViewModel 등록. 탭처럼 상태를 유지해야 하면 `registerLazySingleton`, 아니면 `registerFactory`
+3. `lib/config/di.dart` — ViewModel 등록. 탭처럼 상태를 유지해야 하면 `registerLazySingleton`, 아니면 `registerFactory`. 라우트 extra를 생성자에 넣어야 하면 `registerFactoryParam`
 4. `lib/config/app_router.dart` — 경로 추가
 5. `test/presentation/<feature>/<feature>_view_model_test.dart` — Fake 리포지토리로 상태 전이 검증
 
 화면이 커지면 `lib/presentation/<feature>/components/` 아래로 위젯을 뺀다.
 
+디자인은 피그마 `QCsx45ysi49gwfY76gYMT9` (Screens / Components / Foundations)가 기준이다.
+색은 `ColorConfig`의 의미 이름(bg/text/action/border)만, 글자는 `TextConfig`의 16개 스타일만 쓴다
+(제목 계열 NanumSquareRound Bold, 본문 계열 Pretendard, 자간 -1%). 간격·모서리는 `AppSpacing`·`AppRadius`.
+공용 위젯은 `lib/ui/common_components/`에 피그마 Components와 1:1로 있다. 치수는 피그마 값(390 기준) 그대로 쓰고 비율 스케일링을 하지 않는다.
+
 ## 명령어
 
 ```bash
-flutter run                          # 실행
+flutter run --dart-define-from-file=$HOME/development/keys/cake-social-login.json   # 실행 (소셜 로그인 ID 필요)
+flutter run --dart-define=API_BASE_URL=https://test.example   # 테스트 서버로
 flutter test                         # 테스트
 flutter analyze                      # 정적 분석
 dart run build_runner build --delete-conflicting-outputs   # freezed / json_serializable 생성
@@ -63,10 +74,14 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 
 ## 함정
 
-- **`lib/config/di.dart`의 mock API 토글.** `MockDiaryApi` 등록 줄이 주석 처리되어 있다. 실수로 주석을 풀고 커밋하면 앱이 목 데이터로 빌드된다
-- **`ApiConfig.baseUrl`이 하드코딩되어 있다.** `flutter_dotenv`는 의존성에 있었지만 쓰이지 않아 제거했다
-- **테스트에서 Firebase를 초기화하지 않는다.** 크래시 보고는 `CrashReporter`를 거치며, 테스트는 `NoopCrashReporter`를 주입한다
-- **HTTP 클라이언트가 둘이다.** API 계층(`lib/data/data_source/api/`)은 `dio`를 쓴다 — 인증 헤더, 토큰 재발급, 에러 보고가 인터셉터에 붙어 있다. `lib/data/service/app_store_check_service_impl.dart`만 `http`를 쓰는데, 스토어 페이지를 긁는 별개 작업이라 그 인프라가 필요 없고 테스트가 없어 옮기지 않았다. **새 API 호출은 언제나 `dio`를 쓴다.**
+- **비밀값은 dart-define으로 받는다.** `ApiConfig.baseUrl`(기본 운영 서버), `AuthConfig.googleServerClientId`·`googleIosClientId`는 `String.fromEnvironment`다. 배포 스크립트는 `~/development/keys/cake-social-login.json`을 `--dart-define-from-file`로 넘긴다. 로컬 실행도 같은 파일을 넘겨야 Google 로그인이 된다
+- **Google 서버 검증은 웹 클라이언트 ID로 한다.** `GOOGLE_SERVER_CLIENT_ID`에 넣는 값은 서버가 idToken audience로 검사하는 값과 같아야 한다. Firebase 콘솔에서 Google 로그인을 켜고 SHA-1을 등록한 뒤 `google-services.json`·`GoogleService-Info.plist`를 다시 받아야 하며, iOS `Info.plist`의 URL scheme(`REPLACE_WITH_REVERSED_CLIENT_ID`)을 plist의 `REVERSED_CLIENT_ID`로 바꿔야 한다
+- **테스트에서 Firebase를 초기화하지 않는다.** 크래시 보고는 `CrashReporter`(테스트는 `NoopCrashReporter`), 애널리틱스는 `AnalyticsService`(테스트는 `NoopAnalyticsService`)를 거친다. ViewModel에서 `FirebaseAnalytics.instance`를 직접 부르지 말 것
+- **HTTP 클라이언트는 `dio` 하나다.** 인증 헤더, 재발급(single-flight), 에러 보고가 `AuthInterceptor`·`ErrorReportingInterceptor`에 붙어 있다. 401 처리 규칙: `TOKEN_EXPIRED` → refresh 후 재시도, `TOKEN_INVALID`·`REFRESH_INVALID` → 토큰 삭제 + 로그인 화면(`di.dart`의 `_handleSessionExpired`). 인증이 필요 없는 요청은 `AuthInterceptor.needsAuthKey: false`
+- **서버 에러는 RFC 9457 `code`로 구분한다.** `api_error_mapper.dart`가 dio 예외를 도메인 예외(`DiaryDailyLimitExceededException` 등)로 바꾼다. 리포지토리는 `on DioException catch (e) { throw mapOrRethrow(e); }`
+- **deviceId 시절 유저는 버렸다.** 업데이트 후 첫 실행에서 `LegacyDataCleanupService`가 옛 토큰·sqflite(`cake.db`)·prefs를 지우고, 옛 세션이 있었으면 "계정 방식 변경" 안내를 한 번 띄운다. `sqflite` 의존성은 이 삭제 한 줄 때문에만 남아 있다
+- **FCM 수신·탭 처리(`fcm_service_impl.dart`, `notification_service_impl.dart`, `main.dart` 백그라운드 핸들러)는 알려진 버그가 있고 따로 고칠 예정이다.** 지금은 토큰 등록(`PUT /auth/devices/fcm-token`, `AuthRepository.registerFcmToken`)만 새 API에 맞췄다
+- **서버 PATCH는 본문만 받는다.** 상세의 "수정하기"(`/diary-edit`)에서 사진은 보여주기만 하고 추가·삭제를 지원하지 않는다
 - **Xcode에서 바로 Archive하지 않는다.** 버전은 `flutter build`가 `pubspec.yaml`에서 `ios/Flutter/Generated.xcconfig`로 복사할 때 들어간다. Xcode Archive만 하면 예전 번호가 들어간다. 꼭 해야 하면 먼저 `flutter build ipa`를 돌린다
 - **배포 키는 저장소 밖 `~/development/keys/`에 있다.** 무엇이 어디 쓰이는지는 그 폴더의 `README.md`. 키 ID·Issuer ID도 저장소에 적지 않는다
 
@@ -85,7 +100,7 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 | 스킬 | 이 앱에 적용되는가 |
 | --- | --- |
 | `flutter-presentation-mvvm` | 적용된다. `context.watch/read` + ChangeNotifier getter 방식이 이 앱과 같다 |
-| `flutter-data-layer` | 부분적으로 적용된다. DataSource 인터페이스 + Repository + DTO/매퍼 구조는 같다. 단 `rxdart`/`BehaviorSubject`로 만드는 반응형 저장소 절은 **적용되지 않는다** — `rxdart`는 `pubspec.yaml`에 있지만 `lib/`에 `BehaviorSubject`를 쓰는 곳이 없다. 이 패턴을 새로 들이지 말 것 |
+| `flutter-data-layer` | 부분적으로 적용된다. DataSource 인터페이스 + Repository + DTO/매퍼 구조는 같다. 단 `rxdart`/`BehaviorSubject` 반응형 저장소 절은 **적용되지 않는다** (의존성도 없다). 로컬 DB도 없다 |
 | `flutter-testing` | 적용된다 |
 | `flutter-widget-ui` | 적용된다. 단 공용 위젯 경로는 다르다 — 스킬은 `lib/core/presentation/components/`, 이 앱은 `lib/ui/common_components/` |
 | `flutter-di-get-it` | 개념은 적용되지만 세부는 이 문서가 기준이다. 등록 규칙은 위 "화면 하나를 추가할 때" 3번을 따른다. 경로도 다르다 — 스킬은 `lib/core/di/di_setup.dart`, 이 앱은 `lib/config/di.dart` |

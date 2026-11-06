@@ -1,105 +1,58 @@
-import 'package:cake/presentation/main/components/diary_select_bottom_sheet.dart';
-import 'package:cake/presentation/main/components/main_banner.dart';
-import 'package:cake/ui/style/color_config.dart';
-import 'package:cake/config/size_config.dart';
-import 'package:cake/presentation/main/components/bottom_navi.dart';
+import 'package:cake/presentation/main/components/write_type_sheet.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
+import 'package:cake/ui/common_components/app_bottom_sheet.dart';
+import 'package:cake/ui/common_components/bottom_nav.dart';
+import 'package:cake/ui/style/app_assets.dart';
+import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:toastification/toastification.dart';
 
 class MainScreen extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainScreen({required this.navigationShell, super.key});
 
+  Future<void> _onFabTap(BuildContext context) async {
+    final viewModel = context.read<MainViewModel>();
+    final canWrite = await viewModel.canWriteToday();
+    if (!context.mounted) return;
+
+    if (!canWrite) {
+      await ConfirmSheet.show(
+        context,
+        title: '오늘의 조각을 모두 구웠어요',
+        description: '일기는 하루에 ${viewModel.dailyLimit}개까지 쓸 수 있어요.\n내일 또 만나요!',
+        primaryLabel: '확인',
+        visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+      );
+      return;
+    }
+
+    final type = await WriteTypeSheet.show(context);
+    if (type == null || !context.mounted) return;
+    switch (type) {
+      case WriteType.qna:
+        context.push('/qna-diary');
+      case WriteType.free:
+        context.push('/free-diary');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<MainViewModel>();
-
     return Scaffold(
-      backgroundColor: ColorConfig.background,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // 상단 고정 배너
-              MainBanner(),
-              // 하단 탭 컨텐츠
-              Expanded(child: navigationShell),
-            ],
-          ),
-          // 배너 위에 떠있는 설정 버튼
-          Positioned(
-            top: getHeight(210),
-            right: getWidth(12),
-            child: IconButton(
-              onPressed: () {
-                // 설정 페이지로 이동
-                context.push('/settings');
-              },
-              icon: Icon(Icons.settings_outlined),
-              color: ColorConfig.disabled,
-              iconSize: getWidth(28),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavi(
+      backgroundColor: ColorConfig.bgPage,
+      body: navigationShell,
+      extendBody: false,
+      bottomNavigationBar: BottomNav(
         currentIndex: navigationShell.currentIndex,
-        changeTap: (index) => navigationShell.goBranch(index),
-      ),
-      floatingActionButton: RawMaterialButton(
-        constraints: BoxConstraints.tightFor(
-          width: getWidth(70),
-          height: getHeight(70),
+        onTap: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
         ),
-        shape: const CircleBorder(),
-        elevation: 2,
-        fillColor: ColorConfig.primary,
-        onPressed: () async {
-          final canWrite = await viewModel.checkDiaryLimit();
-          if (!context.mounted) return;
-
-          if (!canWrite) {
-            toastification.show(
-              context: context,
-              type: ToastificationType.info,
-              style: ToastificationStyle.fillColored,
-              primaryColor: ColorConfig.primary,
-              title: Text(
-                '일기는 하루에 세번까지 작성할 수 있어요',
-                style: TextStyle(fontSize: getWidth(14)),
-              ),
-              autoCloseDuration: const Duration(seconds: 2),
-              alignment: Alignment.bottomCenter,
-              showProgressBar: false,
-            );
-            return;
-          }
-
-          if (!context.mounted) return;
-
-          showModalBottomSheet(
-            backgroundColor: ColorConfig.background,
-            context: context,
-            isScrollControlled: false,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            builder: (context) {
-              return DiarySelectBottomSheet();
-            },
-          );
-        },
-        child: Icon(
-          Icons.create_outlined,
-          color: ColorConfig.white,
-          size: getHeight(40),
-        ),
+        onFabTap: () => _onFabTap(context),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

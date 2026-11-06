@@ -42,6 +42,22 @@ void main() {
     expect(violations, isEmpty, reason: 'domain 레이어의 외부 패키지 의존');
   });
 
+  test('domain은 data·presentation·ui를 import하지 않는다', () {
+    final violations = <String>[];
+
+    _importsUnder('lib/domain').forEach((path, imports) {
+      for (final import in imports) {
+        if (import.contains('package:cake/data/') ||
+            import.contains('package:cake/presentation/') ||
+            import.contains('package:cake/ui/')) {
+          violations.add('$path → $import');
+        }
+      }
+    });
+
+    expect(violations, isEmpty, reason: 'domain → 바깥 레이어 의존');
+  });
+
   test('data는 presentation을 import하지 않는다', () {
     final violations = <String>[];
 
@@ -57,19 +73,31 @@ void main() {
   });
 
   test('presentation은 data_source를 직접 import하지 않는다', () {
-    // shared_preferences의 Storage는 아직 예외로 둔다.
-    // 별도 과제로 리포지토리 뒤로 감춘다.
-    const exempt = 'package:cake/data/data_source/shared_preferences/';
     final violations = <String>[];
 
     _importsUnder('lib/presentation').forEach((path, imports) {
       for (final import in imports) {
-        if (!import.contains('package:cake/data/data_source/')) continue;
-        if (import.contains(exempt)) continue;
-        violations.add('$path → $import');
+        if (import.contains('package:cake/data/data_source/')) {
+          violations.add('$path → $import');
+        }
       }
     });
 
     expect(violations, isEmpty, reason: 'presentation → data_source 직접 의존');
+  });
+
+  test('ui(공용 위젯)는 presentation과 data를 import하지 않는다', () {
+    final violations = <String>[];
+
+    _importsUnder('lib/ui').forEach((path, imports) {
+      for (final import in imports) {
+        if (import.contains('package:cake/presentation/') ||
+            import.contains('package:cake/data/')) {
+          violations.add('$path → $import');
+        }
+      }
+    });
+
+    expect(violations, isEmpty, reason: 'ui → presentation/data 의존');
   });
 }

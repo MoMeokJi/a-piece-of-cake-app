@@ -1,17 +1,17 @@
-import 'package:cake/data/data_source/shared_preferences/storage.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class TokenRepositoryImpl implements TokenRepository {
   late final FlutterSecureStorage _secureStorage;
-  final Storage _storage;
 
   static const String _accessTokenKey = 'ACCESS_TOKEN';
   static const String _refreshTokenKey = 'REFRESH_TOKEN';
   static const String _fcmTokenKey = 'FCM_TOKEN';
+  static const String _deviceIdKey = 'DEVICE_ID';
 
-  TokenRepositoryImpl(this._storage) {
+  TokenRepositoryImpl() {
     _secureStorage = FlutterSecureStorage(
       aOptions: _getAndroidOptions(),
       iOptions: _getIOSOptions(),
@@ -36,31 +36,23 @@ class TokenRepositoryImpl implements TokenRepository {
     required String accessToken,
     required String refreshToken,
   }) async {
-    await Future.wait([
-      _secureStorage.write(key: _accessTokenKey, value: accessToken),
-      _secureStorage.write(key: _refreshTokenKey, value: refreshToken),
-    ]);
-    AppLogger.log('저장된 access 토큰: $accessToken');
-    AppLogger.log('저장된 refresh 토큰: $refreshToken');
-        await _storage.updateLastAccessed();
+    // 재발급이 겹쳐도 access/refresh 쌍이 뒤섞이지 않게 순서대로 쓴다.
+    await _secureStorage.write(key: _accessTokenKey, value: accessToken);
+    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+    AppLogger.log('JWT 토큰 저장됨');
   }
 
   @override
-  Future<String?> getAccessToken() async {
-    return _secureStorage.read(key: _accessTokenKey);
-  }
+  Future<String?> getAccessToken() => _secureStorage.read(key: _accessTokenKey);
 
   @override
-  Future<String?> getRefreshToken() async {
-    return _secureStorage.read(key: _refreshTokenKey);
-  }
+  Future<String?> getRefreshToken() =>
+      _secureStorage.read(key: _refreshTokenKey);
 
   @override
   Future<void> clearJwtTokens() async {
-    await Future.wait([
-      _secureStorage.delete(key: _accessTokenKey),
-      _secureStorage.delete(key: _refreshTokenKey),
-    ]);
+    await _secureStorage.delete(key: _accessTokenKey);
+    await _secureStorage.delete(key: _refreshTokenKey);
   }
 
   @override
@@ -70,29 +62,30 @@ class TokenRepositoryImpl implements TokenRepository {
     return accessToken != null && refreshToken != null;
   }
 
+  // ========== Device ID ==========
+
+  @override
+  Future<String> getOrCreateDeviceId() async {
+    final existing = await _secureStorage.read(key: _deviceIdKey);
+    if (existing != null && existing.isNotEmpty) return existing;
+    final created = const Uuid().v4();
+    await _secureStorage.write(key: _deviceIdKey, value: created);
+    AppLogger.log('deviceId 생성: $created');
+    return created;
+  }
+
   // ========== FCM Token ==========
 
   @override
   Future<void> saveFcmToken(String token) async {
     await _secureStorage.write(key: _fcmTokenKey, value: token);
-    AppLogger.log('저장된 FCM 토큰: $token');
   }
 
   @override
-  Future<String?> getFcmToken() async {
-    return _secureStorage.read(key: _fcmTokenKey);
-  }
+  Future<String?> getFcmToken() => _secureStorage.read(key: _fcmTokenKey);
 
   @override
-  Future<void> clearFcmToken() async {
-    await _secureStorage.delete(key: _fcmTokenKey);
-  }
-
-  @override
-  Future<bool> hasFcmToken() async {
-    final fcmToken = await getFcmToken();
-    return fcmToken != null;
-  }
+  Future<void> clearFcmToken() => _secureStorage.delete(key: _fcmTokenKey);
 
   // ========== Clear All ==========
 
@@ -102,6 +95,6 @@ class TokenRepositoryImpl implements TokenRepository {
       aOptions: _getAndroidOptions(),
       iOptions: _getIOSOptions(),
     );
-    AppLogger.log('모든 Secure Storage 데이터 삭제됨 (재설치 감지)');
+    AppLogger.log('모든 Secure Storage 데이터 삭제됨');
   }
 }

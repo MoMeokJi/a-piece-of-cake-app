@@ -1,186 +1,143 @@
-import 'package:cake/config/size_config.dart';
-import 'package:cake/domain/model/diary_detail.dart';
+import 'package:cake/domain/model/diary_music.dart';
+import 'package:cake/ui/common_components/app_chip.dart';
+import 'package:cake/ui/common_components/section_title.dart';
+import 'package:cake/ui/common_components/surface_card.dart';
+import 'package:cake/ui/style/app_assets.dart';
+import 'package:cake/ui/style/app_dimens.dart';
 import 'package:cake/ui/style/color_config.dart';
-import 'package:cake/utils/app_logger.dart';
+import 'package:cake/ui/style/text_config.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+/// 오늘의 음악. 유튜브 플레이어 + 곡 정보. videoId가 없으면 오류 상태.
 class MusicSection extends StatelessWidget {
-  final DiaryDetail diary;
-  const MusicSection({super.key, required this.diary});
+  final DiaryMusic music;
+  final int attempt;
+  final VoidCallback onRetry;
+
+  const MusicSection({
+    super.key,
+    required this.music,
+    required this.attempt,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // videoId가 비어있으면 빈 컨테이너 표시
-    if (diary.youtubeVideoId.isEmpty) {
-      AppLogger.log('videoId가 비어있음');
-      return _buildEmptyMusicSection();
-    }
-
-    AppLogger.log('videoId: ${diary.youtubeVideoId}');
-
-    return _buildMusicSection();
-  }
-
-  Widget _buildEmptyMusicSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ColorConfig.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: ColorConfig.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
+    return SurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SectionTitle(iconAsset: AppImages.iconMusic, title: '오늘의 음악'),
+              Text(
+                'YouTube',
+                style: TextConfig.caption.copyWith(
+                  color: ColorConfig.textTertiary,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: getWidth(16),
-          vertical: getHeight(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Image.asset(
-                  'assets/icons/music_icon.png',
-                  width: getWidth(24),
-                  height: getHeight(24),
-                ),
-                SizedBox(width: getWidth(8)),
-                Text(
-                  '오늘의 추천 음악',
-                  style: TextStyle(
-                    fontSize: getHeight(16),
-                    fontWeight: FontWeight.w800,
-                    color: ColorConfig.black,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: getHeight(12)),
-            Container(
-              height: getHeight(200),
-              decoration: BoxDecoration(
-                color: ColorConfig.gray3,
-                borderRadius: BorderRadius.circular(8),
-              ),
+          const SizedBox(height: 16),
+          if (!music.hasVideo)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
               child: Center(
-                child: Text(
-                  '유튜브에서 음악을 불러올 수 없어요 😢',
-                  style: TextStyle(
-                    fontSize: getHeight(14),
-                    color: ColorConfig.gray1,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      '음악을 불러오지 못했어요',
+                      style: TextConfig.bodyM.copyWith(
+                        color: ColorConfig.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    AppChip(label: '다시 시도', onTap: onRetry),
+                  ],
                 ),
               ),
-            ),
-            SizedBox(height: getHeight(12)),
+            )
+          else
+            _Player(key: ValueKey('${music.youtubeVideoId}-$attempt'), music: music),
+          if (music.title.isNotEmpty || music.artist.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(music.title, style: TextConfig.bodyMStrong),
+            const SizedBox(height: 2),
             Text(
-              diary.musicTitle,
-              style: TextStyle(
-                fontSize: getHeight(16),
-                fontWeight: FontWeight.w800,
-                color: ColorConfig.black,
-              ),
-            ),
-            Text(
-              diary.musicArtist,
-              style: TextStyle(
-                fontSize: getHeight(14),
-                fontWeight: FontWeight.w400,
-                color: ColorConfig.gray1,
-              ),
+              music.artist,
+              style: TextConfig.label.copyWith(color: ColorConfig.textSecondary),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildMusicSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ColorConfig.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: ColorConfig.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
+class _Player extends StatefulWidget {
+  final DiaryMusic music;
+
+  const _Player({super.key, required this.music});
+
+  @override
+  State<_Player> createState() => _PlayerState();
+}
+
+class _PlayerState extends State<_Player> {
+  late final YoutubePlayerController _controller =
+      YoutubePlayerController.fromVideoId(
+        videoId: widget.music.youtubeVideoId,
+        autoPlay: false,
+        params: const YoutubePlayerParams(
+          showControls: true,
+          enableCaption: false,
+          showVideoAnnotations: false,
+          loop: true,
+          interfaceLanguage: 'ko',
+          origin: 'https://www.youtube-nocookie.com',
+        ),
+      );
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = widget.music.durationLabel;
+    return ClipRRect(
+      borderRadius: AppRadius.circular(AppRadius.md),
+      child: Stack(
+        children: [
+          ColoredBox(
+            color: ColorConfig.bgVideoPlaceholder,
+            child: YoutubePlayer(controller: _controller, aspectRatio: 16 / 9),
           ),
+          if (duration != null)
+            Positioned(
+              right: 10,
+              bottom: 10,
+              child: IgnorePointer(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    duration,
+                    style: TextConfig.numberS.copyWith(
+                      color: ColorConfig.textOnDark,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: getWidth(16),
-          vertical: getHeight(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Image.asset(
-                  'assets/icons/music_icon.png',
-                  width: getWidth(24),
-                  height: getHeight(24),
-                ),
-                SizedBox(width: getWidth(8)),
-                Text(
-                  '오늘의 추천 음악',
-                  style: TextStyle(
-                    fontSize: getHeight(16),
-                    fontWeight: FontWeight.w800,
-                    color: ColorConfig.black,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: getHeight(12)),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: YoutubePlayer(
-                controller: YoutubePlayerController.fromVideoId(
-                  videoId: diary.youtubeVideoId,
-                  autoPlay: false,
-                  params: const YoutubePlayerParams(
-                    mute: false,
-                    showControls: true,
-                    enableCaption: false,
-                    showVideoAnnotations: true,
-                    loop: true,
-                    interfaceLanguage: 'ko',
-                    origin: 'https://www.youtube-nocookie.com',
-                  ),
-                ),
-                aspectRatio: 16 / 9,
-              ),
-            ),
-            SizedBox(height: getHeight(12)),
-            Text(
-              diary.musicTitle,
-              style: TextStyle(
-                fontSize: getHeight(16),
-                fontWeight: FontWeight.w800,
-                color: ColorConfig.black,
-              ),
-            ),
-            Text(
-              diary.musicArtist,
-              style: TextStyle(
-                fontSize: getHeight(14),
-                fontWeight: FontWeight.w400,
-                color: ColorConfig.gray1,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

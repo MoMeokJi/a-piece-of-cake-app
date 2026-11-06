@@ -1,105 +1,169 @@
 import 'package:cake/domain/enum/result_state.dart';
-import 'package:cake/presentation/qna_diary_create/components/chat_list.dart';
-import 'package:cake/presentation/qna_diary_create/components/bottom_fixed_input_section.dart';
-import 'package:cake/presentation/qna_diary_create/components/loading_overlay.dart';
+import 'package:cake/presentation/qna_diary_create/components/answer_input_bar.dart';
+import 'package:cake/presentation/qna_diary_create/components/qna_progress_bar.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
-import 'package:cake/ui/common_components/common_main_app_bar.dart';
+import 'package:cake/ui/common_components/app_bottom_sheet.dart';
+import 'package:cake/ui/common_components/app_chip.dart';
+import 'package:cake/ui/common_components/app_toast.dart';
+import 'package:cake/ui/common_components/chat_bubble.dart';
+import 'package:cake/ui/common_components/full_loading.dart';
+import 'package:cake/ui/common_components/gradient_scaffold.dart';
+import 'package:cake/ui/common_components/top_bar.dart';
+import 'package:cake/ui/style/app_assets.dart';
+import 'package:cake/ui/style/app_dimens.dart';
 import 'package:cake/ui/style/color_config.dart';
-import 'package:cake/utils/dialog/dialog_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class QnaDiaryCreateScreen extends StatelessWidget {
   const QnaDiaryCreateScreen({super.key});
 
-  Future<void> _handleBackPress(BuildContext context, bool isLoading) async {
-    if (isLoading) return;
-    final shouldExit = await DialogUtils.showExitDiaryDialog(context: context);
-    if (shouldExit == true && context.mounted) {
+  Future<void> _handleBack(
+    BuildContext context,
+    QnaDiaryCreateViewModel viewModel,
+  ) async {
+    if (viewModel.isGenerating) return;
+    if (viewModel.answeredCount == 0) {
       context.pop();
+      return;
     }
-  }
-
-  void _showRetrySnackbar(BuildContext context, VoidCallback onRetry) {
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('일기 생성에 실패했어요.'),
-          action: SnackBarAction(label: '다시 시도', onPressed: onRetry),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    final leave = await ConfirmSheet.show(
+      context,
+      title: '작성 중인 일기가 있어요',
+      description: '지금 나가면 쓰던 내용이 저장되지 않아요.',
+      primaryLabel: '계속 쓰기',
+      secondaryLabel: '나가기',
+      visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+    );
+    if (!leave && context.mounted) context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<QnaDiaryCreateViewModel>();
-    final isLoading = viewModel.state == ResultState.loading;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      if (viewModel.state == ResultState.success) {
+        viewModel.consumeSuccess();
+        context.pushReplacement('/qna-confirm', extra: viewModel.generatedDiary);
+        return;
+      }
+      final error = viewModel.errorMessage;
+      if (error != null) {
+        viewModel.clearError();
+        final retryable = viewModel.isAllQuestionsDone && !viewModel.allSkipped;
+        AppToast.show(
+          context,
+          error,
+          tone: ToastTone.error,
+          actionLabel: retryable
+              ? '다시 시도'
+              : viewModel.allSkipped
+              ? '답하기'
+              : null,
+          onAction: retryable
+              ? viewModel.retryGenerate
+              : viewModel.allSkipped
+              ? viewModel.reopenLastQuestion
+              : null,
+          bottomOffset: 129,
+        );
+      }
+    });
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _handleBackPress(context, isLoading);
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack(context, viewModel);
       },
       child: Stack(
         children: [
-          KeyboardVisibilityBuilder(
-            builder: (context, isKeyboardVisible) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (viewModel.state == ResultState.success) {
-                  context.pushReplacement(
-                    '/qna-edit',
-                    extra: viewModel.generatedDiary,
-                  );
-                } else if (viewModel.state == ResultState.error) {
-                  _showRetrySnackbar(context, viewModel.retrySubmit);
-                }
-              });
-
-              return Scaffold(
-                backgroundColor: ColorConfig.background,
-                appBar: CommonMainAppBar(
-                  onBackPressed: () => _handleBackPress(context, isLoading),
-                ),
-                body: SafeArea(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            if (viewModel.isEditMode) {
-                              viewModel.cancelEditAnswer();
-                            } else {
-                              viewModel.unfocusKeyboard();
-                            }
-                          },
-                          child: ChatList(
-                            chatList: viewModel.chatList,
-                            scrollController: viewModel.scrollController,
-                            onEditAnswer: isLoading
-                                ? null
-                                : viewModel.startEditAnswer,
+          GradientScaffold(
+            body: Column(
+              children: [
+                Container(
+                  color: ColorConfig.bgSurface,
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Column(
+                      children: [
+                        TopBar(
+                          title: '오늘의 문답',
+                          onBack: () => _handleBack(context, viewModel),
+                        ),
+                        Padding(
+                          padding: AppSpacing.pageHorizontal,
+                          child: QnaProgressBar(
+                            progress: viewModel.progress,
+                            label:
+                                '${viewModel.currentQuestionNumber}/${viewModel.totalQuestions}',
                           ),
                         ),
-                      ),
-                      BottomFixedInputSection(
-                        textController: viewModel.textController,
-                        focusNode: viewModel.focusNode,
-                        onCompleted: viewModel.saveAnswer,
-                        isKeyboardVisible: isKeyboardVisible,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              );
-            },
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      if (viewModel.isEditMode) {
+                        viewModel.cancelEditAnswer();
+                      } else {
+                        viewModel.unfocusKeyboard();
+                      }
+                    },
+                    child: ListView(
+                      controller: viewModel.scrollController,
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.page,
+                        20,
+                        AppSpacing.page,
+                        16,
+                      ),
+                      children: [
+                        for (final item in viewModel.chatList) ...[
+                          ChatBubble(
+                            message: item.content,
+                            isUser: item.isUser,
+                            onTap: item.isUser && item.qnaIndex != null
+                                ? () => viewModel.startEditAnswer(item.qnaIndex!)
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (viewModel.canSkip)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 44),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: AppChip(
+                                label: '이 질문 건너뛰기',
+                                height: 32,
+                                onTap: viewModel.skipCurrentQuestion,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                AnswerInputBar(
+                  controller: viewModel.textController,
+                  focusNode: viewModel.focusNode,
+                  onSend: viewModel.submitAnswer,
+                  enabled: !viewModel.isGenerating && !viewModel.isAllQuestionsDone,
+                ),
+              ],
+            ),
           ),
-
-          if (isLoading) const LoadingOverlay(),
+          if (viewModel.isGenerating)
+            const Positioned.fill(
+              child: FullLoading(messages: FullLoading.qnaMessages),
+            ),
         ],
       ),
     );

@@ -1,9 +1,11 @@
 import 'dart:ui';
 
 extension StringColorExtension on String {
+  /// "#8196C3" / "8196C3" → Color. 못 읽으면 투명.
   Color toColor() {
-    // 스트링 헥사코드를 Color로 변환하는 익스텐션
-    String hex = replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
+    final hex = replaceAll('#', '').trim();
+    if (hex.length != 6 && hex.length != 8) return const Color(0x00000000);
+    final value = int.tryParse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
+    return value == null ? const Color(0x00000000) : Color(value);
   }
 }

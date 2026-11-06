@@ -1,144 +1,105 @@
-import 'package:cake/config/di.dart';
 import 'package:cake/config/service_config.dart';
 import 'package:cake/domain/enum/diary_type.dart';
 import 'package:cake/domain/enum/result_state.dart';
+import 'package:cake/domain/exception/app_exception.dart';
 import 'package:cake/domain/model/diary_detail.dart';
-import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
-import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
-import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
+import 'package:cake/domain/service/analytics_service.dart';
+import 'package:cake/presentation/common/app_error_messages.dart';
+import 'package:cake/presentation/common/diary_change_notifier.dart';
+import 'package:cake/presentation/common/image_attachments.dart';
 import 'package:cake/utils/app_logger.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
-class FreeDiaryCreateViewModel with ChangeNotifier {
+class FreeDiaryCreateViewModel extends ChangeNotifier {
   final DiaryRepository _diaryRepo;
+  final DiaryChangeNotifier _diaryChanges;
+  final AnalyticsService _analytics;
 
-  FreeDiaryCreateViewModel({required DiaryRepository diaryRepo})
-    : _diaryRepo = diaryRepo;
+  FreeDiaryCreateViewModel({
+    required DiaryRepository diaryRepo,
+    required DiaryChangeNotifier diaryChanges,
+    required AnalyticsService analytics,
+  }) : _diaryRepo = diaryRepo,
+       _diaryChanges = diaryChanges,
+       _analytics = analytics {
+    attachments.addListener(_onAttachmentsChanged);
+    textController.addListener(notifyListeners);
+  }
 
-  final TextEditingController _textController = TextEditingController();
-  TextEditingController get textController => _textController;
+  final TextEditingController textController = TextEditingController();
+  final FocusNode focusNode = FocusNode();
+  final ImageAttachments attachments = ImageAttachments();
 
-  final FocusNode _focusNode = FocusNode();
-  FocusNode get focusNode => _focusNode;
-
-  final ImagePicker _picker = ImagePicker();
-
-  final List<XFile> _pickedImages = [];
-  List<XFile> get pickedImages => _pickedImages;
+  ResultState _state = ResultState.none;
+  ResultState get state => _state;
+  bool get isSaving => _state == ResultState.loading;
 
   DiaryDetail? _completedDiary;
   DiaryDetail? get completedDiary => _completedDiary;
 
-  ResultState _resultState = ResultState.none;
-  ResultState get state => _resultState;
-
-  // 토스트 메시지 상태
   String? _toastMessage;
   String? get toastMessage => _toastMessage;
 
+  bool _dailyLimitExceeded = false;
+  bool get dailyLimitExceeded => _dailyLimitExceeded;
+
+  bool get hasContent =>
+      textController.text.trim().isNotEmpty || attachments.count > 0;
+  bool get canComplete =>
+      textController.text.trim().length >= ServiceConfig.minDiaryLength &&
+      !isSaving;
+
+  void _onAttachmentsChanged() {
+    final message = attachments.message;
+    if (message != null) {
+      attachments.clearMessage();
+      _toastMessage = message;
+    }
+    notifyListeners();
+  }
+
   Future<void> completeDiary() async {
     unfocus();
-    if (_textController.text.length < ServiceConfig.minDiaryLength) {
-      _toastMessage = '일기는 ${ServiceConfig.minDiaryLength}자 이상 작성해주세요';
+    final text = textController.text.trim();
+    if (text.length < ServiceConfig.minDiaryLength) {
+      _toastMessage = '일기는 ${ServiceConfig.minDiaryLength}자 이상 적어 주세요';
       notifyListeners();
       return;
     }
-
+    _state = ResultState.loading;
+    notifyListeners();
     try {
-      _resultState = ResultState.loading;
-      notifyListeners();
-
-      FirebaseAnalytics.instance.logEvent(name: 'free_diary_complete');
-
+      _analytics.logEvent('free_diary_complete');
       _completedDiary = await _diaryRepo.saveDiary(
         diaryType: DiaryType.free,
-        text: _textController.text,
-        images: _pickedImages.map((file) => LocalImage(file.path)).toList(),
+        text: text,
+        images: attachments.images,
       );
-      AppLogger.log(_completedDiary.toString());
-
-      final diaryCalendarVM = getIt<DiaryCalendarViewModel>();
-      await diaryCalendarVM.initialize();
-      final diaryListVM = getIt<DiaryListViewModel>();
-      await diaryListVM.loadDiaryList();
-
-      _resultState = ResultState.success;
+      _diaryChanges.notifyChanged();
+      _state = ResultState.success;
+    } on DiaryDailyLimitExceededException {
+      _dailyLimitExceeded = true;
+      _state = ResultState.error;
     } catch (e) {
-      _toastMessage = '일기 작성에 실패했습니다';
-      _resultState = ResultState.error;
-      AppLogger.error('자유 일기 확정 에러: ${e.toString()}');
+      AppLogger.error('자유 일기 저장 실패: $e');
+      _toastMessage = AppErrorMessages.of(e, fallback: AppErrorMessages.saveFailed);
+      _state = ResultState.error;
     }
     notifyListeners();
   }
 
-  Future<void> getImageFromGallery() async {
-    unfocus();
-    if (_pickedImages.length >= ServiceConfig.maxImageCount) {
-      _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
-      notifyListeners();
-      return;
-    }
-
-    final images = await _picker.pickMultiImage();
-    if (images.isNotEmpty) {
-      await _addImages(images);
-    }
-  }
-
-  Future<void> getImageFromCamera() async {
-    unfocus();
-    if (_pickedImages.length >= ServiceConfig.maxImageCount) {
-      _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
-      notifyListeners();
-      return;
-    }
-
-    final image = await _picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      await _addImages([image]);
-    }
-  }
-
-  Future<void> _addImages(List<XFile> newImages) async {
-    final remainingSlots = ServiceConfig.maxImageCount - _pickedImages.length;
-
-    if (remainingSlots <= 0) {
-      _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
-      notifyListeners();
-      return;
-    }
-
-    final imagesToAdd = newImages.take(remainingSlots).toList();
-    _pickedImages.addAll(imagesToAdd);
-
-    if (newImages.length > remainingSlots) {
-      _toastMessage = '사진은 ${ServiceConfig.maxImageCount}장까지 첨부 가능합니다';
-    }
-
-    notifyListeners();
-  }
-
-  void removeImage(int index) {
-    _pickedImages.removeAt(index);
-    notifyListeners();
-  }
-
-  void unfocus() {
-    _focusNode.unfocus();
-  }
-
-  // 토스트 메시지 초기화 메서드
-  void clearToastMessage() {
-    _toastMessage = null;
-  }
+  void unfocus() => focusNode.unfocus();
+  void clearToast() => _toastMessage = null;
+  void clearDailyLimit() => _dailyLimitExceeded = false;
+  void consumeSuccess() => _state = ResultState.none;
 
   @override
   void dispose() {
-    _textController.dispose();
-    _focusNode.dispose();
+    attachments.removeListener(_onAttachmentsChanged);
+    attachments.dispose();
+    textController.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 }

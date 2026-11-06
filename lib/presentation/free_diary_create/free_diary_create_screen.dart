@@ -1,146 +1,151 @@
-import 'package:cake/config/size_config.dart';
 import 'package:cake/domain/enum/result_state.dart';
-import 'package:cake/ui/common_components/diary_image_grid.dart';
-import 'package:cake/presentation/free_diary_create/components/diary_text_field.dart';
+import 'package:cake/presentation/common/components/attachment_row.dart';
+import 'package:cake/presentation/common/components/diary_editor_card.dart';
+import 'package:cake/presentation/common/components/diary_toolbar.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
-import 'package:cake/ui/common_components/common_main_app_bar.dart';
-import 'package:cake/ui/common_components/diary_complete_loading_overlay.dart';
-import 'package:cake/ui/common_components/diary_complete_fixed_bottom_bar.dart';
+import 'package:cake/ui/common_components/app_bottom_sheet.dart';
+import 'package:cake/ui/common_components/app_toast.dart';
+import 'package:cake/ui/common_components/full_loading.dart';
+import 'package:cake/ui/common_components/top_bar.dart';
+import 'package:cake/ui/style/app_assets.dart';
+import 'package:cake/ui/style/app_dimens.dart';
 import 'package:cake/ui/style/color_config.dart';
-import 'package:cake/utils/dialog/dialog_utils.dart';
+import 'package:cake/utils/date_converter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:toastification/toastification.dart';
+
+/// 일기 저장 중 429를 받았을 때 띄우는 안내.
+Future<void> showDailyLimitSheet(BuildContext context) => ConfirmSheet.show(
+  context,
+  title: '오늘의 조각을 모두 구웠어요',
+  description: '일기는 하루에 3개까지 쓸 수 있어요.\n내일 또 만나요!',
+  primaryLabel: '확인',
+  visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+);
+
+/// 작성 중 나가기 확인. true면 나간다.
+Future<bool> confirmLeaveDiary(BuildContext context) async {
+  final stay = await ConfirmSheet.show(
+    context,
+    title: '작성 중인 일기가 있어요',
+    description: '지금 나가면 쓰던 내용이 저장되지 않아요.',
+    primaryLabel: '계속 쓰기',
+    secondaryLabel: '나가기',
+    visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+  );
+  return !stay;
+}
 
 class FreeDiaryCreateScreen extends StatelessWidget {
   const FreeDiaryCreateScreen({super.key});
 
+  Future<void> _handleBack(
+    BuildContext context,
+    FreeDiaryCreateViewModel viewModel,
+  ) async {
+    if (viewModel.isSaving) return;
+    if (!viewModel.hasContent) {
+      context.pop();
+      return;
+    }
+    final leave = await confirmLeaveDiary(context);
+    if (leave && context.mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<FreeDiaryCreateViewModel>();
-    final isLoading = viewModel.state == ResultState.loading;
 
-    Future<void> handleBackPress() async {
-      if (isLoading) return;
-      if (viewModel.textController.text.isEmpty) {
-        context.pop();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!context.mounted) return;
+      if (viewModel.state == ResultState.success) {
+        viewModel.consumeSuccess();
+        context.pushReplacement('/diary-detail', extra: viewModel.completedDiary);
         return;
       }
-      final shouldExit = await DialogUtils.showExitDiaryDialog(context: context);
-      if (shouldExit == true && context.mounted) {
-        context.pop();
+      if (viewModel.dailyLimitExceeded) {
+        viewModel.clearDailyLimit();
+        await showDailyLimitSheet(context);
+        if (context.mounted) context.pop();
+        return;
       }
-    }
+      final toast = viewModel.toastMessage;
+      if (toast != null) {
+        viewModel.clearToast();
+        AppToast.show(context, toast, tone: ToastTone.error, bottomOffset: 88);
+      }
+    });
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await handleBackPress();
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack(context, viewModel);
       },
       child: Stack(
         children: [
-          KeyboardVisibilityBuilder(
-            builder: (context, isKeyboardVisible) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (viewModel.state == ResultState.success) {
-                  context.pushReplacement(
-                    '/diary-detail',
-                    extra: viewModel.completedDiary,
-                  );
-                } else if (viewModel.state == ResultState.error) {
-                  //TODO: error 처리
-                }
-                if (viewModel.toastMessage != null) {
-                  toastification.show(
-                    context: context,
-                    type: ToastificationType.warning,
-                    style: ToastificationStyle.fillColored,
-                    primaryColor: ColorConfig.primary,
-                    title: Text(
-                      viewModel.toastMessage!,
-                      style: TextStyle(fontSize: getWidth(14)),
-                    ),
-                    autoCloseDuration: const Duration(seconds: 2),
-                    alignment: Alignment.bottomCenter,
-                    showProgressBar: false,
-                  );
-                  viewModel.clearToastMessage();
-                }
-              });
-
-              return GestureDetector(
-                onTap: () => FocusScope.of(context).unfocus(),
-                child: Scaffold(
-                  backgroundColor: ColorConfig.background,
-                  appBar: CommonMainAppBar(
-                    onBackPressed: handleBackPress,
+          Scaffold(
+            backgroundColor: ColorConfig.bgPage,
+            body: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  TopBar(
+                    title: '자유 일기',
+                    subtitle: DateConverter.toMonthDayWeekday(DateTime.now()),
+                    onBack: () => _handleBack(context, viewModel),
                   ),
-                  body: Stack(
-                    children: [
-                      SafeArea(
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: SingleChildScrollView(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getWidth(25),
-                                  vertical: getHeight(15),
-                                ),
-                                child: Column(
-                                  children: [
-                                    DiaryTextField(
-                                      textController: viewModel.textController,
-                                      focusNode: viewModel.focusNode,
-                                      isKeyboardVisible: isKeyboardVisible,
-                                      hintText: '하고 싶은 말을 자유롭게 적어주세요',
-                                    ),
-                                    SizedBox(height: getHeight(10)),
-                                    if (viewModel.pickedImages.isNotEmpty)
-                                      DiaryImageGrid(
-                                        images: viewModel.pickedImages,
-                                        onRemove: (index) =>
-                                            viewModel.removeImage(index),
-                                      ),
-                                    if (isKeyboardVisible)
-                                      SizedBox(height: getHeight(60)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            if (!isKeyboardVisible)
-                              DiaryCompleteFixedBottomBar(
-                                onGalleryTap: viewModel.getImageFromGallery,
-                                onCameraTap: viewModel.getImageFromCamera,
-                                onCompleted: viewModel.completeDiary,
-                                currentImageCount: viewModel.pickedImages.length,
-                              ),
-                          ],
-                        ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.page,
+                        12,
+                        AppSpacing.page,
+                        16,
                       ),
-                      if (isKeyboardVisible)
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: DiaryCompleteFixedBottomBar(
-                            onGalleryTap: viewModel.getImageFromGallery,
-                            onCameraTap: viewModel.getImageFromCamera,
-                            onCompleted: viewModel.completeDiary,
-                            currentImageCount: viewModel.pickedImages.length,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: DiaryEditorCard(
+                              controller: viewModel.textController,
+                              focusNode: viewModel.focusNode,
+                              hintText: '오늘 하루를 자유롭게 적어 주세요',
+                            ),
                           ),
-                        ),
-                    ],
+                          const SizedBox(height: 6),
+                          AttachmentRow(
+                            images: viewModel.attachments.images,
+                            max: viewModel.attachments.max,
+                            onRemove: viewModel.attachments.removeAt,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              );
-            },
+                  DiaryToolbar(
+                    onCamera: () {
+                      viewModel.unfocus();
+                      viewModel.attachments.pickFromCamera();
+                    },
+                    onGallery: () {
+                      viewModel.unfocus();
+                      viewModel.attachments.pickFromGallery();
+                    },
+                    imageCount: viewModel.attachments.count,
+                    imageMax: viewModel.attachments.max,
+                    actionLabel: '완성하기',
+                    actionEnabled: viewModel.canComplete,
+                    onAction: viewModel.completeDiary,
+                  ),
+                ],
+              ),
+            ),
           ),
-
-          if (isLoading)
-          DiaryCompleteLoadingOverlay(),
+          if (viewModel.isSaving)
+            const Positioned.fill(
+              child: FullLoading(messages: FullLoading.saveMessages),
+            ),
         ],
       ),
     );

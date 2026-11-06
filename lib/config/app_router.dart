@@ -1,23 +1,28 @@
 import 'package:cake/config/di.dart';
 import 'package:cake/domain/model/diary_detail.dart';
-import 'package:cake/presentation/diary_calendar/diary_calendar_screen.dart';
-import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
+import 'package:cake/presentation/diary_detail/components/diary_body_card.dart';
 import 'package:cake/presentation/diary_detail/diary_detail_screen.dart';
 import 'package:cake/presentation/diary_detail/diary_detail_view_model.dart';
-import 'package:cake/presentation/diary_list/diary_list_screen.dart';
-import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
+import 'package:cake/presentation/diary_edit/diary_edit_screen.dart';
+import 'package:cake/presentation/diary_edit/diary_edit_view_model.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_screen.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
+import 'package:cake/presentation/home/home_screen.dart';
+import 'package:cake/presentation/home/home_view_model.dart';
+import 'package:cake/presentation/login/login_screen.dart';
+import 'package:cake/presentation/login/login_view_model.dart';
 import 'package:cake/presentation/main/main_screen.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
+import 'package:cake/presentation/my/my_screen.dart';
+import 'package:cake/presentation/my/my_view_model.dart';
+import 'package:cake/presentation/nickname/nickname_edit_screen.dart';
+import 'package:cake/presentation/nickname/nickname_setup_screen.dart';
+import 'package:cake/presentation/nickname/nickname_view_model.dart';
+import 'package:cake/presentation/photo_viewer/photo_viewer_screen.dart';
+import 'package:cake/presentation/qna_diary_confirm/qna_diary_confirm_screen.dart';
+import 'package:cake/presentation/qna_diary_confirm/qna_diary_confirm_view_model.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_screen.dart';
 import 'package:cake/presentation/qna_diary_create/qna_diary_create_view_model.dart';
-import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_screen.dart';
-import 'package:cake/presentation/qna_diary_edit/qna_diary_edit_view_model.dart';
-import 'package:cake/presentation/settings/settings_screen.dart';
-import 'package:cake/presentation/settings/settings_view_model.dart';
-import 'package:cake/presentation/sign_up/sign_up_screen.dart';
-import 'package:cake/presentation/sign_up/sign_up_view_model.dart';
 import 'package:cake/presentation/splash/splash_screen.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:flutter/material.dart';
@@ -25,26 +30,46 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class AppRouter {
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
       GoRoute(
         path: '/splash',
-        builder: (BuildContext context, GoRouterState state) {
-          return ChangeNotifierProvider(
-            create: (context) => getIt<SplashViewModel>(),
-            child: const SplashScreen(),
-          );
-        },
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<SplashViewModel>(),
+          child: const SplashScreen(),
+        ),
       ),
       GoRoute(
-        path: '/sign-up',
-        builder: (BuildContext context, GoRouterState state) {
-          return ChangeNotifierProvider(
-            create: (context) => getIt<SignUpViewModel>(),
-            child: const SignUpScreen(),
-          );
-        },
+        path: '/login',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<LoginViewModel>(),
+          child: const LoginScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/nickname-setup',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<NicknameViewModel>(
+            param1: true,
+            param2: state.extra as String?,
+          ),
+          child: const NicknameSetupScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/nickname-edit',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<NicknameViewModel>(
+            param1: false,
+            param2: state.extra as String?,
+          ),
+          child: const NicknameEditScreen(),
+        ),
       ),
 
       StatefulShellRoute.indexedStack(
@@ -55,29 +80,24 @@ class AppRouter {
           );
         },
         branches: [
-          // 캘린더 탭
           StatefulShellBranch(
-            initialLocation: '/diary-calendar',
             routes: [
               GoRoute(
-                path: '/diary-calendar',
+                path: '/home',
                 builder: (context, state) => ChangeNotifierProvider.value(
-                  value: getIt<DiaryCalendarViewModel>(),
-                  child: const DiaryCalendarScreen(),
+                  value: getIt<HomeViewModel>(),
+                  child: const HomeScreen(),
                 ),
               ),
             ],
           ),
-
-          // 리스트 탭
           StatefulShellBranch(
-            initialLocation: '/diary-list',
             routes: [
               GoRoute(
-                path: '/diary-list',
+                path: '/my',
                 builder: (context, state) => ChangeNotifierProvider.value(
-                  value: getIt<DiaryListViewModel>(),
-                  child: const DiaryListScreen(),
+                  value: getIt<MyViewModel>(),
+                  child: const MyScreen(),
                 ),
               ),
             ],
@@ -87,65 +107,55 @@ class AppRouter {
 
       GoRoute(
         path: '/qna-diary',
-        builder: (BuildContext context, GoRouterState state) {
-          return ChangeNotifierProvider(
-            create: (context) => getIt<QnaDiaryCreateViewModel>(),
-            child: const QnaDiaryCreateScreen(),
-          );
-        },
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<QnaDiaryCreateViewModel>(),
+          child: const QnaDiaryCreateScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/qna-confirm',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<QnaDiaryConfirmViewModel>(
+            param1: state.extra as String? ?? '',
+          ),
+          child: const QnaDiaryConfirmScreen(),
+        ),
       ),
       GoRoute(
         path: '/free-diary',
-        builder: (BuildContext context, GoRouterState state) {
-          return ChangeNotifierProvider(
-            create: (context) => getIt<FreeDiaryCreateViewModel>(),
-            child: const FreeDiaryCreateScreen(),
-          );
-        },
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<FreeDiaryCreateViewModel>(),
+          child: const FreeDiaryCreateScreen(),
+        ),
       ),
       GoRoute(
         path: '/diary-detail',
         builder: (context, state) {
           final extra = state.extra;
-          DiaryDetail? diaryDetail;
-          int? id;
-
-          if (extra is DiaryDetail) {
-            diaryDetail = extra;
-          } else if (extra is int) {
-            id = extra;
-          }
-
+          final detail = extra is DiaryDetail ? extra : null;
+          final id = extra is int ? extra : null;
           return ChangeNotifierProvider(
-            create: (context) =>
-                getIt<DiaryDetailViewModel>()..initialize(diaryDetail, id),
-            child: DiaryDetailScreen(),
+            create: (_) => getIt<DiaryDetailViewModel>()..initialize(detail, id),
+            child: const DiaryDetailScreen(),
           );
         },
       ),
       GoRoute(
-        path: '/qna-edit',
+        path: '/diary-edit',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => getIt<DiaryEditViewModel>(
+            param1: state.extra as DiaryDetail,
+          ),
+          child: const DiaryEditScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/photo-viewer',
         builder: (context, state) {
-          final extra = state.extra;
-          String content = '';
-
-          if (extra is String) {
-            content = extra;
-          }
-
-          return ChangeNotifierProvider(
-            create: (context) =>
-                getIt<QnaDiaryEditViewModel>()..initialize(content),
-            child: QnaDiaryEditScreen(),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (BuildContext context, GoRouterState state) {
-          return ChangeNotifierProvider(
-            create: (context) => getIt<SettingsViewModel>(),
-            child: const SettingsScreen(),
+          final args = state.extra as PhotoViewerArgs;
+          return PhotoViewerScreen(
+            urls: args.urls,
+            initialIndex: args.initialIndex,
           );
         },
       ),

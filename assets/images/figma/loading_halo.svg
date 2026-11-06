@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle id="Halo" cx="90" cy="90" r="90" fill="url(#paint0_linear_0_9)"/>
+<defs>
+<linearGradient id="paint0_linear_0_9" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E0E5F0"/>
+<stop offset="1" stop-color="#FBECEF"/>
+</linearGradient>
+</defs>
+</svg>

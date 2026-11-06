@@ -18,13 +18,7 @@ dependencies:
  go_router: ^16.0.0
  get_it: ^8.0.0
  intl: ^0.20.2
- http: ^1.2.2
- easy_stepper: ^0.8.5+1
  flutter_secure_storage: ^9.2.2
- fluttertoast: ^8.2.12
- flutter_spinkit: ^5.2.1
- carousel_slider: ^5.0.0
- shimmer: ^3.0.0
  url_launcher: ^6.3.1
  cached_network_image: ^3.4.1
  image_picker: ^1.1.2
@@ -34,23 +28,18 @@ dependencies:
  flutter_local_notifications: ^19.3.0
  flutter_native_splash: ^2.4.4
  sqflite: ^2.4.1
- rxdart: ^0.28.0
  shared_preferences: ^2.5.2
- pull_to_refresh: ^2.0.0
- animated_bottom_navigation_bar: ^1.4.0
- table_calendar: ^3.2.0
  flutter_svg: ^2.2.1
- flutter_keyboard_visibility: ^6.0.0
  photo_view: ^0.15.0
  youtube_player_iframe: ^5.2.2
- webview_flutter: ^4.13.0
- toastification: ^3.0.3
- animated_text_kit: ^4.3.0
  package_info_plus: ^9.0.0
  firebase_analytics: ^11.6.0
  firebase_crashlytics: ^4.3.10
  uuid: ^4.5.3
  dio: ^5.11.0
+ google_sign_in: ^7.2.0
+ sign_in_with_apple: ^8.2.0
+ crypto: ^3.0.8
 
 dev_dependencies:
  flutter_test:
@@ -64,60 +53,19 @@ dev_dependencies:
 flutter:
  uses-material-design: true
  assets:
-   - assets/images/
-   - assets/logo/
-   - assets/icons/
+   - assets/images/figma/
+   - assets/icons/ui/
+   - assets/icons/brand/
  fonts:
-   - family: NanumSquareNeo
-     fonts:
-       - asset: assets/fonts/NanumSquareNeoOTF-Lt.otf
-         weight: 300
-       - asset: assets/fonts/NanumSquareNeoOTF-Rg.otf
-         weight: 400
-       - asset: assets/fonts/NanumSquareNeoOTF-Bd.otf
-         weight: 700
-       - asset: assets/fonts/NanumSquareNeoOTF-Eb.otf
-         weight: 800
-       - asset: assets/fonts/NanumSquareNeoOTF-Hv.otf
-         weight: 900
    - family: NanumSquareRound
      fonts:
-       - asset: assets/fonts/NanumSquareRoundOTFL.otf
-         weight: 300
-       - asset: assets/fonts/NanumSquareRoundOTFR.otf
-         weight: 400
        - asset: assets/fonts/NanumSquareRoundOTFB.otf
          weight: 700
-       - asset: assets/fonts/NanumSquareRoundOTFEB.otf
-         weight: 800
-   - family: DCC
-     fonts:
-       - asset: assets/fonts/DCC_Cloud.otf
-         weight: 400
-   - family: NanumGaram
-     fonts:
-       - asset: assets/fonts/NanumGaramYeonkkot.ttf
-         weight: 400  
    - family: Pretendard
      fonts:
-       - asset: assets/fonts/Pretendard-Thin.ttf
-         weight: 100
-       - asset: assets/fonts/Pretendard-ExtraLight.ttf
-         weight: 200
-       - asset: assets/fonts/Pretendard-Light.ttf
-         weight: 300
        - asset: assets/fonts/Pretendard-Regular.ttf
          weight: 400
        - asset: assets/fonts/Pretendard-Medium.ttf
          weight: 500
        - asset: assets/fonts/Pretendard-SemiBold.ttf
          weight: 600
-       - asset: assets/fonts/Pretendard-Bold.ttf
-         weight: 700
-       - asset: assets/fonts/Pretendard-ExtraBold.ttf
-         weight: 800
-       - asset: assets/fonts/Pretendard-Black.ttf
-         weight: 900
-         
-         
-  

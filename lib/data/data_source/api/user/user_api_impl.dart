@@ -1,47 +1,46 @@
-import 'dart:io';
-
-import 'package:cake/data/data_source/api/api_exception.dart';
-import 'package:cake/data/data_source/api/auth_interceptor.dart';
 import 'package:cake/data/data_source/api/user/user_api.dart';
-import 'package:cake/domain/repository/token_repository.dart';
+import 'package:cake/data/dto/diary_stats_response_dto.dart';
+import 'package:cake/data/dto/user_me_response_dto.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 
 class UserApiImpl implements UserApi {
   final Dio _dio;
-  final TokenRepository _tokenRepository;
 
-  UserApiImpl({required Dio dio, required TokenRepository tokenRepository})
-    : _dio = dio,
-      _tokenRepository = tokenRepository;
+  UserApiImpl({required Dio dio}) : _dio = dio;
 
   @override
-  Future<void> createUser({required String preference}) async {
-    final fcmToken = await _tokenRepository.getFcmToken();
+  Future<UserMeResponseDto> fetchMe() async {
+    final response = await _dio.get('/users/me');
+    return UserMeResponseDto.fromJson(response.data as Map<String, dynamic>);
+  }
 
-    // 회원가입은 아직 토큰이 없으므로 인증 헤더를 붙이지 않는다.
-    final response = await _dio.post(
-      '/users',
-      data: {
-        'deviceId': fcmToken,
-        'preference': preference,
-        'mobileOS': Platform.isAndroid ? 'AND' : 'IOS',
-      },
-      options: Options(
-        extra: {AuthInterceptor.needsAuthKey: false},
-        validateStatus: (status) => status != null && status < 500,
-      ),
+  @override
+  Future<String> updateNickname(String nickname) async {
+    final response = await _dio.put(
+      '/users/me/nickname',
+      data: {'nickname': nickname},
     );
+    final body = response.data;
+    return (body is Map ? body['nickname'] as String? : null) ?? nickname;
+  }
 
-    if (response.statusCode == 204) {
-      AppLogger.log('가입된 deviceId : $fcmToken');
-      return;
-    }
+  @override
+  Future<bool> updateNotification(bool enabled) async {
+    final response = await _dio.put(
+      '/users/me/notification',
+      data: {'enabled': enabled},
+    );
+    final body = response.data;
+    return (body is Map ? body['notificationEnabled'] as bool? : null) ??
+        enabled;
+  }
 
-    throw ApiException(
-      statusCode: response.statusCode ?? -1,
-      endpoint: 'createUser',
-      responseBody: response.data?.toString() ?? '',
+  @override
+  Future<DiaryStatsResponseDto> fetchStats() async {
+    final response = await _dio.get('/users/me/stats');
+    return DiaryStatsResponseDto.fromJson(
+      response.data as Map<String, dynamic>,
     );
   }
 
@@ -50,26 +49,13 @@ class UserApiImpl implements UserApi {
     final response = await _dio.delete(
       '/users',
       options: Options(
-        // 401은 통과시키지 않는다. DioException으로 떨어져야
-        // 인터셉터가 재발급 후 재시도할 수 있다.
-        validateStatus: (status) => status == 204 || status == 404,
+        // 404는 이미 삭제된 유저. 401은 통과시키지 않아야 인터셉터가 재발급한다.
+        validateStatus: (status) =>
+            status != null && (status < 300 || status == 404),
       ),
     );
-
-    if (response.statusCode == 204) {
-      await _tokenRepository.clearJwtTokens();
-      return;
-    }
-
     if (response.statusCode == 404) {
       AppLogger.log('deleteUser 404 이미 삭제된 유저.');
-      return;
     }
-
-    throw ApiException(
-      statusCode: response.statusCode ?? -1,
-      endpoint: 'deleteUser',
-      responseBody: response.data?.toString() ?? '',
-    );
   }
 }

@@ -16,8 +16,10 @@ KEYS_DIR="${CAKE_KEYS_DIR:-$HOME/development/keys}"
 ENV_FILE="$KEYS_DIR/fastlane.env"
 
 # 빌드 때 --dart-define-from-file로 넘길 비밀 파일. 깃 밖(KEYS_DIR)에 둔다.
-# 점검과 빌드 인자가 모두 이 목록을 읽는다. 예: "$KEYS_DIR/cake-social-login.json"
-BUILD_SECRET_FILES=()
+# 점검과 빌드 인자가 모두 이 목록을 읽는다.
+# cake-social-login.json 키: GOOGLE_SERVER_CLIENT_ID (서버 검증용 웹 클라이언트 ID),
+#   GOOGLE_IOS_CLIENT_ID (iOS 클라이언트 ID, 생략 가능), API_BASE_URL (생략하면 운영 서버)
+BUILD_SECRET_FILES=("$KEYS_DIR/cake-social-login.json")
 
 usage() {
   cat <<'EOF'

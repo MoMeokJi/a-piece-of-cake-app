@@ -1,9 +1,12 @@
-import 'package:cake/domain/enum/diary_preference.dart';
+import 'package:cake/domain/model/diary_stats.dart';
+import 'package:cake/domain/model/user_profile.dart';
 
 abstract interface class UserRepository {
-  Future<void> signUp({required DiaryPreference diaryPreference});
-  Future<void> withdraw();
+  Future<UserProfile> getMe();
+  Future<String> updateNickname(String nickname);
+  Future<bool> updateNotification(bool enabled);
+  Future<DiaryStats> getStats();
 
-  /// 비활성 사용자 판정 시 로컬 일기를 모두 지운다.
-  Future<void> clearLocalDiaries();
+  /// 서버 탈퇴 후 로컬 세션을 지운다.
+  Future<void> withdraw();
 }

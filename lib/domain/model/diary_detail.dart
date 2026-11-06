@@ -1,45 +1,62 @@
-// ignore_for_file: annotate_overrides
+import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/model/diary.dart';
+import 'package:cake/domain/model/diary_color.dart';
+import 'package:cake/domain/model/diary_music.dart';
 
-import 'package:freezed_annotation/freezed_annotation.dart';
-part 'diary_detail.freezed.dart';
-
-@freezed
-class DiaryDetail with _$DiaryDetail {
+class DiaryDetail {
   final int id;
+  final DiaryType type;
   final String body;
   final DateTime createdAt;
   final List<String> imageUrls;
-  final String firstColorHex;
-  final String secondColorHex;
-  final String musicTitle;
-  final String musicArtist;
-  final String youtubeVideoId;
-  String? feedback;
-  String? summary;
+  final List<DiaryColor> colors;
+  final DiaryMusic music;
 
-  DiaryDetail({
+  /// 시식평. 작성 후 약 10분 뒤 서버 배치가 채운다. 그 전엔 null.
+  final String? feedback;
+
+  /// 확정 응답에만 실린다. 상세 조회는 null.
+  final String? summary;
+
+  const DiaryDetail({
     required this.id,
+    required this.type,
     required this.body,
     required this.createdAt,
     required this.imageUrls,
-    required this.firstColorHex,
-    required this.secondColorHex,
-    required this.musicTitle,
-    required this.musicArtist,
-    required this.youtubeVideoId,
+    required this.colors,
+    required this.music,
     this.feedback,
     this.summary,
   });
 
-  factory DiaryDetail.empty() => DiaryDetail(
-    id: -1,
-    body: '',
-    createdAt: DateTime(1900, 1, 1),
-    imageUrls: [],
-    firstColorHex: '',
-    secondColorHex: '',
-    musicTitle: '',
-    musicArtist: '',
-    youtubeVideoId: '',
+  DiaryColor get firstColor =>
+      colors.isNotEmpty ? colors[0] : DiaryColor.fallbackFirst;
+  DiaryColor get secondColor =>
+      colors.length > 1 ? colors[1] : DiaryColor.fallbackSecond;
+
+  bool get hasFeedback => feedback != null && feedback!.trim().isNotEmpty;
+
+  DiaryDetail copyWith({String? body, String? feedback}) => DiaryDetail(
+    id: id,
+    type: type,
+    body: body ?? this.body,
+    createdAt: createdAt,
+    imageUrls: imageUrls,
+    colors: colors,
+    music: music,
+    feedback: feedback ?? this.feedback,
+    summary: summary,
+  );
+
+  /// 목록 갱신용 요약 모델로 바꾼다 (확정 직후 로컬 목록에 끼워 넣을 때).
+  Diary toDiary() => Diary(
+    id: id,
+    type: type,
+    summary: summary ?? '',
+    createdAt: createdAt,
+    colors: colors,
+    musicTitle: music.title,
+    musicArtist: music.artist,
   );
 }

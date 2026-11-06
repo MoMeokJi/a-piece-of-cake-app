@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -21,7 +22,7 @@ class _RecordingCrashReporter implements CrashReporter {
 
 class _FakeAdapter implements HttpClientAdapter {
   final List<RequestOptions> requests = [];
-  late ResponseBody Function(RequestOptions options) responder;
+  late Future<ResponseBody> Function(RequestOptions options) responder;
 
   @override
   Future<ResponseBody> fetch(
@@ -30,6 +31,10 @@ class _FakeAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     requests.add(options);
+    if (requestStream != null) {
+      // 멀티파트 본문 스트림을 끝까지 읽어야 FormData가 "소비"된다.
+      await for (final _ in requestStream) {}
+    }
     return responder(options);
   }
 
@@ -37,118 +42,85 @@ class _FakeAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-ResponseBody _json(int statusCode, {Map<String, List<String>>? headers}) {
+ResponseBody _json(int statusCode, [Object body = const {}]) {
   return ResponseBody.fromString(
-    '{}',
+    jsonEncode(body),
     statusCode,
     headers: {
       Headers.contentTypeHeader: [Headers.jsonContentType],
-      ...?headers,
     },
   );
 }
+
+ResponseBody _refreshed() => _json(200, {
+  'accessToken': 'reissued',
+  'refreshToken': 'reissued-refresh',
+});
 
 void main() {
   late FakeTokenRepository tokenRepository;
   late _FakeAdapter adapter;
   late Dio dio;
+  late int sessionExpiredCount;
 
   setUp(() {
     ApiException.reporter = const NoopCrashReporter();
-
-    tokenRepository = FakeTokenRepository();
+    tokenRepository = FakeTokenRepository()
+      ..accessToken = 'access-1'
+      ..refreshToken = 'refresh-1';
     adapter = _FakeAdapter();
-
-    BaseOptions options() => BaseOptions(baseUrl: 'https://example.test');
-
-    final reissueDio = Dio(options())..httpClientAdapter = adapter;
-    final retryDio = Dio(options())
-      ..httpClientAdapter = adapter
-      ..interceptors.add(
-        AuthInterceptor(
-          tokenRepository: tokenRepository,
-          handleUnauthorized: false,
-        ),
-      );
-
-    dio = Dio(options())
-      ..httpClientAdapter = adapter
-      ..interceptors.add(
-        AuthInterceptor(
-          tokenRepository: tokenRepository,
-          handleUnauthorized: true,
-          retryDio: retryDio,
-          reissueDio: reissueDio,
-        ),
-      );
+    sessionExpiredCount = 0;
+    dio = buildDio(
+      tokenRepository,
+      adapter: adapter,
+      onSessionExpired: () => sessionExpiredCount++,
+    );
   });
 
   tearDown(() {
     ApiException.reporter = const NoopCrashReporter();
   });
 
-  test('토큰이 있으면 인증 헤더를 붙인다', () async {
-    tokenRepository.accessToken = 'access-1';
-    tokenRepository.refreshToken = 'refresh-1';
-    adapter.responder = (_) => _json(200);
+  test('토큰이 있으면 Bearer 헤더만 붙인다 (Refresh-Token 헤더는 없다)', () async {
+    adapter.responder = (_) async => _json(200);
 
     await dio.get('/diaries');
 
     final sent = adapter.requests.single;
     expect(sent.headers['Authorization'], 'Bearer access-1');
-    expect(sent.headers['Refresh-Token'], 'refresh-1');
+    expect(sent.headers.containsKey('Refresh-Token'), isFalse);
   });
 
-  test('needsAuth가 false면 인증 헤더를 붙이지 않는다', () async {
-    tokenRepository.accessToken = 'access-1';
-    tokenRepository.refreshToken = 'refresh-1';
-    adapter.responder = (_) => _json(200);
+  test('needsAuth가 false면 인증 헤더를 붙이지 않고 401도 재발급하지 않는다', () async {
+    adapter.responder = (_) async => _json(401, {'code': 'TOKEN_EXPIRED'});
 
-    await dio.post(
-      '/users',
-      options: Options(extra: {AuthInterceptor.needsAuthKey: false}),
+    await expectLater(
+      dio.post(
+        '/auth/social/google',
+        options: Options(extra: {AuthInterceptor.needsAuthKey: false}),
+      ),
+      throwsA(isA<DioException>()),
     );
 
-    expect(
-      adapter.requests.single.headers.containsKey('Authorization'),
-      isFalse,
-    );
+    expect(adapter.requests.single.headers.containsKey('Authorization'), isFalse);
+    expect(adapter.requests.length, 1);
+    expect(sessionExpiredCount, 0);
   });
 
-  test('응답 헤더에 토큰이 오면 Bearer를 떼고 저장한다', () async {
-    adapter.responder = (_) => _json(
-      200,
-      headers: {
-        'authorization': ['Bearer new-access'],
-        'refresh-token': ['new-refresh'],
-      },
-    );
-
-    await dio.get('/diaries');
-
-    expect(tokenRepository.accessToken, 'new-access');
-    expect(tokenRepository.refreshToken, 'new-refresh');
-    // 이중 저장(예: onResponse가 두 번 걸리는 회귀)이 조용히 통과하지 않도록 한다.
-    expect(tokenRepository.saveJwtTokensCallCount, 1);
-  });
-
-  test('401이면 재발급 후 한 번 재시도하고 성공 응답을 반환한다', () async {
-    tokenRepository.fcmToken = 'device-1';
+  test('TOKEN_EXPIRED 401이면 /auth/refresh 바디로 재발급하고 한 번 재시도한다', () async {
     var diariesCalls = 0;
-
-    adapter.responder = (options) {
-      if (options.path.contains('/auth/login')) {
-        return ResponseBody.fromString(
-          '',
-          204,
-          headers: {
-            'authorization': ['Bearer reissued'],
-            'refresh-token': ['reissued-refresh'],
-          },
-        );
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) {
+        expect(options.data, {
+          'refreshToken': 'refresh-1',
+          'deviceId': 'device-uuid',
+        });
+        return _refreshed();
       }
       diariesCalls++;
-      return _json(diariesCalls == 1 ? 401 : 200);
+      return diariesCalls == 1
+          ? _json(401, {'code': 'TOKEN_EXPIRED'})
+          : _json(200);
     };
 
     final response = await dio.get('/diaries');
@@ -156,207 +128,161 @@ void main() {
     expect(response.statusCode, 200);
     expect(diariesCalls, 2);
     expect(tokenRepository.accessToken, 'reissued');
-    // 재시도는 같은 RequestOptions 인스턴스를 재사용하므로 adapter.requests의
-    // 첫 항목과 마지막 항목은 동일 객체이고, 헤더는 최종 값을 반영한다.
-    // 이 단언은 retryDio에 AuthInterceptor가 없어 재발급된 토큰을 싣지
-    // 못하는 회귀를 잡아내며, 시도별 헤더를 구분하지는 못한다.
+    expect(tokenRepository.refreshToken, 'reissued-refresh');
     expect(adapter.requests.last.headers['Authorization'], 'Bearer reissued');
+    expect(sessionExpiredCount, 0);
   });
 
-  test('재시도한 요청도 401이면 더 재시도하지 않고 예외를 던진다', () async {
-    tokenRepository.fcmToken = 'device-1';
+  test('코드를 못 읽는 401도 refresh를 한 번 시도한다', () async {
     var diariesCalls = 0;
-
-    adapter.responder = (options) {
-      if (options.path.contains('/auth/login')) {
-        return ResponseBody.fromString(
-          '',
-          204,
-          headers: {
-            'authorization': ['Bearer reissued'],
-            'refresh-token': ['reissued-refresh'],
-          },
-        );
-      }
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) return _refreshed();
       diariesCalls++;
-      return _json(401);
+      return diariesCalls == 1
+          ? ResponseBody.fromString('', 401)
+          : _json(200);
+    };
+
+    final response = await dio.get('/diaries');
+
+    expect(response.statusCode, 200);
+    expect(diariesCalls, 2);
+  });
+
+  test('TOKEN_INVALID 401이면 refresh 없이 토큰을 지우고 세션 만료를 알린다', () async {
+    adapter.responder = (_) async => _json(401, {'code': 'TOKEN_INVALID'});
+
+    await expectLater(dio.get('/diaries'), throwsA(isA<DioException>()));
+
+    expect(adapter.requests.length, 1);
+    expect(tokenRepository.accessToken, isNull);
+    expect(tokenRepository.refreshToken, isNull);
+    expect(sessionExpiredCount, 1);
+  });
+
+  test('refresh가 REFRESH_INVALID로 거부되면 토큰을 지우고 세션 만료를 알린다', () async {
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) {
+        return _json(401, {'code': 'REFRESH_INVALID'});
+      }
+      return _json(401, {'code': 'TOKEN_EXPIRED'});
     };
 
     await expectLater(dio.get('/diaries'), throwsA(isA<DioException>()));
 
-    // 원요청 1 + 재시도 1. 무한 재귀가 없다는 것이 이 테스트의 요점이다.
-    expect(diariesCalls, 2);
+    expect(tokenRepository.accessToken, isNull);
+    expect(sessionExpiredCount, 1);
+    // 원요청 1 + refresh 1. 재시도는 없다.
+    expect(adapter.requests.length, 2);
   });
 
-  test('재발급 자체가 실패하면 재시도하지 않는다', () async {
-    tokenRepository.fcmToken = 'device-1';
+  test('refresh가 500으로 실패하면 토큰을 유지하고 재시도하지 않는다', () async {
+    final reporter = _RecordingCrashReporter();
+    ApiException.reporter = reporter;
     var diariesCalls = 0;
-
-    adapter.responder = (options) {
-      if (options.path.contains('/auth/login')) {
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) {
         return ResponseBody.fromString('', 500);
       }
       diariesCalls++;
-      return _json(401);
+      return _json(401, {'code': 'TOKEN_EXPIRED'});
     };
 
     await expectLater(dio.get('/diaries'), throwsA(isA<DioException>()));
 
     expect(diariesCalls, 1);
+    expect(tokenRepository.accessToken, 'access-1');
+    expect(sessionExpiredCount, 0);
+    expect(reporter.reasons, contains('refreshTokens 실패'));
   });
 
-  test('토큰이 하나라도 없으면 인증 헤더를 붙이지 않는다', () async {
-    tokenRepository.accessToken = 'access-1';
-    tokenRepository.refreshToken = null;
-    adapter.responder = (_) => _json(200);
+  test('재시도한 요청도 401이면 더 재시도하지 않는다', () async {
+    var diariesCalls = 0;
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) return _refreshed();
+      diariesCalls++;
+      return _json(401, {'code': 'TOKEN_EXPIRED'});
+    };
+
+    await expectLater(dio.get('/diaries'), throwsA(isA<DioException>()));
+
+    expect(diariesCalls, 2);
+  });
+
+  test('동시에 여러 요청이 401을 받아도 refresh는 한 번만 나간다 (single-flight)', () async {
+    var refreshCalls = 0;
+    final firstAttempts = <String>{};
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) {
+        refreshCalls++;
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        return _refreshed();
+      }
+      if (firstAttempts.add(options.path)) {
+        return _json(401, {'code': 'TOKEN_EXPIRED'});
+      }
+      return _json(200);
+    };
+
+    final results = await Future.wait([
+      dio.get('/diaries'),
+      dio.get('/users/me'),
+      dio.get('/users/me/stats'),
+    ]);
+
+    expect(results.map((r) => r.statusCode), everyElement(200));
+    expect(refreshCalls, 1);
+    expect(tokenRepository.saveJwtTokensCallCount, 1);
+  });
+
+  test('401 후 FormData 요청도 clone된 본문으로 한 번만 재시도한다', () async {
+    var uploadCalls = 0;
+    adapter.responder = (options) async {
+      if (options.path.contains('/auth/refresh')) return _refreshed();
+      uploadCalls++;
+      return uploadCalls == 1
+          ? _json(401, {'code': 'TOKEN_EXPIRED'})
+          : _json(200, {'diaryId': 1});
+    };
+
+    final tempFile = await File(
+      '${Directory.systemTemp.path}/auth_interceptor_test_${DateTime.now().microsecondsSinceEpoch}.jpg',
+    ).create();
+    await tempFile.writeAsBytes([1, 2, 3, 4]);
+    addTearDown(() async {
+      if (await tempFile.exists()) await tempFile.delete();
+    });
+
+    final formData = FormData.fromMap({
+      'text': 'hello',
+      'images': [await MultipartFile.fromFile(tempFile.path)],
+    });
+
+    final response = await dio.post('/diaries', data: formData);
+
+    expect(response.statusCode, 200);
+    expect(uploadCalls, 2);
+    expect(tokenRepository.accessToken, 'reissued');
+  });
+
+  test('응답을 받은 실패(500)는 한 번 보고된다', () async {
+    final reporter = _RecordingCrashReporter();
+    ApiException.reporter = reporter;
+    adapter.responder = (_) async => ResponseBody.fromString('server error', 500);
+
+    await expectLater(dio.get('/diaries'), throwsA(isA<DioException>()));
+
+    expect(reporter.reasons, ['[500] /diaries']);
+  });
+
+  test('기본 Content-Type에 charset=utf-8이 붙는다', () async {
+    adapter.responder = (_) async => _json(200);
 
     await dio.get('/diaries');
 
-    final sent = adapter.requests.single;
-    expect(sent.headers.containsKey('Authorization'), isFalse);
-    expect(sent.headers.containsKey('Refresh-Token'), isFalse);
-  });
-
-  test('refresh-token이 없으면 응답 헤더의 토큰을 저장하지 않는다', () async {
-    adapter.responder = (_) => _json(
-      200,
-      headers: {
-        'authorization': ['Bearer new-access'],
-      },
+    expect(
+      adapter.requests.first.headers[Headers.contentTypeHeader],
+      '${Headers.jsonContentType}; charset=utf-8',
     );
-
-    await dio.get('/diaries');
-
-    expect(tokenRepository.saveJwtTokensCallCount, 0);
-  });
-
-  group('buildDio', () {
-    test('401 후 재발급하고 한 번만 재시도한다 (3-Dio 배선 검증)', () async {
-      tokenRepository.fcmToken = 'device-1';
-      var diariesCalls = 0;
-
-      adapter.responder = (options) {
-        if (options.path.contains('/auth/login')) {
-          return ResponseBody.fromString(
-            '',
-            204,
-            headers: {
-              'authorization': ['Bearer reissued'],
-              'refresh-token': ['reissued-refresh'],
-            },
-          );
-        }
-        diariesCalls++;
-        return _json(401);
-      };
-
-      final builtDio = buildDio(tokenRepository, adapter: adapter);
-
-      await expectLater(builtDio.get('/diaries'), throwsA(isA<DioException>()));
-
-      // retryDio가 handleUnauthorized: true로 잘못 배선되면 재시도의 401이
-      // 다시 재발급+재시도를 트리거해 diariesCalls가 2를 넘어선다.
-      // 이 테스트는 buildDio가 실제로 만드는 배선 자체를 검증한다.
-      expect(diariesCalls, 2);
-      // base_api_test.dart가 검증하던 기본 Content-Type: BaseApi.getHeaders는
-      // 이를 직접 넣었으나, dio 전환 후에는 dio_client.dart의 BaseOptions가
-      // 담당한다. AuthInterceptor는 이 헤더를 건드리지 않으므로 buildDio를
-      // 실제로 거쳐야만 이 배선을 검증할 수 있다.
-      // charset=utf-8은 package:http가 항상 덧붙이던 선언을 복원한 것이다
-      // (dio_client.dart의 _baseOptions 참고).
-      expect(
-        adapter.requests.first.headers[Headers.contentTypeHeader],
-        '${Headers.jsonContentType}; charset=utf-8',
-      );
-    });
-
-    test('응답을 받은 실패(500)는 한 번 보고된다', () async {
-      final reporter = _RecordingCrashReporter();
-      ApiException.reporter = reporter;
-
-      adapter.responder = (_) => ResponseBody.fromString('server error', 500);
-
-      final builtDio = buildDio(tokenRepository, adapter: adapter);
-
-      await expectLater(builtDio.get('/diaries'), throwsA(isA<DioException>()));
-
-      expect(reporter.reasons, ['[500] /diaries']);
-    });
-
-    test('401이 재발급+재시도로 복구되면 보고되지 않는다', () async {
-      final reporter = _RecordingCrashReporter();
-      ApiException.reporter = reporter;
-
-      tokenRepository.fcmToken = 'device-1';
-      var diariesCalls = 0;
-
-      adapter.responder = (options) {
-        if (options.path.contains('/auth/login')) {
-          return ResponseBody.fromString(
-            '',
-            204,
-            headers: {
-              'authorization': ['Bearer reissued'],
-              'refresh-token': ['reissued-refresh'],
-            },
-          );
-        }
-        diariesCalls++;
-        return _json(diariesCalls == 1 ? 401 : 200);
-      };
-
-      final builtDio = buildDio(tokenRepository, adapter: adapter);
-
-      final response = await builtDio.get('/diaries');
-
-      expect(response.statusCode, 200);
-      expect(reporter.reasons, isEmpty);
-    });
-
-    test('401 후 FormData 요청도 재발급하고 clone된 본문으로 한 번만 재시도한다', () async {
-      tokenRepository.fcmToken = 'device-1';
-      var uploadCalls = 0;
-
-      adapter.responder = (options) {
-        if (options.path.contains('/auth/login')) {
-          return ResponseBody.fromString(
-            '',
-            204,
-            headers: {
-              'authorization': ['Bearer reissued'],
-              'refresh-token': ['reissued-refresh'],
-            },
-          );
-        }
-        uploadCalls++;
-        return _json(uploadCalls == 1 ? 401 : 201);
-      };
-
-      final builtDio = buildDio(tokenRepository, adapter: adapter);
-
-      // 프로덕션 경로(MultipartFile.fromFile)를 그대로 써야 clone()이
-      // 실제로 재현하는 상황(file.clone()이 file.openRead()를 다시 호출)을
-      // 검증한다. fromString은 메모리 바이트를 감싸므로 이 경로를 안 탄다.
-      final tempFile = await File(
-        '${Directory.systemTemp.path}/auth_interceptor_test_${DateTime.now().microsecondsSinceEpoch}.jpg',
-      ).create();
-      await tempFile.writeAsBytes([1, 2, 3, 4]);
-      addTearDown(() async {
-        if (await tempFile.exists()) await tempFile.delete();
-      });
-
-      final formData = FormData.fromMap({
-        'text': 'hello',
-        'images': [await MultipartFile.fromFile(tempFile.path)],
-      });
-
-      final response = await builtDio.post('/diaries', data: formData);
-
-      expect(response.statusCode, 201);
-      // 원요청 1 + 재시도 1. clone() 없이는 두 번째 전송에서
-      // FormData가 이미 소비된 스트림이라 실패한다.
-      expect(uploadCalls, 2);
-      expect(tokenRepository.accessToken, 'reissued');
-    });
   });
 }

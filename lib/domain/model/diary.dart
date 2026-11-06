@@ -1,27 +1,31 @@
-// ignore_for_file: annotate_overrides
+import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/model/diary_color.dart';
 
-import 'package:freezed_annotation/freezed_annotation.dart';
-part 'diary.freezed.dart';
-
-@freezed
-class Diary with _$Diary {
+/// 목록·캘린더용 요약 일기.
+class Diary {
   final int id;
+  final DiaryType type;
   final String summary;
   final DateTime createdAt;
-  final String firstColorHex;
-  final String secondColorHex;
+  final List<DiaryColor> colors;
   final String musicTitle;
   final String musicArtist;
-  final bool isDeleted;
 
   const Diary({
     required this.id,
+    required this.type,
     required this.summary,
     required this.createdAt,
-    required this.firstColorHex,
-    required this.secondColorHex,
+    required this.colors,
     required this.musicTitle,
     required this.musicArtist,
-    this.isDeleted = false,
   });
+
+  DiaryColor get firstColor =>
+      colors.isNotEmpty ? colors[0] : DiaryColor.fallbackFirst;
+  DiaryColor get secondColor =>
+      colors.length > 1 ? colors[1] : DiaryColor.fallbackSecond;
+
+  String get musicLabel =>
+      musicArtist.isEmpty ? musicTitle : '$musicTitle · $musicArtist';
 }

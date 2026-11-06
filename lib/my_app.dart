@@ -1,6 +1,6 @@
 import 'package:cake/config/app_router.dart';
 import 'package:cake/ui/style/color_config.dart';
-import 'package:cake/config/size_config.dart';
+import 'package:cake/ui/style/text_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -9,33 +9,46 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context);
     return MaterialApp.router(
-      title: 'PieceOfCake',
-      locale: const Locale('ko', 'KR'), // 한국어 로케일 설정
+      title: '조각케이크',
+      locale: const Locale('ko', 'KR'),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('ko', 'KR'), // 한국어
-        Locale('en', 'US'), // 영어 (fallback)
-      ],
+      supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
       theme: ThemeData(
         useMaterial3: true,
-        primaryColor: ColorConfig.primary,
-        scaffoldBackgroundColor: ColorConfig.background,
+        scaffoldBackgroundColor: ColorConfig.bgPage,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: ColorConfig.primary,
+          seedColor: ColorConfig.brandBlue,
           brightness: Brightness.light,
+          surface: ColorConfig.bgPage,
         ),
-        // 탭했을 때 퍼지는 물결 효과의 색상 -> expansionTile같은데서 적용됨
-        splashColor: ColorConfig.primary.withValues(alpha: 0.1),
-        // 탭하고 있을 때의 배경색 -> expansionTile같은데서 적용됨
-        highlightColor: Colors.grey.withValues(alpha: 0.1),
-        fontFamily: 'NanumSquareRound',
-        fontFamilyFallback: const ['Pretendard'],
+        splashColor: ColorConfig.brandBlue.withValues(alpha: 0.08),
+        highlightColor: ColorConfig.brandBlue.withValues(alpha: 0.06),
+        // 본문 기본은 Pretendard. 제목은 TextConfig의 Round 스타일을 명시해서 쓴다.
+        fontFamily: TextConfig.bodyFamily,
+        textTheme: TextTheme(
+          bodyLarge: TextConfig.bodyL,
+          bodyMedium: TextConfig.bodyM,
+          bodySmall: TextConfig.bodyS,
+          titleLarge: TextConfig.titleL,
+          titleMedium: TextConfig.titleM,
+          titleSmall: TextConfig.titleS,
+          labelLarge: TextConfig.buttonL,
+          labelMedium: TextConfig.label,
+          labelSmall: TextConfig.caption,
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: ColorConfig.brandBlue,
+          selectionHandleColor: ColorConfig.brandBlue,
+        ),
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: ColorConfig.bgSurface,
+          surfaceTintColor: Colors.transparent,
+        ),
       ),
       debugShowCheckedModeBanner: false,
       routerConfig: AppRouter.router,

@@ -1,51 +1,62 @@
 import 'package:cake/domain/enum/diary_type.dart';
+import 'package:cake/domain/enum/sort_type.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/model/diary_detail.dart';
+import 'package:cake/domain/model/diary_page.dart';
 import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/model/qna.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 
 class FakeDiaryRepository implements DiaryRepository {
-  List<Diary> latestDiaries = [];
-  List<Diary> oldestDiaries = [];
+  /// 페이지별 응답. 없는 페이지는 빈 페이지.
+  Map<SortType, List<DiaryPage>> pages = {};
+  List<Diary> monthlyDiaries = [];
+  List<Qna> questions = [];
+  String generated = '생성된 일기';
+  Object? generateError;
 
-  int getLatestCallCount = 0;
-  int getOldestCallCount = 0;
+  int getPageCallCount = 0;
+  int getMonthlyCallCount = 0;
+  final List<SortType> requestedSorts = [];
+  final List<int> requestedPages = [];
+  List<Qna>? lastGenerateInput;
 
   @override
-  Future<List<Diary>> getLatestDiaryList() async {
-    getLatestCallCount++;
-    return latestDiaries;
+  Future<DiaryPage> getDiaryPage({
+    required SortType sort,
+    required int page,
+    int size = 10,
+  }) async {
+    getPageCallCount++;
+    requestedSorts.add(sort);
+    requestedPages.add(page);
+    final list = pages[sort] ?? const [];
+    if (page < list.length) return list[page];
+    return DiaryPage(items: const [], page: page, hasNext: false, totalCount: 0);
   }
-
-  @override
-  Future<List<Diary>> getOldestDiaryList() async {
-    getOldestCallCount++;
-    return oldestDiaries;
-  }
-
-  @override
-  Future<List<Diary>> getCurrentMonthlyDiaryList() async => latestDiaries;
 
   @override
   Future<List<Diary>> getMonthlyDiaryList({
     required int year,
     required int month,
-  }) async => latestDiaries;
+  }) async {
+    getMonthlyCallCount++;
+    return monthlyDiaries;
+  }
 
   @override
-  Future<bool> isAbleToWriteDiaryToday() async => true;
+  Future<DiaryDetail> getDiary({required int id}) => throw UnimplementedError();
 
   @override
-  Future<DiaryDetail> getDiary({required int id}) =>
-      throw UnimplementedError();
+  Future<List<Qna>> getQuestionList() async => questions;
 
   @override
-  Future<List<Qna>> getQuestionList() => throw UnimplementedError();
-
-  @override
-  Future<String> generateQnaDiary({required List<Qna> qnaList}) =>
-      throw UnimplementedError();
+  Future<String> generateQnaDiary({required List<Qna> qnaList}) async {
+    lastGenerateInput = qnaList;
+    final error = generateError;
+    if (error != null) throw error;
+    return generated;
+  }
 
   @override
   Future<DiaryDetail> saveDiary({

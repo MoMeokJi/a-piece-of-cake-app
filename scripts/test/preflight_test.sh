@@ -158,6 +158,7 @@ make_deploy_repo() {
   cp "$REPO/scripts/deploy.sh" "$d/scripts/"
   cp "$REPO/scripts/lib/preflight.sh" "$d/scripts/lib/"
   touch "$keys/upload.jks" "$keys/play.json" "$keys/asc.p8"
+  printf '{"GOOGLE_SERVER_CLIENT_ID":"test"}\n' > "$keys/cake-social-login.json"
   printf 'storeFile=%s\n' "$keys/upload.jks" > "$d/android/key.properties"
   printf 'PLAY_JSON_KEY_PATH=%s\nASC_KEY_ID=K\nASC_ISSUER_ID=I\nASC_KEY_PATH=%s\n' "$keys/play.json" "$keys/asc.p8" > "$keys/fastlane.env"
   git -C "$d" add -A

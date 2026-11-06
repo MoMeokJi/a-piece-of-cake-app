@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:cake/config/di.dart';
-import 'package:cake/data/data_source/shared_preferences/storage.dart';
+import 'package:cake/domain/repository/app_prefs_repository.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
@@ -87,7 +87,7 @@ void main() async {
     SystemUiOverlayStyle(
       // statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: ColorConfig.bottomNavi,
+      systemNavigationBarColor: ColorConfig.bgSurface,
       systemNavigationBarIconBrightness: Brightness.dark,
       systemNavigationBarDividerColor: Colors.transparent,
       // systemStatusBarContrastEnforced: false,
@@ -99,9 +99,9 @@ void main() async {
   await _initializeFirebase();
   await diSetup();
 
-  // 최초 설치인지 확인
-  final isReinstall = await getIt<Storage>().checkAndHandleReinstall();
-  if (isReinstall) {
+  // 재설치 감지: iOS 키체인은 앱을 지워도 남으므로 첫 실행이면 secure storage를 비운다
+  final isFreshInstall = await getIt<AppPrefsRepository>().consumeFreshInstallFlag();
+  if (isFreshInstall) {
     await getIt<TokenRepository>().clearAllSecureData();
   }
 

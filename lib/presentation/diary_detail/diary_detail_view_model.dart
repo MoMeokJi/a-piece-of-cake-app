@@ -1,144 +1,114 @@
-import 'package:cake/config/di.dart';
 import 'package:cake/domain/enum/result_state.dart';
+import 'package:cake/domain/exception/app_exception.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
-import 'package:cake/presentation/diary_calendar/diary_calendar_view_model.dart';
-import 'package:cake/presentation/diary_list/diary_list_view_model.dart';
+import 'package:cake/domain/service/analytics_service.dart';
+import 'package:cake/presentation/common/app_error_messages.dart';
+import 'package:cake/presentation/common/diary_change_notifier.dart';
 import 'package:cake/utils/app_logger.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
-class DiaryDetailViewModel with ChangeNotifier {
+class DiaryDetailViewModel extends ChangeNotifier {
   final DiaryRepository _diaryRepo;
+  final DiaryChangeNotifier _diaryChanges;
+  final AnalyticsService _analytics;
 
-  DiaryDetailViewModel({required DiaryRepository diaryRepo})
-    : _diaryRepo = diaryRepo;
+  DiaryDetailViewModel({
+    required DiaryRepository diaryRepo,
+    required DiaryChangeNotifier diaryChanges,
+    required AnalyticsService analytics,
+  }) : _diaryRepo = diaryRepo,
+       _diaryChanges = diaryChanges,
+       _analytics = analytics;
 
-  DiaryDetail _diary = DiaryDetail.empty();
-  DiaryDetail get diary => _diary;
+  DiaryDetail? _diary;
+  DiaryDetail? get diary => _diary;
 
-  ResultState _initializeState = ResultState.loading;
-  ResultState get initializeState => _initializeState;
+  ResultState _loadState = ResultState.loading;
+  ResultState get loadState => _loadState;
+  bool get isLoading => _loadState == ResultState.loading;
+  bool get loadFailed => _loadState == ResultState.error;
+  bool get notFound => _notFound;
+  bool _notFound = false;
 
-  ResultState _removeState = ResultState.none;
-  ResultState get removeState => _removeState;
+  bool _isDeleting = false;
+  bool get isDeleting => _isDeleting;
 
-  ResultState _updateState = ResultState.none;
-  ResultState get updateState => _updateState;
+  bool _deleted = false;
+  bool get deleted => _deleted;
 
   String? _toastMessage;
   String? get toastMessage => _toastMessage;
 
-  final TextEditingController _editTextController = TextEditingController();
-  TextEditingController get editTextController => _editTextController;
+  /// 유튜브를 못 불러왔을 때 "다시 시도"로 플레이어를 다시 만든다.
+  int _playerAttempt = 0;
+  int get playerAttempt => _playerAttempt;
 
-  final FocusNode _focusNode = FocusNode();
-  FocusNode get focusNode => _focusNode;
+  int? _id;
 
-  bool get isEditModified => _editTextController.text != _diary.body;
   Future<void> initialize(DiaryDetail? detail, int? id) async {
-    try {
-      if (detail != null) {
-        _diary = detail;
-        _initializeState = ResultState.success;
-        notifyListeners();
-        return;
-      }
-
-      if (id != null) {
-        _diary = await _diaryRepo.getDiary(id: id);
-        _initializeState = ResultState.success;
-        notifyListeners();
-        return;
-      }
-
-      // detail도 id도 없는 경우 처리
-      _initializeState = ResultState.error;
+    if (detail != null) {
+      _diary = detail;
+      _id = detail.id;
+      _loadState = ResultState.success;
       notifyListeners();
-    } catch (e) {
-      AppLogger.error('일기디테일 초기화 에러: ${e.toString()}');
-      _initializeState = ResultState.error;
-      notifyListeners();
+      return;
     }
+    if (id == null) {
+      _loadState = ResultState.error;
+      notifyListeners();
+      return;
+    }
+    _id = id;
+    await reload();
+  }
+
+  Future<void> reload() async {
+    final id = _id;
+    if (id == null) return;
+    _loadState = ResultState.loading;
+    notifyListeners();
+    try {
+      _diary = await _diaryRepo.getDiary(id: id);
+      _loadState = ResultState.success;
+    } on DiaryNotFoundException {
+      _notFound = true;
+      _loadState = ResultState.error;
+    } catch (e) {
+      AppLogger.error('일기 상세 조회 실패: $e');
+      _loadState = ResultState.error;
+    }
+    notifyListeners();
+  }
+
+  void applyEditedBody(String body) {
+    _diary = _diary?.copyWith(body: body);
+    notifyListeners();
   }
 
   Future<void> removeDiary() async {
+    final diary = _diary;
+    if (diary == null || _isDeleting) return;
+    _isDeleting = true;
+    notifyListeners();
     try {
-      _removeState = ResultState.loading;
-      notifyListeners();
-
-      FirebaseAnalytics.instance.logEvent(name: 'diary_detail_delete');
-      await _diaryRepo.removeDiary(_diary.id);
-
-      final diaryCalendarVM = getIt<DiaryCalendarViewModel>();
-      await diaryCalendarVM.initialize();
-      final diaryListVM = getIt<DiaryListViewModel>();
-      await diaryListVM.loadDiaryList();
-
-      _toastMessage = '일기가 삭제되었습니다';
-      _removeState = ResultState.success;
-      notifyListeners();
+      _analytics.logEvent('diary_detail_delete');
+      await _diaryRepo.removeDiary(diary.id);
+      _diaryChanges.notifyChanged();
+      _deleted = true;
     } catch (e) {
-      AppLogger.error('일기삭제 에러: ${e.toString()}');
-      _toastMessage = '일기를 삭제하지 못하였습니다. 잠시 후 다시 시도해 주세요.';
-      _removeState = ResultState.error;
+      AppLogger.error('일기 삭제 실패: $e');
+      _toastMessage = AppErrorMessages.of(e, fallback: AppErrorMessages.deleteFailed);
+    } finally {
+      _isDeleting = false;
       notifyListeners();
     }
   }
 
-  Future<void> updateDiaryContent() async {
-    if (!isEditModified) {
-      return;
-    }
-
-    try {
-      _updateState = ResultState.loading;
-      notifyListeners();
-
-      FirebaseAnalytics.instance.logEvent(name: 'diary_detail_edit');
-
-      final editText = _editTextController.text;
-      await _diaryRepo.editDiaryText(id: _diary.id, editText: editText);
-
-      _diary = _diary.copyWith(body: editText);
-      _toastMessage = '일기가 수정되었습니다';
-      _updateState = ResultState.success;
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('일기수정 에러: ${e.toString()}');
-      _toastMessage = '일기를 수정하지 못하였습니다. 잠시 후 다시 시도해 주세요.';
-      _updateState = ResultState.error;
-      notifyListeners();
-    }
+  void retryPlayer() {
+    _playerAttempt++;
+    notifyListeners();
   }
 
-  // Dialog 열릴 때 호출 - 초기화만
-  void prepareEditMode() {
-    _editTextController.text = _diary.body;
-    _focusNode.requestFocus();
-  }
-
-  // Dialog 닫힐 때 호출 - 포커스만 해제
-  void closeEditMode() {
-    _focusNode.unfocus();
-  }
-
-  void clearToastMessage() {
-    _toastMessage = null;
-  }
-
-  void resetRemoveState() {
-    _removeState = ResultState.none;
-  }
-
-  void resetUpdateState() {
-    _updateState = ResultState.none;
-  }
-
-  @override
-  void dispose() {
-    _editTextController.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
+  void clearToast() => _toastMessage = null;
 }

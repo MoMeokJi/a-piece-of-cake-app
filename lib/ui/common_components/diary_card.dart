@@ -1,103 +1,79 @@
-import 'package:cake/config/size_config.dart';
 import 'package:cake/core/extensions/color_extensions.dart';
 import 'package:cake/domain/model/diary.dart';
-import 'package:cake/ui/common_components/custom_divider.dart';
+import 'package:cake/ui/common_components/app_icon.dart';
+import 'package:cake/ui/style/app_assets.dart';
+import 'package:cake/ui/style/app_dimens.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/ui/style/text_config.dart';
 import 'package:cake/utils/date_converter.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+/// 일기 요약 카드. 오른쪽 위 막대는 그날의 컬러 두 개를 이은 그라데이션.
 class DiaryCard extends StatelessWidget {
   final Diary diary;
-  const DiaryCard({super.key, required this.diary});
+  final VoidCallback? onTap;
+
+  const DiaryCard({super.key, required this.diary, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        context.push('/diary-detail', extra: diary.id);
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: ColorConfig.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: ColorConfig.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: getWidth(25),
-            vertical: getHeight(15),
+    return Material(
+      color: ColorConfig.bgSurface,
+      borderRadius: AppRadius.circular(AppRadius.xl),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.circular(AppRadius.xl),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.circular(AppRadius.xl),
+            boxShadow: AppShadows.card,
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 날짜
-              Text(
-                DateConverter.dateToDateString(diary.createdAt),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: ColorConfig.diaryDateColor,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-
-              // 일기 내용
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: getHeight(5)),
-                child: Text(
-                  diary.summary,
-                  style: const TextStyle(
-                    fontSize: TextConfig.diaryDefaultFontSize,
-                    color: ColorConfig.diarySummaryColor,
-                    fontWeight: FontWeight.w600,
-                    height: 1.5,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateConverter.toMonthDayWeekday(diary.createdAt),
+                    style: TextConfig.label.copyWith(
+                      color: ColorConfig.textTertiary,
+                    ),
                   ),
-                ),
+                  DiaryColorBar(
+                    first: diary.firstColor.hex.toColor(),
+                    second: diary.secondColor.hex.toColor(),
+                    width: 36,
+                    height: 12,
+                  ),
+                ],
               ),
-              SizedBox(height: getHeight(5)),
-              CustomDivider(),
-              SizedBox(height: getHeight(10)),
-
+              const SizedBox(height: 10),
+              Text(diary.summary, style: TextConfig.bodyM),
+              const SizedBox(height: 10),
+              const Divider(
+                height: 1,
+                thickness: 1,
+                color: ColorConfig.borderSubtle,
+              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  _colorCircle(diary.firstColorHex),
-                  SizedBox(width: getWidth(8)),
-                  _colorCircle(diary.secondColorHex),
-                  SizedBox(width: getWidth(20)),
-
-                  // Expanded로 남은 공간을 다 차지하게 하고 그 안에서 음악 정보를 오른쪽 정렬. 길어지면 ...처리
+                  const AppIcon(
+                    AppIcons.headphones,
+                    size: 16,
+                    color: ColorConfig.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Icon(
-                          Icons.headphones,
-                          size: getWidth(16),
-                          color: ColorConfig.diaryMusicTextColor,
-                        ),
-                        SizedBox(width: getWidth(3)),
-                        Flexible(
-                          child: Text(
-                            '${diary.musicTitle} - ${diary.musicArtist}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: ColorConfig.diaryMusicTextColor,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      diary.musicLabel,
+                      style: TextConfig.label.copyWith(
+                        color: ColorConfig.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -108,21 +84,31 @@ class DiaryCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _colorCircle(String colorHex) {
+/// 두 컬러를 잇는 알약 막대 (카드·캘린더 날짜).
+class DiaryColorBar extends StatelessWidget {
+  final Color first;
+  final Color second;
+  final double width;
+  final double height;
+
+  const DiaryColorBar({
+    super.key,
+    required this.first,
+    required this.second,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: getWidth(16),
-      height: getHeight(16),
+      width: width,
+      height: height,
       decoration: BoxDecoration(
-        color: colorHex.toColor(),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: ColorConfig.black.withValues(alpha: 0.1),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        borderRadius: AppRadius.circular(AppRadius.full),
+        gradient: LinearGradient(colors: [first, second]),
       ),
     );
   }
