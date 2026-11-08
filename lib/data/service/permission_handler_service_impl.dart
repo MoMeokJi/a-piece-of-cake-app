@@ -13,12 +13,6 @@ class PermissionHandlerServiceImpl implements PermissionHandlerService {
   };
 
   @override
-  Future<void> requestEssentialPermissions() async {
-    AppLogger.log('필수 권한 요청 시작');
-    await Permission.notification.request();
-  }
-
-  @override
   Future<bool> checkNotificationPermission() async {
     AppLogger.log('알림 권한 : ${await Permission.notification.isGranted}');
     return await Permission.notification.isGranted;

@@ -13,6 +13,7 @@
 - 하루 한도는 서버 `GET /users/me/stats`의 `dailyLimit`이 기준이고 `ServiceConfig.maxDiaryCount`는 fallback. 초과하면 서버가 429 `DIARY_DAILY_LIMIT_EXCEEDED`
 - 목록·캘린더는 서버가 원본이다 (`GET /diaries` 페이지, `GET /diaries/calendar`). 로컬 DB는 없다
 - 알림은 토글 하나(`PUT /users/me/notification`)로 리마인드·공감 푸시를 함께 켠다. 관리자 공지는 무관
+- **푸시 페이로드** — 서버는 두 플랫폼 모두 `notification{title, body}` + `data{type, diaryId?}`를 보낸다. `type`은 `FEEDBACK`(diaryId 문자열 동반)·`REMIND`·`ADMIN_MESSAGE` 셋뿐. Android 채널 ID는 `high_importance_channel`(서버 AndroidConfig·매니페스트·`NotificationServiceImpl` 세 곳이 같아야 한다)
 
 ## 레이어
 
@@ -80,7 +81,7 @@ freezed 모델이나 DTO를 고치면 build_runner를 반드시 다시 돌린다
 - **HTTP 클라이언트는 `dio` 하나다.** 인증 헤더, 재발급(single-flight), 에러 보고가 `AuthInterceptor`·`ErrorReportingInterceptor`에 붙어 있다. 401 처리 규칙: `TOKEN_EXPIRED` → refresh 후 재시도, `TOKEN_INVALID`·`REFRESH_INVALID` → 토큰 삭제 + 로그인 화면(`di.dart`의 `_handleSessionExpired`). 인증이 필요 없는 요청은 `AuthInterceptor.needsAuthKey: false`
 - **서버 에러는 RFC 9457 `code`로 구분한다.** `api_error_mapper.dart`가 dio 예외를 도메인 예외(`DiaryDailyLimitExceededException` 등)로 바꾼다. 리포지토리는 `on DioException catch (e) { throw mapOrRethrow(e); }`
 - **deviceId 시절 유저는 버렸다.** 업데이트 후 첫 실행에서 `LegacyDataCleanupService`가 옛 토큰·sqflite(`cake.db`)·prefs를 지우고, 옛 세션이 있었으면 "계정 방식 변경" 안내를 한 번 띄운다. `sqflite` 의존성은 이 삭제 한 줄 때문에만 남아 있다
-- **FCM 수신·탭 처리(`fcm_service_impl.dart`, `notification_service_impl.dart`, `main.dart` 백그라운드 핸들러)는 알려진 버그가 있고 따로 고칠 예정이다.** 지금은 토큰 등록(`PUT /auth/devices/fcm-token`, `AuthRepository.registerFcmToken`)만 새 API에 맞췄다
+- **푸시 탭은 data 서비스가 화면을 옮기지 않는다.** `FCMServiceImpl`·`NotificationServiceImpl`은 탭을 `PushEventService.publish`로 넘기기만 하고, 로그인된 `MainViewModel`이 받아 `diaryIdToOpen`을 세우면 `MainScreen`이 `/diary-detail`을 push한다. 같은 일기 상세가 맨 위에 있으면 push하지 않는다. 듣는 쪽이 없을 때(앱이 알림으로 켜짐, 로그인 전) 들어온 탭은 `takePending`으로 보류된다. 포그라운드 수신은 어느 플랫폼도 이동하지 않고 `publishReceived`로만 알린다 (iOS는 OS 배너, Android는 로컬 알림). 열려 있는 `DiaryDetailViewModel`은 자기 일기의 시식평 수신·탭을 듣고 `refreshQuietly`로 로딩 없이 갱신한다. 백그라운드 아이솔레이트 핸들러는 없다. 토큰은 세션이 있을 때 `AuthRepository.registerFcmToken`이 등록하고 `onTokenRefresh`에도 다시 등록한다. 알림 권한은 `FCMService.initialize`의 `requestPermission` 한 곳에서만 묻는다
 - **서버 PATCH는 본문만 받는다.** 상세의 "수정하기"(`/diary-edit`)에서 사진은 보여주기만 하고 추가·삭제를 지원하지 않는다
 - **Xcode에서 바로 Archive하지 않는다.** 버전은 `flutter build`가 `pubspec.yaml`에서 `ios/Flutter/Generated.xcconfig`로 복사할 때 들어간다. Xcode Archive만 하면 예전 번호가 들어간다. 꼭 해야 하면 먼저 `flutter build ipa`를 돌린다
 - **배포 키는 저장소 밖 `~/development/keys/`에 있다.** 무엇이 어디 쓰이는지는 그 폴더의 `README.md`. 키 ID·Issuer ID도 저장소에 적지 않는다

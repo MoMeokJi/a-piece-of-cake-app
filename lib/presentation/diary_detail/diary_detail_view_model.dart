@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:cake/domain/enum/result_state.dart';
 import 'package:cake/domain/exception/app_exception.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
+import 'package:cake/domain/model/push_payload.dart';
 import 'package:cake/domain/service/analytics_service.dart';
+import 'package:cake/domain/service/push_event_service.dart';
 import 'package:cake/presentation/common/app_error_messages.dart';
 import 'package:cake/presentation/common/diary_change_notifier.dart';
 import 'package:cake/utils/app_logger.dart';
@@ -12,14 +16,22 @@ class DiaryDetailViewModel extends ChangeNotifier {
   final DiaryRepository _diaryRepo;
   final DiaryChangeNotifier _diaryChanges;
   final AnalyticsService _analytics;
+  final List<StreamSubscription<PushPayload>> _pushSubscriptions = [];
 
   DiaryDetailViewModel({
     required DiaryRepository diaryRepo,
     required DiaryChangeNotifier diaryChanges,
     required AnalyticsService analytics,
+    required PushEventService pushEvents,
   }) : _diaryRepo = diaryRepo,
        _diaryChanges = diaryChanges,
-       _analytics = analytics;
+       _analytics = analytics {
+    // 이 일기의 시식평 푸시가 도착하거나 탭되면 조용히 다시 불러온다.
+    // (메인 화면은 이미 열려 있는 상세를 한 장 더 밀지 않는다)
+    for (final stream in [pushEvents.received, pushEvents.taps]) {
+      _pushSubscriptions.add(stream.listen(_onPush));
+    }
+  }
 
   DiaryDetail? _diary;
   DiaryDetail? get diary => _diary;
@@ -81,6 +93,23 @@ class DiaryDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 로딩 상태를 띄우지 않고 서버 내용으로 바꾼다. 실패하면 지금 화면을 그대로 둔다.
+  Future<void> refreshQuietly() async {
+    final id = _id;
+    if (id == null) return;
+    try {
+      _diary = await _diaryRepo.getDiary(id: id);
+      _loadState = ResultState.success;
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('일기 상세 조용한 갱신 실패: $e');
+    }
+  }
+
+  void _onPush(PushPayload payload) {
+    if (payload.isFeedbackFor(_id)) refreshQuietly();
+  }
+
   void applyEditedBody(String body) {
     _diary = _diary?.copyWith(body: body);
     notifyListeners();
@@ -111,4 +140,12 @@ class DiaryDetailViewModel extends ChangeNotifier {
   }
 
   void clearToast() => _toastMessage = null;
+
+  @override
+  void dispose() {
+    for (final sub in _pushSubscriptions) {
+      sub.cancel();
+    }
+    super.dispose();
+  }
 }

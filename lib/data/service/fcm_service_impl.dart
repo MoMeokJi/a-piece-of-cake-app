@@ -1,162 +1,89 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:cake/config/app_router.dart';
+
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
-import 'package:cake/domain/enum/app_permission.dart';
+import 'package:cake/domain/model/push_payload.dart';
 import 'package:cake/domain/repository/token_repository.dart';
 import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
-import 'package:cake/domain/service/permission_handler_service.dart';
+import 'package:cake/domain/service/push_event_service.dart';
 import 'package:cake/utils/app_logger.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+/// 서버는 두 플랫폼 모두 `notification{title, body}` + `data{type, diaryId?}`를 보낸다.
+///
+/// - 백그라운드·종료: OS가 알림을 띄우고, 탭하면 [FirebaseMessagingManager.onMessageOpenedApp]
+///   또는 [FirebaseMessagingManager.getInitialMessage]로 들어온다.
+/// - 포그라운드: iOS는 OS 배너, Android는 FCM이 띄우지 않으므로 로컬 알림으로 대신 그린다.
+///   어느 쪽도 화면을 바로 옮기지 않는다. 수신 사실과 탭을 [PushEventService]로 넘길 뿐이다.
 class FCMServiceImpl implements FCMService {
   final FirebaseMessagingManager _messagingManager;
   final TokenRepository _tokenRepository;
   final NotificationService _notificationService;
-  final PermissionHandlerService _permissionHandlerService;
+  final PushEventService _pushEvents;
+  final bool _isAndroid;
 
   FCMServiceImpl({
     required FirebaseMessagingManager messagingManager,
     required TokenRepository tokenRepository,
     required NotificationService notificationService,
-    required PermissionHandlerService permissionHandlerService,
+    required PushEventService pushEvents,
+    required bool isAndroid,
   }) : _messagingManager = messagingManager,
        _tokenRepository = tokenRepository,
        _notificationService = notificationService,
-       _permissionHandlerService = permissionHandlerService;
+       _pushEvents = pushEvents,
+       _isAndroid = isAndroid;
 
   @override
   Future<void> initialize() async {
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-          alert: true,
-          badge: false,
-          sound: true,
-        );
+    await _messagingManager.requestPermission();
+    await _messagingManager.setForegroundPresentationOptions();
 
-    // 1. 알림 권한 확인 및 요청
-    if (!await _permissionHandlerService.checkPermission(
-      AppPermission.notification,
-    )) {
-      final settings = await _messagingManager.requestPermission();
-      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-        AppLogger.log('FCM: 알림 권한 거부됨');
-        return;
-      }
+    // 권한이 거부돼도 핸들러는 건다. 설정에서 나중에 켜면 그대로 동작해야 한다.
+    _messagingManager.onMessage.listen(_onForegroundMessage);
+    _messagingManager.onMessageOpenedApp.listen(_publishTap);
+
+    final initial = await _messagingManager.getInitialMessage();
+    if (initial != null) {
+      AppLogger.log('종료 상태에서 알림 탭으로 실행됨', tag: 'FCM');
+      _publishTap(initial);
     }
-
-    // 2. FCM 토큰 저장
-    await getFCMTokenAndSave();
-
-    // 3. 각 상태별 메시지 핸들러 설정
-    _setupForegroundHandler();
-    _setupBackgroundOpenHandler();
-    _setupTerminatedHandler();
   }
 
   @override
   Future<void> getFCMTokenAndSave() async {
     final token = await _messagingManager.getToken();
+    if (token == null || token.isEmpty) {
+      await _tokenRepository.clearFcmToken();
+      return;
+    }
     await _tokenRepository.saveFcmToken(token);
   }
 
   @override
-Future<void> deleteFCMToken() async {
-  await _messagingManager.deleteToken();
-  await _tokenRepository.clearFcmToken();
-}
-
-  void _setupForegroundHandler() {
-    // Foreground 상태에서 메시지 수신
-    FirebaseMessaging.onMessage.listen((message) async {
-      AppLogger.log('FCM 수신 : Foreground 메시지');
-      if (message.data.isNotEmpty) {
-        AppLogger.log('제목: ${message.data['title']}');
-        AppLogger.log('내용: ${message.data['body']}');
-        AppLogger.log('타입: ${message.data['type']}');
-        AppLogger.log('diaryId: ${message.data['diaryId']}');
-        AppLogger.log('click_action: ${message.data["click_action"]}');
-
-        if (Platform.isIOS) {
-          _handleMessageTap(message);
-        } else {
-          if (Platform.isAndroid) {
-            await _notificationService.showNotification(
-              title:
-                  message.data['title'] ??
-                  'message.data[title]이 null. foreground임니다용',
-              body: message.data['body'] ?? '',
-              payload: jsonEncode({
-                'type': message.data['type'],
-                'diaryId': message.data['diaryId'],
-              }),
-            );
-          }
-        }
-      }
-    });
+  Future<void> deleteFCMToken() async {
+    await _messagingManager.deleteToken();
+    await _tokenRepository.clearFcmToken();
   }
 
-  void _setupBackgroundOpenHandler() {
-    // Background 상태에서 푸시 터치
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      if (message.data.isNotEmpty) {
-        AppLogger.log('FCM 수신 : Background 알림 탭');
-        AppLogger.log('제목: ${message.data['title']}');
-        AppLogger.log('내용: ${message.data['body']}');
-        AppLogger.log('타입: ${message.data['type']}');
-        AppLogger.log('diaryId: ${message.data['diaryId']}');
-        AppLogger.log('click_action: ${message.data["click_action"]}');
+  @override
+  Stream<String> get onTokenRefresh => _messagingManager.onTokenRefresh;
 
-        _handleMessageTap(message);
-      }
-    });
+  Future<void> _onForegroundMessage(RemoteMessage message) async {
+    AppLogger.log('포그라운드 수신: ${message.data}', tag: 'FCM');
+    _pushEvents.publishReceived(PushPayload.fromData(message.data));
+
+    final notification = message.notification;
+    if (!_isAndroid || notification == null) return;
+
+    await _notificationService.showNotification(
+      title: notification.title ?? message.data['title']?.toString() ?? '',
+      body: notification.body ?? message.data['body']?.toString() ?? '',
+      payload: jsonEncode(message.data),
+    );
   }
 
-  Future<void> _setupTerminatedHandler() async {
-    if (Platform.isIOS) {
-      // iOS: Terminated 상태에서 FCM 노티로 실행된 경우
-      // 위젯트리가 생성되고 라우터 생성이 될 때까지 충분한 딜레이 추가
-      await Future.delayed(const Duration(milliseconds: 2000));
-      final initialMessage = await FirebaseMessaging.instance
-          .getInitialMessage();
-      if (initialMessage?.notification != null) {
-        AppLogger.log('FCM 수신 : Terminated 상태에서 알림으로 앱이 실행됨 (iOS)');
-        AppLogger.log('title: ${initialMessage?.notification?.title}');
-        AppLogger.log('body: ${initialMessage?.notification?.body}');
-
-        _handleMessageTap(initialMessage!);
-      }
-    }
-    // Android: Terminated 상태는 LocalNotificationService에서 처리됨
+  void _publishTap(RemoteMessage message) {
+    _pushEvents.publish(PushPayload.fromData(message.data));
   }
-
-  void _handleMessageTap(RemoteMessage message) {
-  AppLogger.log(
-    'fcm service 알림 탭 처리 시작. message: ${message.data.toString()}',
-  );
-  try {
-    final type = message.data['type'];
-    final diaryId = message.data['diaryId'];
-
-    switch (type) {
-      case 'FEEDBACK':
-        FirebaseAnalytics.instance.logEvent(name: 'fcm_feedback_tapped');
-        AppRouter.router.go('/diary-calendar');
-        Future.delayed(const Duration(milliseconds: 100), () {
-          AppLogger.log('diary detail 페이지로 이동합니다');
-          AppRouter.router.push(
-            '/diary-detail',
-            extra: int.parse(diaryId.toString()),
-          );
-        });
-      case 'REMINDER':
-        FirebaseAnalytics.instance.logEvent(name: 'fcm_reminder_tapped');
-    }
-  } catch (e) {
-    AppLogger.error('fcm service 알림 탭 처리 실패: $e');
-  }
-}
 }

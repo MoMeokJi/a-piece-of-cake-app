@@ -27,7 +27,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }) : _authApi = authApi,
        _tokenRepository = tokenRepository,
        _socialSignIn = socialSignIn,
-       _fcmService = fcmService;
+       _fcmService = fcmService {
+    // FCM이 토큰을 바꾸면 세션이 있는 한 서버에 다시 등록한다.
+    _fcmService.onTokenRefresh.listen((_) => registerFcmToken());
+  }
 
   static String get _os => Platform.isAndroid ? 'AND' : 'IOS';
 

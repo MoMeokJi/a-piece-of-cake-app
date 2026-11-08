@@ -1,60 +1,72 @@
 import 'dart:io';
+
 import 'package:cake/data/data_source/firebase/messaging/firebase_messaging_manager.dart';
 import 'package:cake/utils/app_logger.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:uuid/uuid.dart';
 
 class FirebaseMessagingManagerImpl implements FirebaseMessagingManager {
   final FirebaseMessaging _messaging;
 
   FirebaseMessagingManagerImpl() : _messaging = FirebaseMessaging.instance;
-@override
-Future<String> getToken() async {
-  if (Platform.isIOS) {
-    AppLogger.log('iOS에서 APNS 토큰 확인 중...');
-    final apnsToken = await _messaging.getAPNSToken();
 
-    if (apnsToken == null) {
-      AppLogger.log('APNS 토큰 없음, 2초 대기 후 재시도');
-      await Future.delayed(Duration(seconds: 2));
-    } else {
-      AppLogger.log('APNS 토큰 확보됨');
-    }
-  }
-
-  AppLogger.log('FCM 토큰 요청 중...');
-  final token = await _messaging.getToken();
-  
-  if (token == null) {
-    AppLogger.log('FCM token null, UUID로 대체');
-    return const Uuid().v4();
-  }
-  
-  AppLogger.log('FCM token : $token');
-  return token;
-}
+  static const _apnsRetries = 3;
+  static const _apnsRetryDelay = Duration(seconds: 1);
 
   @override
-  Future<NotificationSettings> requestPermission() async {
-    return await _messaging.requestPermission(
+  Future<void> requestPermission() async {
+    final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
+    AppLogger.log('알림 권한: ${settings.authorizationStatus}', tag: 'FCM');
   }
 
   @override
-  void setForegroundMessageListener(void Function(RemoteMessage) onMessage) {
-    FirebaseMessaging.onMessage.listen(onMessage);
+  Future<void> setForegroundPresentationOptions() =>
+      _messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: false,
+        sound: true,
+      );
+
+  @override
+  Future<String?> getToken() async {
+    try {
+      if (Platform.isIOS && !await _waitForApnsToken()) {
+        AppLogger.log('APNs 토큰이 없어 FCM 토큰을 건너뜀', tag: 'FCM');
+        return null;
+      }
+      return await _messaging.getToken();
+    } on FirebaseException catch (e) {
+      AppLogger.error('FCM 토큰 발급 실패: ${e.code}', tag: 'FCM', error: e);
+      return null;
+    }
+  }
+
+  /// iOS는 APNs 토큰이 먼저 있어야 `getToken`이 성공한다.
+  Future<bool> _waitForApnsToken() async {
+    for (var i = 0; i < _apnsRetries; i++) {
+      if (await _messaging.getAPNSToken() != null) return true;
+      await Future<void>.delayed(_apnsRetryDelay);
+    }
+    return await _messaging.getAPNSToken() != null;
   }
 
   @override
-  void setMessageTapListener(void Function(RemoteMessage) onTap) {
-    FirebaseMessaging.onMessageOpenedApp.listen(onTap);
-  }
-  
+  Future<void> deleteToken() => _messaging.deleteToken();
+
   @override
-  Future<void> deleteToken() async{
-   await _messaging.deleteToken();
-  }
+  Stream<RemoteMessage> get onMessage => FirebaseMessaging.onMessage;
+
+  @override
+  Stream<RemoteMessage> get onMessageOpenedApp =>
+      FirebaseMessaging.onMessageOpenedApp;
+
+  @override
+  Future<RemoteMessage?> getInitialMessage() => _messaging.getInitialMessage();
+
+  @override
+  Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
 }

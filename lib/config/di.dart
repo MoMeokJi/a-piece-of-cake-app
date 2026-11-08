@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cake/config/app_router.dart';
 import 'package:cake/data/data_source/api/app_version/app_version_api.dart';
 import 'package:cake/data/data_source/api/app_version/app_version_api_impl.dart';
@@ -22,6 +24,7 @@ import 'package:cake/data/service/firebase_analytics_service_impl.dart';
 import 'package:cake/data/service/legacy_data_cleanup_service_impl.dart';
 import 'package:cake/data/service/notification_service_impl.dart';
 import 'package:cake/data/service/permission_handler_service_impl.dart';
+import 'package:cake/data/service/push_event_service_impl.dart';
 import 'package:cake/data/service/social_sign_in_service_impl.dart';
 import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/repository/app_prefs_repository.dart';
@@ -35,6 +38,7 @@ import 'package:cake/domain/service/fcm_service.dart';
 import 'package:cake/domain/service/legacy_data_cleanup_service.dart';
 import 'package:cake/domain/service/notification_service.dart';
 import 'package:cake/domain/service/permission_handler_service.dart';
+import 'package:cake/domain/service/push_event_service.dart';
 import 'package:cake/domain/service/social_sign_in_service.dart';
 import 'package:cake/presentation/common/app_error_messages.dart';
 import 'package:cake/presentation/common/diary_change_notifier.dart';
@@ -88,15 +92,17 @@ Future<void> diSetup() async {
   getIt.registerLazySingleton<PermissionHandlerService>(
     () => PermissionHandlerServiceImpl(),
   );
+  getIt.registerLazySingleton<PushEventService>(() => PushEventServiceImpl());
   getIt.registerLazySingleton<NotificationService>(
-    () => NotificationServiceImpl(),
+    () => NotificationServiceImpl(pushEvents: getIt<PushEventService>()),
   );
   getIt.registerLazySingleton<FCMService>(
     () => FCMServiceImpl(
       messagingManager: getIt<FirebaseMessagingManager>(),
       tokenRepository: getIt<TokenRepository>(),
       notificationService: getIt<NotificationService>(),
-      permissionHandlerService: getIt<PermissionHandlerService>(),
+      pushEvents: getIt<PushEventService>(),
+      isAndroid: Platform.isAndroid,
     ),
   );
   getIt.registerLazySingleton<SocialSignInService>(
@@ -181,7 +187,13 @@ Future<void> diSetup() async {
       initialNickname: initialNickname,
     ),
   );
-  getIt.registerFactory(() => MainViewModel(userRepo: getIt<UserRepository>()));
+  getIt.registerFactory(
+    () => MainViewModel(
+      userRepo: getIt<UserRepository>(),
+      pushEvents: getIt<PushEventService>(),
+      analytics: getIt<AnalyticsService>(),
+    ),
+  );
   getIt.registerFactory(
     () => QnaDiaryCreateViewModel(diaryRepo: getIt<DiaryRepository>()),
   );
@@ -205,6 +217,7 @@ Future<void> diSetup() async {
       diaryRepo: getIt<DiaryRepository>(),
       diaryChanges: getIt<DiaryChangeNotifier>(),
       analytics: getIt<AnalyticsService>(),
+      pushEvents: getIt<PushEventService>(),
     ),
   );
   getIt.registerFactoryParam<DiaryEditViewModel, DiaryDetail, void>(

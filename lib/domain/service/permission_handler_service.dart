@@ -1,9 +1,6 @@
 import 'package:cake/domain/enum/app_permission.dart';
 
 abstract interface class PermissionHandlerService {
-  /// 필수 권한들 요청
-  Future<void> requestEssentialPermissions();
-
   /// 알림 권한 요청
   Future<bool> requestNotificationPermission();
 

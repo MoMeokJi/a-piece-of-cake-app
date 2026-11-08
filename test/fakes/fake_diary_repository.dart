@@ -44,8 +44,17 @@ class FakeDiaryRepository implements DiaryRepository {
     return monthlyDiaries;
   }
 
+  /// id별 상세. 없으면 UnimplementedError (예전과 같음).
+  Map<int, DiaryDetail> details = {};
+  int getDiaryCallCount = 0;
+
   @override
-  Future<DiaryDetail> getDiary({required int id}) => throw UnimplementedError();
+  Future<DiaryDetail> getDiary({required int id}) async {
+    getDiaryCallCount++;
+    final detail = details[id];
+    if (detail == null) throw UnimplementedError();
+    return detail;
+  }
 
   @override
   Future<List<Qna>> getQuestionList() async => questions;

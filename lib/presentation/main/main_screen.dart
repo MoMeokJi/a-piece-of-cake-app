@@ -1,3 +1,4 @@
+import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/presentation/main/components/write_type_sheet.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
 import 'package:cake/ui/common_components/app_bottom_sheet.dart';
@@ -39,8 +40,32 @@ class MainScreen extends StatelessWidget {
     }
   }
 
+  static bool _isDiaryDetailOnTop(BuildContext context, int diaryId) {
+    final top =
+        GoRouter.of(context).routerDelegate.currentConfiguration.lastOrNull;
+    if (top is! ImperativeRouteMatch ||
+        top.matches.uri.path != '/diary-detail') {
+      return false;
+    }
+    final extra = top.matches.extra;
+    return extra == diaryId || (extra is DiaryDetail && extra.id == diaryId);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<MainViewModel>();
+
+    // 푸시 알림 탭으로 열어야 할 일기 상세. 빌드가 끝난 뒤 한 번만 민다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      final diaryId = viewModel.diaryIdToOpen;
+      if (diaryId == null) return;
+      viewModel.clearDiaryToOpen();
+      // 같은 일기 상세가 맨 위에 있으면 그 화면이 알아서 갱신한다. 한 장 더 쌓지 않는다.
+      if (_isDiaryDetailOnTop(context, diaryId)) return;
+      context.push('/diary-detail', extra: diaryId);
+    });
+
     return Scaffold(
       backgroundColor: ColorConfig.bgPage,
       body: navigationShell,

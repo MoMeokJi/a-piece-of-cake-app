@@ -1,45 +1,57 @@
 import 'dart:convert';
-import 'package:cake/config/app_router.dart';
+
+import 'package:cake/domain/model/push_payload.dart';
 import 'package:cake/domain/service/notification_service.dart';
+import 'package:cake/domain/service/push_event_service.dart';
 import 'package:cake/utils/app_logger.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationServiceImpl implements NotificationService {
+  /// 서버 AndroidConfig·AndroidManifest와 같은 ID. FCM이 띄우는 알림도 이 채널을 쓴다.
+  static const channelId = 'high_importance_channel';
+  static const _channelName = '기록·공감 알림';
+
   final _localNotifications = FlutterLocalNotificationsPlugin();
+  final PushEventService _pushEvents;
+
+  NotificationServiceImpl({required PushEventService pushEvents})
+    : _pushEvents = pushEvents;
 
   @override
   Future<void> initialize() async {
-    // 1. Terminated 상태에서 노티로 실행되었는지 체크
-    final launchDetails = await _localNotifications
-        .getNotificationAppLaunchDetails();
-    if (launchDetails?.didNotificationLaunchApp ?? false) {
-      AppLogger.log(
-        '앱이 로컬 노티로 실행됨: ${launchDetails?.notificationResponse?.payload}',
-      );
-      _handleNotificationTap(launchDetails?.notificationResponse?.payload);
-    }
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            channelId,
+            _channelName,
+            importance: Importance.high,
+          ),
+        );
 
-    // 2. 노티피케이션 초기화
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
-    const iosSettings = DarwinInitializationSettings(
-      requestSoundPermission: true,
-      requestBadgePermission: true,
-      requestAlertPermission: true,
-    );
-
+    // 권한은 FCMService가 한 곳에서 요청한다.
     await _localNotifications.initialize(
-      const InitializationSettings(android: androidSettings, iOS: iosSettings),
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        AppLogger.log('로컬 노티 탭됨: ${response.payload}');
-        _handleNotificationTap(response.payload);
-      },
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@drawable/ic_notification'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
+      ),
+      onDidReceiveNotificationResponse: (response) =>
+          _publishTap(response.payload),
     );
+
+    // 포그라운드에서 띄운 로컬 알림이 트레이에 남았다가 앱 종료 후 탭된 경우
+    final launch = await _localNotifications.getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp ?? false) {
+      _publishTap(launch?.notificationResponse?.payload);
+    }
   }
 
-  //개별 알림 메서드
   @override
   Future<void> showNotification({
     required String title,
@@ -47,57 +59,28 @@ class NotificationServiceImpl implements NotificationService {
     String? payload,
   }) async {
     const androidDetails = AndroidNotificationDetails(
-      'default_channel',
-      'test',
-      importance: Importance.max,
-      priority: Priority.max,
-    );
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      interruptionLevel: InterruptionLevel.critical,
+      channelId,
+      _channelName,
+      importance: Importance.high,
+      priority: Priority.high,
     );
 
     await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch.remainder(
-        100000,
-      ), // 매번 다른 ID : 현재 시간의 밀리초값을 100000으로 나눈 나머지(0~99999)
+      DateTime.now().millisecondsSinceEpoch.remainder(100000),
       title,
       body,
-      const NotificationDetails(android: androidDetails, iOS: iosDetails),
+      const NotificationDetails(android: androidDetails),
       payload: payload,
     );
   }
 
-  void _handleNotificationTap(String? payload) {
-  if (payload == null || payload.isEmpty) {
-    AppLogger.log('payload가 비어있음');
-    return;
-  }
-
-  AppLogger.log('notification service 알림 탭 처리 시작. payload : $payload');
-  try {
-    final data = jsonDecode(payload) as Map<String, dynamic>;
-    final type = data['type'];
-    final diaryId = data['diaryId'];
-
-    switch (type) {
-      case 'FEEDBACK':
-        FirebaseAnalytics.instance.logEvent(name: 'fcm_feedback_tapped');
-        AppRouter.router.go('/diary-calendar');
-        Future.delayed(const Duration(milliseconds: 100), () {
-          AppLogger.log('diary detail 페이지로 이동합니다');
-          AppRouter.router.push(
-            '/diary-detail',
-            extra: int.parse(diaryId.toString()),
-          );
-        });
-      case 'REMINDER':
-        FirebaseAnalytics.instance.logEvent(name: 'fcm_reminder_tapped');
+  void _publishTap(String? payload) {
+    if (payload == null || payload.isEmpty) return;
+    try {
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      _pushEvents.publish(PushPayload.fromData(data));
+    } catch (e) {
+      AppLogger.error('로컬 알림 payload 해석 실패: $payload', tag: 'FCM', error: e);
     }
-  } catch (e) {
-    AppLogger.error('notification service 알림 탭 처리 실패: $e');
   }
-}
 }
