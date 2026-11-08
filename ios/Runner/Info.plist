@@ -24,8 +24,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<!-- Google 로그인 콜백 URL scheme. Firebase 콘솔에서 Google 로그인을 켜고 받은
-	     GoogleService-Info.plist의 REVERSED_CLIENT_ID 값으로 바꿔야 한다. -->
+	<!-- Google 로그인 콜백 URL scheme. GoogleService-Info.plist의 REVERSED_CLIENT_ID와 같아야 한다.
+	     plist를 다시 받으면 이 값도 같이 맞춘다. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -33,7 +33,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.REPLACE_WITH_REVERSED_CLIENT_ID</string>
+				<string>com.googleusercontent.apps.528128213573-47964n7vgck4m16cdbmbv87khp9eo728</string>
 			</array>
 		</dict>
 	</array>
@@ -87,5 +87,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- 로컬 개발 서버(http://localhost, http://192.168.x.x)로 붙을 때 필요. 인터넷의 http는 여전히 막힌다 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

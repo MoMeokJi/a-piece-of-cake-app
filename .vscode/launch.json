@@ -1,0 +1,65 @@
+{
+  // 실행 설정. 어떤 파일이 열려 있든 F5(실행 > 디버그 시작)로 앱이 뜬다.
+  // 키 파일(~/development/keys/cake-social-login.json)은 Google 로그인에 필요하다.
+  // 서버 구분은 flavor가 아니라 --dart-define=API_BASE_URL 하나로 한다.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "조각케이크 · 운영 서버",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define-from-file=${env:HOME}/development/keys/cake-social-login.json"
+      ]
+    },
+    {
+      "name": "조각케이크 · 로컬 서버 (iOS 시뮬레이터)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define-from-file=${env:HOME}/development/keys/cake-social-login.json",
+        "--dart-define=API_BASE_URL=http://localhost:8080"
+      ]
+    },
+    {
+      "name": "조각케이크 · 로컬 서버 (Android 에뮬레이터)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define-from-file=${env:HOME}/development/keys/cake-social-login.json",
+        "--dart-define=API_BASE_URL=http://10.0.2.2:8080"
+      ]
+    },
+    {
+      "name": "조각케이크 · 로컬 서버 (실기기, 같은 Wi-Fi)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define-from-file=${env:HOME}/development/keys/cake-social-login.json",
+        "--dart-define=API_BASE_URL=http://${input:lanIp}:8080"
+      ]
+    },
+    {
+      "name": "조각케이크 · 운영 서버 (release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "args": [
+        "--dart-define-from-file=${env:HOME}/development/keys/cake-social-login.json"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "lanIp",
+      "type": "promptString",
+      "description": "서버가 떠 있는 맥의 IP (터미널에서 ipconfig getifaddr en0)",
+      "default": "192.168.0.5"
+    }
+  ]
+}
