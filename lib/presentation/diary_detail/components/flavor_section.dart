@@ -6,7 +6,7 @@ import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/ui/style/text_config.dart';
 import 'package:flutter/material.dart';
 
-/// 오늘의 시식평. 아직 없으면(작성 후 약 10분) 대기 문구.
+/// 오늘의 시식평. 아직 없으면(작성 후 2~4분) 대기 문구.
 class FlavorSection extends StatelessWidget {
   final DiaryDetail diary;
 

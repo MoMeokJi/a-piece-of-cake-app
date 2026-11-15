@@ -12,7 +12,7 @@ class DiaryDetail {
   final List<DiaryColor> colors;
   final DiaryMusic music;
 
-  /// 시식평. 작성 후 약 10분 뒤 서버 배치가 채운다. 그 전엔 null.
+  /// 시식평. 작성 후 2~4분 안에 서버 배치가 채운다. 그 전엔 null.
   final String? feedback;
 
   /// 확정 응답에만 실린다. 상세 조회는 null.
