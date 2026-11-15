@@ -2,7 +2,8 @@ import 'package:cake/ui/style/app_assets.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 
-/// 브랜드 그라데이션 원 위에 납작 케이크. 문답 봇 아바타.
+/// 세레니티 블루 단색 원 위에 케이크 조각. 문답 봇 아바타 (피그마 Bot Avatar 36, 케이크 18).
+/// Brand Mark·앱 아이콘과 같은 배경색.
 class CakeAvatar extends StatelessWidget {
   final double size;
 
@@ -15,13 +16,14 @@ class CakeAvatar extends StatelessWidget {
       height: size,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        gradient: AppGradients.brand,
+        color: ColorConfig.brandBlue,
       ),
       alignment: Alignment.center,
       child: Image.asset(
-        AppImages.cakeFlatStrawberry,
-        width: size * 24 / 36,
-        height: size * 24 / 36,
+        AppImages.cakeSlice,
+        width: size * 18 / 36,
+        height: size * 18 / 36,
+        fit: BoxFit.contain,
       ),
     );
   }

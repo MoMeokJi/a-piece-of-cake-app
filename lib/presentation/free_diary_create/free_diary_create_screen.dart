@@ -4,10 +4,10 @@ import 'package:cake/presentation/common/components/diary_editor_card.dart';
 import 'package:cake/presentation/common/components/diary_toolbar.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
 import 'package:cake/ui/common_components/app_bottom_sheet.dart';
+import 'package:cake/ui/common_components/brand_mark.dart';
 import 'package:cake/ui/common_components/app_toast.dart';
 import 'package:cake/ui/common_components/full_loading.dart';
 import 'package:cake/ui/common_components/top_bar.dart';
-import 'package:cake/ui/style/app_assets.dart';
 import 'package:cake/ui/style/app_dimens.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/utils/date_converter.dart';
@@ -21,7 +21,7 @@ Future<void> showDailyLimitSheet(BuildContext context) => ConfirmSheet.show(
   title: '오늘의 조각을 모두 구웠어요',
   description: '일기는 하루에 3개까지 쓸 수 있어요.\n내일 또 만나요!',
   primaryLabel: '확인',
-  visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+  visual: const BrandMark(),
 );
 
 /// 작성 중 나가기 확인. true면 나간다.
@@ -32,7 +32,6 @@ Future<bool> confirmLeaveDiary(BuildContext context) async {
     description: '지금 나가면 쓰던 내용이 저장되지 않아요.',
     primaryLabel: '계속 쓰기',
     secondaryLabel: '나가기',
-    visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
   );
   return !stay;
 }

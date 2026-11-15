@@ -1,10 +1,12 @@
 import 'package:cake/domain/enum/app_init_state.dart';
 import 'package:cake/presentation/splash/splash_view_model.dart';
 import 'package:cake/ui/common_components/app_bottom_sheet.dart';
+import 'package:cake/ui/common_components/brand_mark.dart';
 import 'package:cake/ui/common_components/gradient_scaffold.dart';
 import 'package:cake/ui/style/app_assets.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -45,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
       description: '더 편해진 조각케이크를 만나보세요.\n지금 업데이트할까요?',
       primaryLabel: '업데이트',
       isDismissible: false,
-      visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+      visual: const BrandMark(),
     );
     if (!mounted) return;
     if (go) await viewModel.openStore();
@@ -61,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
           '이번 버전부터 Apple·Google 계정으로 로그인해요.\n이전 버전에서 쓴 일기는 새 계정으로 이어지지 않아요.',
       primaryLabel: '확인했어요',
       isDismissible: false,
-      visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+      visual: const BrandMark(),
     );
     if (!mounted) return;
     await viewModel.acknowledgeMigrationNotice();
@@ -76,18 +78,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
     return GradientScaffold(
       gradient: AppGradients.onboarding,
+      // A-7: 세로형 흰 로고만 화면 가운데 (너비 150)
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(AppImages.cakePlateStrawberry, width: 121, height: 132),
-            const SizedBox(height: 28),
-            Container(
-              decoration: const BoxDecoration(boxShadow: AppShadows.logo),
-              child: Image.asset(AppImages.logo, width: 260, height: 32),
-            ),
-          ],
-        ),
+        child: SvgPicture.asset(AppImages.logoStacked, width: 150),
       ),
     );
   }

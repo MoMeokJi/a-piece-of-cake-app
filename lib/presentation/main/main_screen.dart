@@ -3,7 +3,7 @@ import 'package:cake/presentation/main/components/write_type_sheet.dart';
 import 'package:cake/presentation/main/main_view_model.dart';
 import 'package:cake/ui/common_components/app_bottom_sheet.dart';
 import 'package:cake/ui/common_components/bottom_nav.dart';
-import 'package:cake/ui/style/app_assets.dart';
+import 'package:cake/ui/common_components/brand_mark.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +25,7 @@ class MainScreen extends StatelessWidget {
         title: '오늘의 조각을 모두 구웠어요',
         description: '일기는 하루에 ${viewModel.dailyLimit}개까지 쓸 수 있어요.\n내일 또 만나요!',
         primaryLabel: '확인',
-        visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
+        visual: const BrandMark(),
       );
       return;
     }

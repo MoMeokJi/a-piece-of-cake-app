@@ -2,4 +2,5 @@
 <resources>
     <!-- ColorConfig.brandBlue. 상태바 알림 아이콘 색 -->
     <color name="notification_accent">#8196C3</color>
+	<color name="ic_launcher_background">#8196C3</color>
 </resources>

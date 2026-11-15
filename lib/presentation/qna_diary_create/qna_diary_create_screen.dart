@@ -9,7 +9,6 @@ import 'package:cake/ui/common_components/chat_bubble.dart';
 import 'package:cake/ui/common_components/full_loading.dart';
 import 'package:cake/ui/common_components/gradient_scaffold.dart';
 import 'package:cake/ui/common_components/top_bar.dart';
-import 'package:cake/ui/style/app_assets.dart';
 import 'package:cake/ui/style/app_dimens.dart';
 import 'package:cake/ui/style/color_config.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,6 @@ class QnaDiaryCreateScreen extends StatelessWidget {
       description: '지금 나가면 쓰던 내용이 저장되지 않아요.',
       primaryLabel: '계속 쓰기',
       secondaryLabel: '나가기',
-      visual: Image.asset(AppImages.cakePlateStrawberry, width: 64, height: 70),
     );
     if (!leave && context.mounted) context.pop();
   }

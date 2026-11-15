@@ -153,7 +153,12 @@ class _FirstDiaryEmptyCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-          Image.asset(AppImages.cakePlateStrawberry, width: 59, height: 64),
+          Image.asset(
+            AppImages.cakeSlice,
+            width: 59,
+            height: 64,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -316,7 +321,12 @@ class _ListEmpty extends StatelessWidget {
       padding: const EdgeInsets.only(top: 96),
       child: Column(
         children: [
-          Image.asset(AppImages.cakePlateStrawberry, width: 88, height: 96),
+          Image.asset(
+            AppImages.cakeSlice,
+            width: 66,
+            height: 72,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(height: 12),
           Text('아직 모은 조각이 없어요', style: TextConfig.titleS),
           const SizedBox(height: 12),

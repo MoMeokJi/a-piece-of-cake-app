@@ -12,6 +12,7 @@ import 'package:cake/ui/style/color_config.dart';
 import 'package:cake/ui/style/text_config.dart';
 import 'package:cake/utils/external_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -117,57 +118,84 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
+/// A-1 Hero: 옅은 3D 케이크 둘 + 세로형 흰 로고(너비 150) 가운데.
+/// 케이크 위치는 피그마의 회전 바운딩 박스 값(390×512 기준). 블루베리는 위, 딸기는 아래에 붙인다.
 class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-          left: -32,
-          top: 28 + MediaQuery.paddingOf(context).top,
-          child: Transform.rotate(
-            angle: -10 * math.pi / 180,
-            child: Opacity(
-              opacity: 0.5,
+    return ClipRect(
+      child: Stack(
+        children: [
+          // Deco Blueberry: 박스 168.75 @ (1.6, 52), 이미지 142.28, 12°, 불투명도 0.4
+          Positioned(
+            left: 1.6,
+            top: 52,
+            child: _RotatedDeco(
+              boxWidth: 168.75,
+              boxHeight: 168.75,
+              angleDeg: 12,
+              opacity: 0.4,
               child: Image.asset(
                 AppImages.cake3dBlueberry,
-                width: 160,
-                height: 160,
+                width: 142.28,
+                height: 142.28,
               ),
             ),
           ),
-        ),
-        Positioned(
-          right: -20,
-          bottom: 0,
-          child: Transform.rotate(
-            angle: 8 * math.pi / 180,
-            child: Opacity(
+          // Deco Strawberry: 박스 171.18×183.31 @ (236.46, 295), 이미지 154.46×168.09, -6°, 0.5
+          Positioned(
+            right: 390 - 236.46 - 171.18,
+            bottom: 512 - 295 - 183.31,
+            child: _RotatedDeco(
+              boxWidth: 171.18,
+              boxHeight: 183.31,
+              angleDeg: -6,
               opacity: 0.5,
               child: Image.asset(
                 AppImages.cake3dStrawberry,
-                width: 165,
-                height: 180,
+                width: 154.46,
+                height: 168.09,
               ),
             ),
           ),
-        ),
-        Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 24),
-              Container(
-                decoration: const BoxDecoration(boxShadow: AppShadows.logo),
-                child: Image.asset(AppImages.logo, width: 280, height: 34),
-              ),
-              const SizedBox(height: 12),
-              Text('오늘은 어떤 하루였나요?', style: TextConfig.titleM),
-            ],
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: SvgPicture.asset(AppImages.logoStacked, width: 150),
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RotatedDeco extends StatelessWidget {
+  final double boxWidth;
+  final double boxHeight;
+  final double angleDeg;
+  final double opacity;
+  final Widget child;
+
+  const _RotatedDeco({
+    required this.boxWidth,
+    required this.boxHeight,
+    required this.angleDeg,
+    required this.opacity,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: boxWidth,
+      height: boxHeight,
+      child: Center(
+        child: Transform.rotate(
+          angle: angleDeg * math.pi / 180,
+          child: Opacity(opacity: opacity, child: child),
         ),
-      ],
+      ),
     );
   }
 }

@@ -26,7 +26,12 @@ class FlavorSection extends StatelessWidget {
           else
             Row(
               children: [
-                Image.asset(AppImages.cakePlateBlueberry, width: 44, height: 46),
+                Image.asset(
+                  AppImages.cakeSlice,
+                  width: 44,
+                  height: 46,
+                  fit: BoxFit.contain,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text('곧 달콤한 한마디가 도착해요', style: TextConfig.bodyMStrong),

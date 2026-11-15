@@ -152,7 +152,12 @@ class _LoadingOrError extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(AppImages.cakePlateBlueberry, width: 88, height: 96),
+          Image.asset(
+            AppImages.cakeSlice,
+            width: 66,
+            height: 72,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(height: 12),
           Text(
             viewModel.notFound ? '이미 사라진 조각이에요' : '일기를 불러오지 못했어요',

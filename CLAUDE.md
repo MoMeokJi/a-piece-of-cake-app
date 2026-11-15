@@ -60,6 +60,7 @@ flutter run --dart-define=API_BASE_URL=https://test.example   # 테스트 서버
 flutter test                         # 테스트
 flutter analyze                      # 정적 분석
 dart run build_runner build --delete-conflicting-outputs   # freezed / json_serializable 생성
+dart run flutter_launcher_icons       # 앱 아이콘 재생성 (assets/icon/ 원본이 바뀌었을 때)
 ./scripts/deploy.sh android          # Play 내부 테스트 트랙에 업로드 (ios / all)
 ./scripts/deploy.sh all --check-only # 빌드 없이 점검만 (--build-only: 업로드 직전까지)
 bash scripts/test/preflight_test.sh  # 배포 스크립트 테스트

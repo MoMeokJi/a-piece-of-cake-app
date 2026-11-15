@@ -48,11 +48,22 @@ dev_dependencies:
  build_runner: ^2.4.13
  freezed: ^3.1.0
  json_serializable: ^6.8.0
+ flutter_launcher_icons: ^0.14.3
+
+# 앱 아이콘. `dart run flutter_launcher_icons`
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon_1024.png"
+  remove_alpha_ios: true
+  adaptive_icon_background: "#8196C3"
+  adaptive_icon_foreground: "assets/icon/adaptive_foreground_1024.png"
 
 
 flutter:
  uses-material-design: true
  assets:
+   - assets/images/
    - assets/images/figma/
    - assets/icons/ui/
    - assets/icons/brand/

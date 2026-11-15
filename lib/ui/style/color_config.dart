@@ -86,6 +86,13 @@ class AppGradients {
     colors: [ColorConfig.bgTintBlue, ColorConfig.bgTintPink],
   );
 
+  /// 전체 로딩 링 (Full Loading)
+  static const LinearGradient loadingRing = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFC9D3EA), Color(0xFFF2CDD5)],
+  );
+
   /// 상세·문답·입력 화면 배경
   static const LinearGradient pageTop = LinearGradient(
     begin: Alignment.topCenter,
@@ -143,14 +150,6 @@ class AppShadows {
       color: Color(0x2E1F2230),
       offset: Offset(0, 6),
       blurRadius: 8,
-    ),
-  ];
-
-  static const List<BoxShadow> logo = [
-    BoxShadow(
-      color: Color(0x7346508C),
-      offset: Offset(0, 2),
-      blurRadius: 10,
     ),
   ];
 }

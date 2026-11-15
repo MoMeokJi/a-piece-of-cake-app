@@ -113,7 +113,11 @@ class WriteFab extends StatelessWidget {
             boxShadow: AppShadows.fab,
           ),
           alignment: Alignment.center,
-          child: const AppIcon(AppIcons.pen, color: ColorConfig.textOnDark),
+          child: const AppIcon(
+            AppIcons.pen,
+            size: 30,
+            color: ColorConfig.textOnDark,
+          ),
         ),
       ),
     );

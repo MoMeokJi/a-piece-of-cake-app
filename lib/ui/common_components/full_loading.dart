@@ -84,15 +84,25 @@ class _FullLoadingState extends State<FullLoading>
                       height: 180,
                     ),
                   ),
-                  SvgPicture.asset(
-                    AppImages.loadingRing,
+                  // Ring: #C9D3EA → #F2CDD5 대각선 그라데이션 원 140
+                  Container(
                     width: 140,
                     height: 140,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: AppGradients.loadingRing,
+                    ),
                   ),
-                  Image.asset(
-                    AppImages.cakePlateStrawberry,
-                    width: 92,
-                    height: 100,
+                  // 케이크 74 @ (53, 47): 링 가운데보다 3px 위
+                  Positioned(
+                    left: 53,
+                    top: 47,
+                    child: Image.asset(
+                      AppImages.cakeSlice,
+                      width: 74,
+                      height: 74,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ],
               ),
