@@ -1,5 +1,6 @@
 import 'package:cake/data/data_source/api/api_exception.dart';
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
+import 'package:cake/data/dto/daily_questions_response_dto.dart';
 import 'package:cake/data/dto/diary_detail_response_dto.dart';
 import 'package:cake/data/dto/diary_list_response_dto.dart';
 import 'package:cake/data/dto/diary_page_response_dto.dart';
@@ -113,10 +114,12 @@ class DiaryApiImpl implements DiaryApi {
   );
 
   @override
-  Future<List<String>> fetchQuestions() async {
+  Future<DailyQuestionsResponseDto> fetchQuestions() async {
     try {
       final response = await _dio.get('/diaries/question');
-      return List<String>.from(response.data['questions']);
+      return DailyQuestionsResponseDto.fromJson(
+        response.data as Map<String, dynamic>,
+      );
     } on DioException catch (e) {
       // 응답을 받은 실패에만 fallback을 적용한다. 오프라인은 그대로 올려보낸다 —
       // 기본 질문을 주면 답을 다 쓴 뒤 생성 요청에서 실패하기 때문.
@@ -124,13 +127,16 @@ class DiaryApiImpl implements DiaryApi {
       AppLogger.error(
         'fetchQuestions 서버 에러. statusCode : ${e.response?.statusCode}',
       );
-      return const [
-        '지금 기분이 어때?',
-        '오늘 특별한 일이나 기록하고 싶은 일이 있었어?',
-        '요즘 너의 최대 관심사는 뭐야?',
-        '오늘 가장 후회되는 지출이 있어? 꼭 오늘이 아니어도 괜찮아',
-        '오늘의 너에게 해주고 싶은 말이 있다면?',
-      ];
+      return DailyQuestionsResponseDto(
+        questions: const [
+          '지금 기분이 어때?',
+          '오늘 특별한 일이나 기록하고 싶은 일이 있었어?',
+          '요즘 너의 최대 관심사는 뭐야?',
+          '오늘 가장 후회되는 지출이 있어? 꼭 오늘이 아니어도 괜찮아',
+          '오늘의 너에게 해주고 싶은 말이 있다면?',
+        ],
+        optionalSpares: const [],
+      );
     }
   }
 

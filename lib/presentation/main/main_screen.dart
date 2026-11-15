@@ -70,13 +70,15 @@ class MainScreen extends StatelessWidget {
       backgroundColor: ColorConfig.bgPage,
       body: navigationShell,
       extendBody: false,
+      // FAB는 바텀바 안이 아니라 Scaffold 슬롯에 둔다. 바 위로 튀어나온 부분까지 눌리게 하기 위해서다.
+      floatingActionButton: WriteFab(onTap: () => _onFabTap(context)),
+      floatingActionButtonLocation: const WriteFabLocation(),
       bottomNavigationBar: BottomNav(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) => navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        onFabTap: () => _onFabTap(context),
       ),
     );
   }

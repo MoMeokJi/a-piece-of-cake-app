@@ -5,6 +5,7 @@ import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/model/diary_page.dart';
 import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/model/qna.dart';
+import 'package:cake/domain/model/question_set.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 
 class FakeDiaryRepository implements DiaryRepository {
@@ -12,6 +13,7 @@ class FakeDiaryRepository implements DiaryRepository {
   Map<SortType, List<DiaryPage>> pages = {};
   List<Diary> monthlyDiaries = [];
   List<Qna> questions = [];
+  List<String> optionalSpares = [];
   String generated = '생성된 일기';
   Object? generateError;
 
@@ -57,7 +59,8 @@ class FakeDiaryRepository implements DiaryRepository {
   }
 
   @override
-  Future<List<Qna>> getQuestionList() async => questions;
+  Future<QuestionSet> getQuestionSet() async =>
+      QuestionSet(questions: questions, optionalSpares: optionalSpares);
 
   @override
   Future<String> generateQnaDiary({required List<Qna> qnaList}) async {

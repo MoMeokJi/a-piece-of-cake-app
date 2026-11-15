@@ -3,22 +3,22 @@ class Qna {
   final String question;
   final String answer;
 
-  /// 건너뛴 문항. 서버에 보내지 않는다.
-  final bool skipped;
+  /// 필수 문항. 건너뛰기 버튼을 보여주지 않는다.
+  final bool required;
 
   const Qna({
     required this.id,
     required this.question,
     required this.answer,
-    this.skipped = false,
+    this.required = false,
   });
 
-  bool get isAnswered => !skipped && answer.trim().isNotEmpty;
+  bool get isAnswered => answer.trim().isNotEmpty;
 
-  Qna copyWith({String? answer, bool? skipped}) => Qna(
+  Qna copyWith({String? question, String? answer}) => Qna(
     id: id,
-    question: question,
+    question: question ?? this.question,
     answer: answer ?? this.answer,
-    skipped: skipped ?? this.skipped,
+    required: required,
   );
 }

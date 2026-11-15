@@ -16,6 +16,9 @@ class ServiceConfig {
   /// 하루 최대 작성 가능 일기 수. 서버 stats의 dailyLimit을 못 받았을 때만 쓴다.
   static const int maxDiaryCount = 3;
 
+  /// 문답 질문 5개 중 앞에서부터 필수인 개수 (서버 규칙: 1·2번 필수, 3~5번 선택)
+  static const int qnaRequiredCount = 2;
+
   /// 목록 한 페이지 크기
   static const int diaryPageSize = 10;
 

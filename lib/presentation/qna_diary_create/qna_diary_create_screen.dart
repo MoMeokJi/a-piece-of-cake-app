@@ -53,23 +53,21 @@ class QnaDiaryCreateScreen extends StatelessWidget {
       final error = viewModel.errorMessage;
       if (error != null) {
         viewModel.clearError();
-        final retryable = viewModel.isAllQuestionsDone && !viewModel.allSkipped;
+        final retryable = viewModel.isAllQuestionsDone;
         AppToast.show(
           context,
           error,
           tone: ToastTone.error,
-          actionLabel: retryable
-              ? '다시 시도'
-              : viewModel.allSkipped
-              ? '답하기'
-              : null,
-          onAction: retryable
-              ? viewModel.retryGenerate
-              : viewModel.allSkipped
-              ? viewModel.reopenLastQuestion
-              : null,
+          actionLabel: retryable ? '다시 시도' : null,
+          onAction: retryable ? viewModel.retryGenerate : null,
           bottomOffset: 129,
         );
+        return;
+      }
+      final info = viewModel.infoMessage;
+      if (info != null) {
+        viewModel.clearInfo();
+        AppToast.show(context, info, bottomOffset: 129);
       }
     });
 
@@ -129,6 +127,7 @@ class QnaDiaryCreateScreen extends StatelessWidget {
                           ChatBubble(
                             message: item.content,
                             isUser: item.isUser,
+                            animated: !item.isUser,
                             onTap: item.isUser && item.qnaIndex != null
                                 ? () => viewModel.startEditAnswer(item.qnaIndex!)
                                 : null,

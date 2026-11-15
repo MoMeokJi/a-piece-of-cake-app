@@ -17,26 +17,43 @@ void main() {
     repository = DiaryRepositoryImpl(diaryApi: api);
   });
 
-  group('getQuestionList', () {
-    test('질문 문자열에 1부터 시작하는 id를 붙이고 answer를 비운다', () async {
-      api.questions = ['오늘 무엇을 했나요', '기분은 어땠나요'];
+  group('getQuestionSet', () {
+    test('질문에 1부터 시작하는 id를 붙이고 앞 2개만 필수로 표시한다', () async {
+      api.questions = ['필수1', '필수2', '선택1', '선택2', '선택3'];
+      api.optionalSpares = ['여분1', '여분2'];
 
-      final result = await repository.getQuestionList();
+      final result = await repository.getQuestionSet();
 
-      expect(result.length, 2);
-      expect(result[0].id, 1);
-      expect(result[0].question, '오늘 무엇을 했나요');
-      expect(result[0].answer, '');
-      expect(result[1].id, 2);
+      expect(result.questions.length, 5);
+      expect(result.questions[0].id, 1);
+      expect(result.questions[0].question, '필수1');
+      expect(result.questions[0].answer, '');
+      expect(result.questions.map((q) => q.required), [
+        true,
+        true,
+        false,
+        false,
+        false,
+      ]);
+      expect(result.optionalSpares, ['여분1', '여분2']);
+    });
+
+    test('optionalSpares가 없는 구버전 응답은 빈 여분으로 받는다', () async {
+      api.questions = ['q1'];
+      api.optionalSpares = null;
+
+      final result = await repository.getQuestionSet();
+
+      expect(result.optionalSpares, isEmpty);
     });
   });
 
   group('generateQnaDiary', () {
-    test('건너뛴 문항과 빈 답은 빼고 보낸다', () async {
+    test('빈 답은 빼고 보낸다', () async {
       await repository.generateQnaDiary(
         qnaList: const [
           Qna(id: 1, question: 'q1', answer: 'a1'),
-          Qna(id: 2, question: 'q2', answer: '', skipped: true),
+          Qna(id: 2, question: 'q2', answer: ''),
           Qna(id: 3, question: 'q3', answer: '   '),
           Qna(id: 4, question: 'q4', answer: 'a4'),
         ],

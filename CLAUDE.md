@@ -7,7 +7,7 @@
 - **계정** — Apple·Google 소셜 로그인. Android는 Google만. 서버는 `deviceId`(설치당 UUID, secure storage)로 기기를 구분하고, 토큰은 응답 **바디**로 온다 (`AuthSession`)
 - **닉네임** — 완성형 한글·영문·숫자 2~10자 (`ServiceConfig.nicknamePattern`). 중복 허용, 실시간 검사 없음. 가입 직후 설정 화면에서 SDK 이름을 미리 채운다
 - **자유일기 (free)** — 사용자가 직접 쓴다
-- **문답일기 (qna)** — 서버가 준 질문에 답하면 서버가 일기를 생성한다. 건너뛴 문항은 서버에 보내지 않고, 전부 건너뛰면 생성 요청을 하지 않는다
+- **문답일기 (qna)** — 서버가 준 질문 5개(앞 2개 필수)에 답하면 서버가 일기를 생성한다. 선택 문항은 건너뛸 수 있는데, 그러면 응답의 `optionalSpares`에서 하나 꺼내 **같은 자리**에 넣는다. 여분이 떨어지면 건너뛰기는 토스트로 막는다. 그래서 생성 요청엔 항상 5문항의 답이 간다. 질문 조회는 진입 때 한 번뿐
 - 일기에는 이미지(최대 4장), 요약, 색상 2개(`{name, hex}`, name은 없을 수 있음), 추천 음악(YouTube, 길이는 없을 수 있음)이 붙는다
 - **시식평(feedback)** — 작성 후 약 10분 뒤 서버 배치가 만든다. 그 전엔 null이라 "곧 도착해요" 상태를 보여준다
 - 하루 한도는 서버 `GET /users/me/stats`의 `dailyLimit`이 기준이고 `ServiceConfig.maxDiaryCount`는 fallback. 초과하면 서버가 429 `DIARY_DAILY_LIMIT_EXCEEDED`

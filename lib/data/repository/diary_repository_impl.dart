@@ -10,6 +10,7 @@ import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/model/diary_page.dart';
 import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/model/qna.dart';
+import 'package:cake/domain/model/question_set.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:dio/dio.dart';
 
@@ -64,12 +65,22 @@ class DiaryRepositoryImpl implements DiaryRepository {
   }
 
   @override
-  Future<List<Qna>> getQuestionList() async {
+  Future<QuestionSet> getQuestionSet() async {
     try {
-      final questions = await _diaryApi.fetchQuestions();
-      return questions.asMap().entries.map((entry) {
-        return Qna(id: entry.key + 1, question: entry.value, answer: '');
-      }).toList();
+      final dto = await _diaryApi.fetchQuestions();
+      final questions = dto.questions ?? const <String>[];
+      return QuestionSet(
+        questions: [
+          for (final (index, question) in questions.indexed)
+            Qna(
+              id: index + 1,
+              question: question,
+              answer: '',
+              required: index < ServiceConfig.qnaRequiredCount,
+            ),
+        ],
+        optionalSpares: List.unmodifiable(dto.optionalSpares ?? const []),
+      );
     } on DioException catch (e) {
       throw mapOrRethrow(e);
     }
@@ -78,7 +89,6 @@ class DiaryRepositoryImpl implements DiaryRepository {
   @override
   Future<String> generateQnaDiary({required List<Qna> qnaList}) async {
     final answered = qnaList.where((qna) => qna.isAnswered).toList();
-    assert(answered.isNotEmpty, '답한 문항이 없으면 생성 요청을 보내지 않는다');
     try {
       return await _diaryApi.requestQnaDiary(
         qnaListDto: answered.map((qna) => qna.toDto()).toList(),

@@ -1,4 +1,5 @@
 import 'package:cake/data/data_source/api/diary/diary_api.dart';
+import 'package:cake/data/dto/daily_questions_response_dto.dart';
 import 'package:cake/data/dto/diary_detail_response_dto.dart';
 import 'package:cake/data/dto/diary_list_response_dto.dart';
 import 'package:cake/data/dto/diary_page_response_dto.dart';
@@ -7,6 +8,7 @@ import 'package:cake/domain/model/local_image.dart';
 
 class FakeDiaryApi implements DiaryApi {
   List<String> questions = [];
+  List<String>? optionalSpares;
   List<int> deletedDiaryIds = [];
   List<QnaRequestDto>? lastQnaRequest;
   DiaryPageResponseDto pageResponse = DiaryPageResponseDto(items: []);
@@ -14,7 +16,11 @@ class FakeDiaryApi implements DiaryApi {
   Map<String, Object?> lastPageQuery = {};
 
   @override
-  Future<List<String>> fetchQuestions() async => questions;
+  Future<DailyQuestionsResponseDto> fetchQuestions() async =>
+      DailyQuestionsResponseDto(
+        questions: questions,
+        optionalSpares: optionalSpares,
+      );
 
   @override
   Future<void> deleteDiary({required int id}) async {

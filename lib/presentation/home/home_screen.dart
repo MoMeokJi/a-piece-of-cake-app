@@ -29,10 +29,6 @@ class HomeScreen extends StatelessWidget {
       color: ColorConfig.bgPage,
       child: Column(
         children: [
-          Container(
-            color: const Color(0xFFADBBD8),
-            height: topInset,
-          ),
           Expanded(
             child: Stack(
               children: [
@@ -41,12 +37,14 @@ class HomeScreen extends StatelessWidget {
                     HomeHeader(
                       expanded: isCalendar,
                       greeting: viewModel.greeting,
+                      topInset: topInset,
                     ),
                     const Expanded(child: SizedBox()),
                   ],
                 ),
                 Positioned.fill(
-                  top: (isCalendar
+                  top: topInset +
+                      (isCalendar
                           ? HomeHeader.expandedHeight
                           : HomeHeader.collapsedHeight) -
                       20,

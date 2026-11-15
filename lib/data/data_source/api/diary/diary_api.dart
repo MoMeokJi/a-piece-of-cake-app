@@ -1,3 +1,4 @@
+import 'package:cake/data/dto/daily_questions_response_dto.dart';
 import 'package:cake/data/dto/diary_detail_response_dto.dart';
 import 'package:cake/data/dto/diary_list_response_dto.dart';
 import 'package:cake/data/dto/diary_page_response_dto.dart';
@@ -29,7 +30,7 @@ abstract interface class DiaryApi {
 
   Future<DiaryDetailResponseDto> fetchDiary({required int id});
 
-  Future<List<String>> fetchQuestions();
+  Future<DailyQuestionsResponseDto> fetchQuestions();
 
   Future<String> requestQnaDiary({required List<QnaRequestDto> qnaListDto});
 

@@ -6,19 +6,25 @@ import 'package:cake/ui/style/text_config.dart';
 import 'package:flutter/material.dart';
 
 /// 홈 헤더. [expanded]면 172(인사말 포함), 아니면 108. 배경 케이크는 반투명으로 잘려 배치.
-/// 상태바 높이는 포함하지 않는다 — 호출부가 위 여백을 더한다.
+/// [topInset](상태바 높이)만큼 위로 늘려 그라데이션이 상태바 뒤까지 이어지게 한다.
 class HomeHeader extends StatelessWidget {
   final bool expanded;
   final String? greeting;
+  final double topInset;
 
-  const HomeHeader({super.key, required this.expanded, this.greeting});
+  const HomeHeader({
+    super.key,
+    required this.expanded,
+    this.greeting,
+    this.topInset = 0,
+  });
 
   static const double expandedHeight = 172;
   static const double collapsedHeight = 108;
 
   @override
   Widget build(BuildContext context) {
-    final height = expanded ? expandedHeight : collapsedHeight;
+    final height = (expanded ? expandedHeight : collapsedHeight) + topInset;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       height: height,
@@ -29,7 +35,7 @@ class HomeHeader extends StatelessWidget {
         children: [
           Positioned(
             left: expanded ? 153 : 188,
-            top: expanded ? -23 : -22,
+            top: (expanded ? -23 : -22) + topInset,
             child: Transform.rotate(
               angle: 12 * math.pi / 180,
               child: Opacity(
@@ -44,7 +50,7 @@ class HomeHeader extends StatelessWidget {
           ),
           Positioned(
             right: expanded ? -30 : -34,
-            top: expanded ? 10 : -2,
+            top: (expanded ? 10 : -2) + topInset,
             child: Transform.rotate(
               angle: -6 * math.pi / 180,
               child: Opacity(
@@ -59,7 +65,7 @@ class HomeHeader extends StatelessWidget {
           ),
           Positioned(
             left: 20,
-            top: expanded ? 48 : 52,
+            top: (expanded ? 48 : 52) + topInset,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

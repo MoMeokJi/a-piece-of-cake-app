@@ -88,6 +88,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<!-- 로컬 개발 서버(http://localhost, http://192.168.x.x)로 붙을 때 필요. 인터넷의 http는 여전히 막힌다 -->
+	<!-- iOS 14+는 같은 Wi-Fi의 개발 서버(192.168.x.x)에 붙을 때 로컬 네트워크 권한을 묻는다. 없으면 연결이 조용히 막힌다 -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>같은 Wi-Fi의 개발 서버에 연결할 때만 사용합니다.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

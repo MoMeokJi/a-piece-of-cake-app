@@ -5,6 +5,7 @@ import 'package:cake/domain/model/diary_detail.dart';
 import 'package:cake/domain/model/diary_page.dart';
 import 'package:cake/domain/model/local_image.dart';
 import 'package:cake/domain/model/qna.dart';
+import 'package:cake/domain/model/question_set.dart';
 
 abstract interface class DiaryRepository {
   Future<DiaryPage> getDiaryPage({
@@ -20,9 +21,10 @@ abstract interface class DiaryRepository {
 
   Future<DiaryDetail> getDiary({required int id});
 
-  Future<List<Qna>> getQuestionList();
+  /// 질문은 진입 때 한 번만 받는다. 건너뛸 때 다시 부르지 않는다 (호출마다 새로 뽑혀 중복됨).
+  Future<QuestionSet> getQuestionSet();
 
-  /// 답한 문항만 보낸다. 전부 건너뛰었으면 호출하지 말 것.
+  /// 답한 문항만 보낸다 (정상 흐름에선 전부 답한 상태다).
   Future<String> generateQnaDiary({required List<Qna> qnaList});
 
   /// 429면 [DiaryDailyLimitExceededException]

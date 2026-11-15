@@ -12,6 +12,7 @@ class FirebaseMessagingManagerImpl implements FirebaseMessagingManager {
 
   static const _apnsRetries = 3;
   static const _apnsRetryDelay = Duration(seconds: 1);
+  static const _initialMessageTimeout = Duration(seconds: 3);
 
   @override
   Future<void> requestPermission() async {
@@ -64,8 +65,18 @@ class FirebaseMessagingManagerImpl implements FirebaseMessagingManager {
   Stream<RemoteMessage> get onMessageOpenedApp =>
       FirebaseMessaging.onMessageOpenedApp;
 
+  /// iOS 네이티브 쪽이 앱 실행 완료 알림을 놓치면 영원히 끝나지 않으므로
+  /// 시간 제한을 둔다. 제한에 걸리면 "알림으로 켜진 게 아님"으로 본다.
   @override
-  Future<RemoteMessage?> getInitialMessage() => _messaging.getInitialMessage();
+  Future<RemoteMessage?> getInitialMessage() => _messaging
+      .getInitialMessage()
+      .timeout(
+        _initialMessageTimeout,
+        onTimeout: () {
+          AppLogger.error('getInitialMessage 응답 없음(무시)', tag: 'FCM');
+          return null;
+        },
+      );
 
   @override
   Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
