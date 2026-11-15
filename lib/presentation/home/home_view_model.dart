@@ -3,6 +3,7 @@ import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/repository/diary_repository.dart';
 import 'package:cake/domain/repository/user_repository.dart';
 import 'package:cake/presentation/common/diary_change_notifier.dart';
+import 'package:cake/presentation/common/profile_change_notifier.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:cake/utils/date_converter.dart';
 import 'package:flutter/material.dart';
@@ -15,20 +16,24 @@ class HomeViewModel extends ChangeNotifier {
   final DiaryRepository _diaryRepo;
   final UserRepository _userRepo;
   final DiaryChangeNotifier _diaryChanges;
+  final ProfileChangeNotifier _profileChanges;
 
   HomeViewModel({
     required DiaryRepository diaryRepo,
     required UserRepository userRepo,
     required DiaryChangeNotifier diaryChanges,
+    required ProfileChangeNotifier profileChanges,
     DateTime? now,
   }) : _diaryRepo = diaryRepo,
        _userRepo = userRepo,
-       _diaryChanges = diaryChanges {
+       _diaryChanges = diaryChanges,
+       _profileChanges = profileChanges {
     final today = now ?? DateTime.now();
     _today = DateTime(today.year, today.month, today.day);
     _focusedMonth = DateTime(today.year, today.month, 1);
     _selectedDay = _today;
     _diaryChanges.addListener(refresh);
+    _profileChanges.addListener(_reloadProfile);
     refresh();
   }
 
@@ -46,7 +51,9 @@ class HomeViewModel extends ChangeNotifier {
   bool get hasAnyDiary => _hasAnyDiary;
 
   String get greeting {
-    final name = (_nickname == null || _nickname!.isEmpty) ? '' : '$_nickname님,\n';
+    final name = (_nickname == null || _nickname!.isEmpty)
+        ? ''
+        : '$_nickname님,\n';
     return _hasAnyDiary ? '$name오늘은 어떤 하루였나요?' : '$name첫 조각을 기다리고 있어요';
   }
 
@@ -215,13 +222,21 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
+  /// 닉네임이 바뀌면 인사말만 다시 그린다.
+  Future<void> _reloadProfile() async {
+    await _loadProfile();
+    notifyListeners();
+  }
+
   void _updateHasAnyDiary() {
-    _hasAnyDiary = _totalCount > 0 || _listItems.isNotEmpty || _monthlyDiaries.isNotEmpty;
+    _hasAnyDiary =
+        _totalCount > 0 || _listItems.isNotEmpty || _monthlyDiaries.isNotEmpty;
   }
 
   @override
   void dispose() {
     _diaryChanges.removeListener(refresh);
+    _profileChanges.removeListener(_reloadProfile);
     listScrollController.dispose();
     super.dispose();
   }

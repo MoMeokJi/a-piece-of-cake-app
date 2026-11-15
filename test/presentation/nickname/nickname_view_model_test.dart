@@ -1,5 +1,6 @@
 import 'package:cake/domain/exception/app_exception.dart';
 import 'package:cake/presentation/common/nickname_validator.dart';
+import 'package:cake/presentation/common/profile_change_notifier.dart';
 import 'package:cake/presentation/nickname/nickname_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,10 +13,16 @@ void main() {
   late FakeAuthRepository authRepo;
   late FakeAppPrefsRepository prefsRepo;
 
+  late ProfileChangeNotifier profileChanges;
+  late int profileChangeCount;
+
   setUp(() {
     userRepo = FakeUserRepository();
     authRepo = FakeAuthRepository();
     prefsRepo = FakeAppPrefsRepository();
+    profileChanges = ProfileChangeNotifier();
+    profileChangeCount = 0;
+    profileChanges.addListener(() => profileChangeCount++);
   });
 
   NicknameViewModel build({bool isOnboarding = true, String? initial}) =>
@@ -23,9 +30,27 @@ void main() {
         userRepo: userRepo,
         authRepo: authRepo,
         prefsRepo: prefsRepo,
+        profileChanges: profileChanges,
         isOnboarding: isOnboarding,
         initialNickname: initial,
       );
+
+  test('저장에 성공하면 프로필 변경을 알린다 (홈 인사말 갱신용)', () async {
+    final vm = build(isOnboarding: false, initial: '서윤');
+    vm.controller.text = '케이크';
+    await vm.save();
+    expect(vm.saved, isTrue);
+    expect(profileChangeCount, 1);
+  });
+
+  test('저장에 실패하면 프로필 변경을 알리지 않는다', () async {
+    userRepo.nicknameError = Exception('boom');
+    final vm = build(isOnboarding: false, initial: '서윤');
+    vm.controller.text = '케이크';
+    await vm.save();
+    expect(vm.saved, isFalse);
+    expect(profileChangeCount, 0);
+  });
 
   group('validateNickname', () {
     test('규칙: 완성형 한글·영문·숫자 2~10자', () {

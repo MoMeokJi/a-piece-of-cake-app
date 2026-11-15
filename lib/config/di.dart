@@ -42,6 +42,7 @@ import 'package:cake/domain/service/push_event_service.dart';
 import 'package:cake/domain/service/social_sign_in_service.dart';
 import 'package:cake/presentation/common/app_error_messages.dart';
 import 'package:cake/presentation/common/diary_change_notifier.dart';
+import 'package:cake/presentation/common/profile_change_notifier.dart';
 import 'package:cake/presentation/diary_detail/diary_detail_view_model.dart';
 import 'package:cake/presentation/diary_edit/diary_edit_view_model.dart';
 import 'package:cake/presentation/free_diary_create/free_diary_create_view_model.dart';
@@ -143,6 +144,9 @@ Future<void> diSetup() async {
 
   // 화면 간 갱신 통로
   getIt.registerLazySingleton<DiaryChangeNotifier>(() => DiaryChangeNotifier());
+  getIt.registerLazySingleton<ProfileChangeNotifier>(
+    () => ProfileChangeNotifier(),
+  );
 
   // 하단 탭 viewmodel → lazySingleton (탭 전환에도 상태 유지)
   getIt.registerLazySingleton(
@@ -150,6 +154,7 @@ Future<void> diSetup() async {
       diaryRepo: getIt<DiaryRepository>(),
       userRepo: getIt<UserRepository>(),
       diaryChanges: getIt<DiaryChangeNotifier>(),
+      profileChanges: getIt<ProfileChangeNotifier>(),
     ),
   );
   getIt.registerLazySingleton(
@@ -183,6 +188,7 @@ Future<void> diSetup() async {
       userRepo: getIt<UserRepository>(),
       authRepo: getIt<AuthRepository>(),
       prefsRepo: getIt<AppPrefsRepository>(),
+      profileChanges: getIt<ProfileChangeNotifier>(),
       isOnboarding: isOnboarding,
       initialNickname: initialNickname,
     ),
@@ -240,6 +246,7 @@ void resetTabViewModels() {
         diaryRepo: getIt<DiaryRepository>(),
         userRepo: getIt<UserRepository>(),
         diaryChanges: getIt<DiaryChangeNotifier>(),
+        profileChanges: getIt<ProfileChangeNotifier>(),
       ),
     );
   }

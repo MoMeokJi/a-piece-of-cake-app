@@ -28,7 +28,12 @@ class AnswerInputBar extends StatelessWidget {
         color: ColorConfig.bgSurface,
         border: Border(top: BorderSide(color: ColorConfig.borderSubtle)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset > 0 ? bottomInset : 12),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        bottomInset > 0 ? bottomInset : 12,
+      ),
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: controller,
         builder: (context, value, _) {
@@ -71,7 +76,9 @@ class AnswerInputBar extends StatelessWidget {
                           hintStyle: TextConfig.bodyM.copyWith(
                             color: ColorConfig.textTertiary,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                          ),
                         ),
                       ),
                       Text(

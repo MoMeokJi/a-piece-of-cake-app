@@ -45,7 +45,10 @@ class QnaDiaryCreateScreen extends StatelessWidget {
       if (!context.mounted) return;
       if (viewModel.state == ResultState.success) {
         viewModel.consumeSuccess();
-        context.pushReplacement('/qna-confirm', extra: viewModel.generatedDiary);
+        context.pushReplacement(
+          '/qna-confirm',
+          extra: viewModel.generatedDiary,
+        );
         return;
       }
       final error = viewModel.errorMessage;
@@ -127,7 +130,8 @@ class QnaDiaryCreateScreen extends StatelessWidget {
                             isUser: item.isUser,
                             animated: !item.isUser,
                             onTap: item.isUser && item.qnaIndex != null
-                                ? () => viewModel.startEditAnswer(item.qnaIndex!)
+                                ? () =>
+                                      viewModel.startEditAnswer(item.qnaIndex!)
                                 : null,
                           ),
                           const SizedBox(height: 16),
@@ -152,12 +156,13 @@ class QnaDiaryCreateScreen extends StatelessWidget {
                   controller: viewModel.textController,
                   focusNode: viewModel.focusNode,
                   onSend: viewModel.submitAnswer,
-                  enabled: !viewModel.isGenerating && !viewModel.isAllQuestionsDone,
+                  enabled:
+                      !viewModel.isGenerating && !viewModel.isAllQuestionsDone,
                 ),
               ],
             ),
           ),
-          if (viewModel.isGenerating)
+          if (viewModel.showsLoading)
             const Positioned.fill(
               child: FullLoading(messages: FullLoading.qnaMessages),
             ),

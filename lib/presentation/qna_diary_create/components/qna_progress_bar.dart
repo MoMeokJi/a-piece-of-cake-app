@@ -6,7 +6,11 @@ class QnaProgressBar extends StatelessWidget {
   final double progress;
   final String label;
 
-  const QnaProgressBar({super.key, required this.progress, required this.label});
+  const QnaProgressBar({
+    super.key,
+    required this.progress,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {

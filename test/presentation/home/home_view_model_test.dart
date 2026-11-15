@@ -3,6 +3,7 @@ import 'package:cake/domain/enum/sort_type.dart';
 import 'package:cake/domain/model/diary.dart';
 import 'package:cake/domain/model/diary_page.dart';
 import 'package:cake/presentation/common/diary_change_notifier.dart';
+import 'package:cake/presentation/common/profile_change_notifier.dart';
 import 'package:cake/presentation/home/home_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -20,7 +21,12 @@ Diary buildDiary({required int id, DateTime? createdAt}) => Diary(
 );
 
 DiaryPage page(List<Diary> items, {int page = 0, bool hasNext = false}) =>
-    DiaryPage(items: items, page: page, hasNext: hasNext, totalCount: items.length);
+    DiaryPage(
+      items: items,
+      page: page,
+      hasNext: hasNext,
+      totalCount: items.length,
+    );
 
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
@@ -28,24 +34,42 @@ void main() {
   late FakeDiaryRepository diaryRepo;
   late FakeUserRepository userRepo;
   late DiaryChangeNotifier changes;
+  late ProfileChangeNotifier profileChanges;
   final now = DateTime(2026, 1, 15);
 
   setUp(() {
     diaryRepo = FakeDiaryRepository();
     userRepo = FakeUserRepository();
     changes = DiaryChangeNotifier();
+    profileChanges = ProfileChangeNotifier();
   });
 
   HomeViewModel build() => HomeViewModel(
     diaryRepo: diaryRepo,
     userRepo: userRepo,
     diaryChanges: changes,
+    profileChanges: profileChanges,
     now: now,
   );
 
+  test('프로필이 바뀌었다는 알림을 받으면 닉네임을 다시 불러온다', () async {
+    final vm = build();
+    await Future<void>.delayed(Duration.zero);
+    expect(vm.nickname, '서윤');
+
+    userRepo.profile = userRepo.profile.copyWith(nickname: '케이크');
+    profileChanges.notifyChanged();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(vm.nickname, '케이크');
+    expect(vm.greeting, startsWith('케이크님,'));
+  });
+
   test('생성 시 프로필·이번 달·최신순 첫 페이지를 불러온다', () async {
     diaryRepo.pages = {
-      SortType.recent: [page([buildDiary(id: 1)])],
+      SortType.recent: [
+        page([buildDiary(id: 1)]),
+      ],
     };
     diaryRepo.monthlyDiaries = [buildDiary(id: 1, createdAt: now)];
 
@@ -69,8 +93,12 @@ void main() {
 
   test('정렬을 바꾸면 그 정렬로 다시 불러오고, 같은 정렬이면 재조회하지 않는다', () async {
     diaryRepo.pages = {
-      SortType.recent: [page([buildDiary(id: 2), buildDiary(id: 1)])],
-      SortType.oldest: [page([buildDiary(id: 1), buildDiary(id: 2)])],
+      SortType.recent: [
+        page([buildDiary(id: 2), buildDiary(id: 1)]),
+      ],
+      SortType.oldest: [
+        page([buildDiary(id: 1), buildDiary(id: 2)]),
+      ],
     };
     final vm = build();
     await settle();
@@ -147,5 +175,6 @@ void main() {
 }
 
 extension on HomeViewModel {
-  List<SortType> requestedSortsOf(FakeDiaryRepository repo) => repo.requestedSorts;
+  List<SortType> requestedSortsOf(FakeDiaryRepository repo) =>
+      repo.requestedSorts;
 }

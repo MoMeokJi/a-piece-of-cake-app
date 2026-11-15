@@ -26,6 +26,12 @@ class QnaDiaryCreateViewModel extends ChangeNotifier {
   ResultState get state => _state;
   bool get isGenerating => _state == ResultState.loading;
 
+  /// 로딩 화면을 보일지. 생성이 끝난 뒤에도 확인 화면으로 넘어갈 때까지 유지한다.
+  /// 안 그러면 성공 → 화면 전환 사이 한 프레임 동안 채팅 화면이 비쳐 보인다.
+  bool get showsLoading =>
+      isGenerating || _state == ResultState.success || _handedOff;
+  bool _handedOff = false;
+
   List<Qna> _qnaList = [];
   final List<String> _spares = [];
   final List<ChatListItem> _chatList = [];
@@ -52,8 +58,7 @@ class QnaDiaryCreateViewModel extends ChangeNotifier {
   /// 진행 표시 "3/5": 현재 답하는 문항 번호
   int get currentQuestionNumber =>
       _qnaList.isEmpty ? 0 : (_currentIndex + 1).clamp(1, _qnaList.length);
-  double get progress =>
-      _qnaList.isEmpty ? 0 : _currentIndex / _qnaList.length;
+  double get progress => _qnaList.isEmpty ? 0 : _currentIndex / _qnaList.length;
 
   bool get isAllQuestionsDone => _currentIndex >= _qnaList.length;
 
@@ -201,7 +206,12 @@ class QnaDiaryCreateViewModel extends ChangeNotifier {
 
   void clearInfo() => _infoMessage = null;
 
-  void consumeSuccess() => _state = ResultState.none;
+  /// 화면이 성공을 처리(다음 화면으로 이동)했다. 다시 이동하지 않도록 상태를 비우되
+  /// 로딩은 계속 보인다 ([showsLoading]).
+  void consumeSuccess() {
+    _state = ResultState.none;
+    _handedOff = true;
+  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {

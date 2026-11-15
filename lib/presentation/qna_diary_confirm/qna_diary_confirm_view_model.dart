@@ -42,6 +42,12 @@ class QnaDiaryConfirmViewModel extends ChangeNotifier {
   ResultState get state => _state;
   bool get isSaving => _state == ResultState.loading;
 
+  /// 로딩 화면을 보일지. 저장이 끝난 뒤에도 상세로 넘어갈 때까지 유지한다.
+  /// 안 그러면 성공 → 화면 전환 사이 한 프레임 동안 확인 화면이 비쳐 보인다.
+  bool get showsLoading =>
+      isSaving || _state == ResultState.success || _handedOff;
+  bool _handedOff = false;
+
   DiaryDetail? _completedDiary;
   DiaryDetail? get completedDiary => _completedDiary;
 
@@ -101,7 +107,10 @@ class QnaDiaryConfirmViewModel extends ChangeNotifier {
       _state = ResultState.error;
     } catch (e) {
       AppLogger.error('문답 일기 확정 실패: $e');
-      _toastMessage = AppErrorMessages.of(e, fallback: AppErrorMessages.saveFailed);
+      _toastMessage = AppErrorMessages.of(
+        e,
+        fallback: AppErrorMessages.saveFailed,
+      );
       _state = ResultState.error;
     }
     notifyListeners();
@@ -109,7 +118,13 @@ class QnaDiaryConfirmViewModel extends ChangeNotifier {
 
   void clearToast() => _toastMessage = null;
   void clearDailyLimit() => _dailyLimitExceeded = false;
-  void consumeSuccess() => _state = ResultState.none;
+
+  /// 화면이 성공을 처리(상세로 이동)했다. 다시 이동하지 않도록 상태를 비우되
+  /// 로딩은 계속 보인다 ([showsLoading]).
+  void consumeSuccess() {
+    _state = ResultState.none;
+    _handedOff = true;
+  }
 
   @override
   void dispose() {

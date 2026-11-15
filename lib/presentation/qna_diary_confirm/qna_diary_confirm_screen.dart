@@ -53,7 +53,10 @@ class QnaDiaryConfirmScreen extends StatelessWidget {
       if (!context.mounted) return;
       if (viewModel.state == ResultState.success) {
         viewModel.consumeSuccess();
-        context.pushReplacement('/diary-detail', extra: viewModel.completedDiary);
+        context.pushReplacement(
+          '/diary-detail',
+          extra: viewModel.completedDiary,
+        );
         return;
       }
       if (viewModel.dailyLimitExceeded) {
@@ -122,7 +125,7 @@ class QnaDiaryConfirmScreen extends StatelessWidget {
               ),
             ),
           ),
-          if (viewModel.isSaving)
+          if (viewModel.showsLoading)
             const Positioned.fill(
               child: FullLoading(messages: FullLoading.saveMessages),
             ),

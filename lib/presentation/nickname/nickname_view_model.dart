@@ -4,6 +4,7 @@ import 'package:cake/domain/repository/auth_repository.dart';
 import 'package:cake/domain/repository/user_repository.dart';
 import 'package:cake/presentation/common/app_error_messages.dart';
 import 'package:cake/presentation/common/nickname_validator.dart';
+import 'package:cake/presentation/common/profile_change_notifier.dart';
 import 'package:cake/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 
@@ -13,17 +14,20 @@ class NicknameViewModel extends ChangeNotifier {
   final UserRepository _userRepo;
   final AuthRepository _authRepo;
   final AppPrefsRepository _prefsRepo;
+  final ProfileChangeNotifier _profileChanges;
   final bool isOnboarding;
 
   NicknameViewModel({
     required UserRepository userRepo,
     required AuthRepository authRepo,
     required AppPrefsRepository prefsRepo,
+    required ProfileChangeNotifier profileChanges,
     required this.isOnboarding,
     String? initialNickname,
   }) : _userRepo = userRepo,
        _authRepo = authRepo,
        _prefsRepo = prefsRepo,
+       _profileChanges = profileChanges,
        _prefilledFromProvider =
            initialNickname != null && initialNickname.trim().isNotEmpty {
     final initial = (initialNickname ?? '').trim();
@@ -71,6 +75,7 @@ class NicknameViewModel extends ChangeNotifier {
 
     try {
       await _userRepo.updateNickname(nickname);
+      _profileChanges.notifyChanged(); // 홈 인사말 갱신
       if (isOnboarding) await _finishOnboarding();
       _saved = true;
     } on ValidationFailedException {

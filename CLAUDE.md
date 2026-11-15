@@ -33,7 +33,8 @@
 shared_preferences는 `AppPrefsRepository` 뒤에 있다. 예외 없이 presentation은 항상 리포지토리를 거친다.
 
 화면끼리 직접 참조하지 않는다. 일기가 생성·수정·삭제되면 `DiaryChangeNotifier`(DI 싱글턴)를
-울리고, `HomeViewModel`·`MyViewModel`이 듣고 다시 불러온다.
+울리고, `HomeViewModel`·`MyViewModel`이 듣고 다시 불러온다. 닉네임이 바뀌면 `ProfileChangeNotifier`를
+울리고 `HomeViewModel`이 인사말을 다시 불러온다.
 
 ## 화면 하나를 추가할 때
 

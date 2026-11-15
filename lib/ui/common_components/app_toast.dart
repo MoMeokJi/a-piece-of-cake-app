@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:cake/ui/style/app_assets.dart';
 import 'package:cake/ui/style/app_dimens.dart';
@@ -29,13 +30,19 @@ class AppToast {
     if (overlay == null) return;
     dismiss();
 
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
     late final OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (_) => Positioned(
+      // 키보드가 올라와 있으면 그 위에 띄운다. 오버레이 컨텍스트로 읽어야 키보드가
+      // 내려갈 때 따라 내려온다. 키보드 높이는 하단 안전영역을 이미 덮으므로 둘 중 큰 값.
+      builder: (overlayContext) => Positioned(
         left: AppSpacing.page,
         right: AppSpacing.page,
-        bottom: bottomInset + bottomOffset,
+        bottom:
+            math.max(
+              MediaQuery.paddingOf(overlayContext).bottom,
+              MediaQuery.viewInsetsOf(overlayContext).bottom,
+            ) +
+            bottomOffset,
         child: _ToastBody(
           message: message,
           tone: tone,
@@ -51,10 +58,7 @@ class AppToast {
     );
     _current = entry;
     overlay.insert(entry);
-    _timer = Timer(
-      Duration(seconds: actionLabel != null ? 5 : 3),
-      dismiss,
-    );
+    _timer = Timer(Duration(seconds: actionLabel != null ? 5 : 3), dismiss);
   }
 
   static void dismiss() {
